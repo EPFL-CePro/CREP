@@ -1,5 +1,3 @@
-// TODO: Authenticate / Authorize this route to avoid anybody retreiving data.
-
 import { getAllExams } from "@/app/lib/database";
 
 export async function GET() {
