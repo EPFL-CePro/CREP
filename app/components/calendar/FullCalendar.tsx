@@ -4,18 +4,39 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction'; // handles event clicks
+import { useEffect, useState } from "react";
+import { EventSourceInput } from "@fullcalendar/core/index.js";
 // import interactionPlugin from "@fullcalendar/interaction";
 export default function Calendar() {
-  const events = [
-    {
-        title: 'Team Meeting',
-        start: '2025-09-10T10:00:00',
-        end: '2025-09-10T11:00:00',
-        description: 'Discuss Q2 strategy with the team.',
-    }
-  ];
 
-  console.log(events);
+  const [exams, setExams] = useState<EventSourceInput | undefined>();
+
+  useEffect(() => {
+    (async function() {
+      const response = await fetch('/api/exams', { method: 'GET' });
+      const data = await response.json();
+
+      const startDate = new Date('2025-09-16T10:00:00');
+
+      const filteredData = data.map((e, i) => {
+        const currentStart = new Date(startDate);
+        currentStart.setDate(startDate.getDate() + i);
+
+        const currentEnd = new Date(currentStart);
+        currentEnd.setHours(currentStart.getHours() + 1);
+
+        return {
+          title: `${e.code} - ${e.name}`,
+          start: currentStart.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
+          end: currentEnd.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
+          description: e.name,
+          durationEditable: false
+        }
+      })
+
+      setExams(filteredData);
+    })();
+  }, [])
   return (
     <FullCalendar
       plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
@@ -42,7 +63,7 @@ export default function Calendar() {
       }}
       editable={true}
       selectable={true}
-      events={events}
+      events={exams}
     />
   );
 }
