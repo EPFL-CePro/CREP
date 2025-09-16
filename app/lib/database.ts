@@ -11,7 +11,7 @@ export function getAllExams() {
     connection.connect()
 
     return new Promise(function(resolve, reject) {
-        connection.query('SELECT * from exam;', (err, rows, fields) => {
+        connection.query('SELECT * from crep;', (err, rows, fields) => {
             if (err) throw err
             resolve(rows);
         })
