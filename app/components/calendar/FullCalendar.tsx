@@ -5,7 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction'; // handles event clicks
 import { useEffect, useState } from "react";
-import { EventSourceInput } from "@fullcalendar/core/index.js";
+import { getAllExams } from "@/app/lib/database";
 import { Modal } from "../Modal";
 // import interactionPlugin from "@fullcalendar/interaction";
 // interface CalendarProps {
@@ -23,8 +23,7 @@ export default function Calendar() {
 
   useEffect(() => {
     (async function () {
-      const response = await fetch('/api/exams', { method: 'GET' });
-      const data = await response.json();
+      const data = await getAllExams()
 
       const startDate = new Date('2025-09-16T10:00:00');
 

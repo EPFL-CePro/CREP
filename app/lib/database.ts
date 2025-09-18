@@ -1,6 +1,7 @@
+'use server';
 import mysql from 'mysql2';
 
-export function getAllExams() {
+export async function getAllExams() {
     const connection = mysql.createConnection({
         host: process.env.MYSQL_HOST,
         user: process.env.MYSQL_USER,
