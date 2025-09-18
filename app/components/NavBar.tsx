@@ -10,12 +10,12 @@ export function NavBar(user: any) {
                 <div>
                     <h1 className="text-2xl font-bold">CREP</h1>
                 </div>
-                <div>
+                <div className="flex items-center flex-nowrap">
                     {user.user ? (
-                        <div>
+                        <>
                             <span className="mr-4">Welcome, {user.user.name} !</span>
                             <SignOut />
-                        </div>
+                        </>
                     ) : (
                         <SignIn />
                     )}
