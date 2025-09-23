@@ -8,14 +8,19 @@ import { useEffect, useState } from "react";
 import { EventDropArg, EventSourceInput } from "@fullcalendar/core/index.js";
 import { getAllExams } from "@/app/lib/database";
 import { Modal } from "../Modal";
+import { User } from "next-auth";
 // import interactionPlugin from "@fullcalendar/interaction";
 // interface CalendarProps {
 //   currentEvent: any;
 //   setEvent: any;
 // }
 
+interface CalendarProps {
+  user: User
+}
 
-export default function Calendar() {
+
+export default function Calendar({ user }:CalendarProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [shareLink, setShareLink] = useState('#');
@@ -126,6 +131,7 @@ export default function Calendar() {
           <Modal
             event={selectedEvent}
             shareLink={shareLink}
+            user={user}
           />
         )}
       </dialog>
