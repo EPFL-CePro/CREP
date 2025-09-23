@@ -20,7 +20,7 @@ export async function getAllExams() {
     })
 }
 
-export async function updateExamById(id: String, startDate: String, endDate: String) {
+export async function updateExamDateById(id: String, startDate: String, endDate: String) {
     const connection = mysql.createConnection({
         host: process.env.MYSQL_HOST,
         user: process.env.MYSQL_USER,

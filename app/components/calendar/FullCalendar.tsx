@@ -6,7 +6,7 @@ import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction'; // handles event clicks
 import { useEffect, useState } from "react";
 import { EventDropArg, EventSourceInput } from "@fullcalendar/core/index.js";
-import { getAllExams, updateExamById } from "@/app/lib/database";
+import { getAllExams, updateExamDateById } from "@/app/lib/database";
 import { Modal } from "../Modal";
 import { User } from "next-auth";
 // import interactionPlugin from "@fullcalendar/interaction";
@@ -75,7 +75,7 @@ export default function Calendar({ user }:CalendarProps) {
     const formattedStartDate = formatDate(startDate || new Date())
     const formattedEndDate = formatDate(endDate || new Date())
 
-    await updateExamById(id, formattedStartDate, formattedEndDate)
+    await updateExamDateById(id, formattedStartDate, formattedEndDate)
   }
 
   return (
