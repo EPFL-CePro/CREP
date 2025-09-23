@@ -6,7 +6,7 @@ import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction'; // handles event clicks
 import { useEffect, useState } from "react";
 import { EventDropArg, EventSourceInput } from "@fullcalendar/core/index.js";
-import { getAllExams } from "@/app/lib/database";
+import { getAllExams, updateExamById } from "@/app/lib/database";
 import { Modal } from "../Modal";
 import { User } from "next-auth";
 // import interactionPlugin from "@fullcalendar/interaction";
