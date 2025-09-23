@@ -46,7 +46,8 @@ export default function Calendar({ user }:CalendarProps) {
           end: e.crep_print_date ? e.crep_print_date.setHours(e.crep_print_date.getUTCHours() + 1) : currentEnd.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
           description: e.name,
           durationEditable: false,
-          id: e.code
+          id: e.code,
+          status: e.crep_status
         }
       })
 

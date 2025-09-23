@@ -1,6 +1,7 @@
 "use client"
 import { User } from "next-auth";
 import React from "react";
+import { updateExamStatusById } from "../lib/database";
 
 interface ModalProps {
     event: any;
@@ -10,6 +11,10 @@ interface ModalProps {
 
 export function Modal({ event, shareLink, user }: ModalProps) {
     console.log(event);
+
+    async function handleSelectChange(arg:any) {
+        await updateExamStatusById(event?.id, arg.target.value)
+    }
     return (
         //TODO : Use flexbox
         <form method="dialog" className="modal-content flex flex-col gap-4 p-12 w-full text-foreground bg-background accent-red-500 [&_input]:rounded-lg">
@@ -36,7 +41,10 @@ export function Modal({ event, shareLink, user }: ModalProps) {
                 <p className="">{event?.extendedProps?.description}</p>
             </div>
             <textarea className="resize-none rounded-lg" rows={4} name="remarks" id="remarks" placeholder="Add any remarks" ></textarea>
-            <select name="from" className="dropdown rounded-lg border-1 pl-3 pr-3 ms-1 w-32" id="from">
+            <select name="from" className="dropdown rounded-lg border-1 pl-3 pr-3 ms-1 w-32" id="from"
+                defaultValue={event?.extendedProps?.status}
+                onChange={handleSelectChange}
+            >
                 <option value="registered">Registered</option>
                 <option value="toPrint">To Print</option>
                 <option value="printing">Printing</option>

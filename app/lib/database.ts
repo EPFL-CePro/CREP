@@ -38,3 +38,22 @@ export async function updateExamDateById(id: String, startDate: String, endDate:
         connection.end()
     })
 }
+
+export async function updateExamStatusById(id: String, status: String) {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    })
+
+    connection.connect()
+
+    return new Promise(function(resolve, reject) {
+        connection.query('UPDATE crep SET crep_status = ? WHERE code = ?;', [status, id], (err, rows, fields) => {
+            if (err) throw err
+            resolve(JSON.stringify(rows));
+        })
+        connection.end()
+    })
+}
