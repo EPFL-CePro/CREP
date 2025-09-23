@@ -20,13 +20,13 @@ export function Modal({ event, shareLink }: ModalProps) {
             <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2">
                 <div className="date-input flex flex-row flex-wrap justify-between gap-y-1 [&_input]:rounded-sm">
                     <label className="font-semibold w-full" htmlFor="start">Start</label>
-                    <input className="basis-full xl:basis-auto" type="date" name="start" defaultValue={event ? new Date(event.start).toISOString().split("T")[0] : ''} />
-                    <input className="time-input basis-full xl:basis-auto" type="time" name="start" step="3600" min="00:00" max="23:59" defaultValue={event ? new Date(event.start).toISOString().split("T")[1].substring(0, 5) : ''} />
+                    <input className="basis-full xl:basis-auto" type="date" name="start" disabled defaultValue={event ? new Date(event.start).toISOString().split("T")[0] : ''} />
+                    <input className="time-input basis-full xl:basis-auto" type="time" name="start" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? new Date(event.start).toISOString().split("T")[1].substring(0, 5) : ''} />
                 </div>
                 <div className="date-input flex flex-row flex-wrap justify-between gap-y-1 [&_input]:rounded-lg">
                     <label className="font-semibold w-full" htmlFor="end">End</label>
-                    <input className="basis-full xl:basis-auto" type="date" name="end" defaultValue={event ? new Date(event.end).toISOString().split("T")[0] : ''} />
-                    <input className="time-input basis-full xl:basis-auto" type="time" name="end" step="3600" min="00:00" max="23:59" defaultValue={event ? new Date(event.end).toISOString().split("T")[1].substring(0, 5) : ''} />
+                    <input className="basis-full xl:basis-auto" type="date" name="end" disabled defaultValue={event ? new Date(event.end).toISOString().split("T")[0] : ''} />
+                    <input className="time-input basis-full xl:basis-auto" type="time" name="end" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? new Date(event.end).toISOString().split("T")[1].substring(0, 5) : ''} />
                 </div>
             </div>
             <div>
