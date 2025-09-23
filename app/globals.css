@@ -34,6 +34,39 @@ body {
   border-width: 0 --spacing(2) 0 0;
 }
 
+.fc-button {
+  background-color: var(--background-secondary) !important;
+  border: none !important;
+  color: var(--foreground) !important;
+  font-weight: var(--font-weight-medium) !important;
+  padding-inline: --spacing(5) !important;
+  padding-block: --spacing(2) !important;
+  &:hover {
+    @media (hover: hover) {
+      background-color: var(--background-secondary) !important;
+      filter: contrast(0.9) !important;
+    }
+  }
+  &.fc-button-active {
+    background-color: var(--color-primary) !important;
+    color: var(--color-white) !important;
+  }
+}
+
+.fc-button-group,
+.fc-today-button,
+.fc-col-header,
+.fc-scrollgrid-section > td,
+.fc-scrollgrid-section > th,
+.fc-scrollgrid {
+  border-radius: var(--radius-xl) !important;
+  overflow: hidden !important;
+}
+
+.fc-event {
+  border-radius: var(--radius-lg) !important;
+}
+
 @layer components {
   .btn {
     display: flex;
