@@ -5,16 +5,22 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction'; // handles event clicks
 import { useEffect, useState } from "react";
-import { EventSourceInput } from "@fullcalendar/core/index.js";
+import { EventDropArg, EventSourceInput } from "@fullcalendar/core/index.js";
+import { getAllExams, updateExamDateById } from "@/app/lib/database";
 import { Modal } from "../Modal";
+import { User } from "next-auth";
 // import interactionPlugin from "@fullcalendar/interaction";
 // interface CalendarProps {
 //   currentEvent: any;
 //   setEvent: any;
 // }
 
+interface CalendarProps {
+  user: User
+}
 
-export default function Calendar() {
+
+export default function Calendar({ user }:CalendarProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [shareLink, setShareLink] = useState('#');
@@ -23,10 +29,9 @@ export default function Calendar() {
 
   useEffect(() => {
     (async function () {
-      const response = await fetch('/api/exams', { method: 'GET' });
-      const data = await response.json();
+      const data = await getAllExams()
 
-      const startDate = new Date('2025-09-16T10:00:00');
+      const startDate = new Date();
 
       const filteredData = data.map((e, i) => {
         const currentStart = new Date(startDate);
@@ -37,16 +42,44 @@ export default function Calendar() {
 
         return {
           title: `${e.code} - ${e.name}`,
-          start: currentStart.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
-          end: currentEnd.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
+          start: e.crep_print_date ? e.crep_print_date.toISOString().slice(0, 19) : currentStart.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
+          end: e.crep_print_date ? e.crep_print_date.setHours(e.crep_print_date.getUTCHours() + 1) : currentEnd.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
           description: e.name,
-          durationEditable: false
+          durationEditable: false,
+          id: e.code,
+          status: e.crep_status,
+          remark: e.crep_remark
         }
       })
 
       setExams(filteredData);
     })();
-  }, [])
+  }, [modalOpen])
+
+  function formatDate(date:Date) {
+    const pad = (num:Number) => String(num).padStart(2, '0');
+
+    const year = date.getFullYear();
+    const month = pad(date.getMonth() + 1); // month starting at 0
+    const day = pad(date.getDate());
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+    const seconds = pad(date.getSeconds());
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  }
+
+  const handleEventDrop = async (arg:EventDropArg) => {
+    const id = arg.event.id;
+    const startDate = arg.event.start;
+    const endDate = arg.event.end;
+
+    const formattedStartDate = formatDate(startDate || new Date())
+    const formattedEndDate = formatDate(endDate || new Date())
+
+    await updateExamDateById(id, formattedStartDate, formattedEndDate)
+  }
+
   return (
     <>
       <FullCalendar
@@ -89,6 +122,8 @@ export default function Calendar() {
         editable={true}
         selectable={true}
         events={exams}
+        allDaySlot={false}
+        eventDrop={handleEventDrop}
       />
       {/* dialog modal starts empty, then is populated with event details on click. Closing the modal will reset the state. */}
       <dialog id="modal" className="modal fixed top-1/4 left-1/4 w-2/4 rounded-xl flex items-center justify-center z-50 drop-shadow-2xl backdrop:backdrop-blur-xs opacity-98" onClose={() => {
@@ -98,6 +133,7 @@ export default function Calendar() {
           <Modal
             event={selectedEvent}
             shareLink={shareLink}
+            user={user}
           />
         )}
       </dialog>
