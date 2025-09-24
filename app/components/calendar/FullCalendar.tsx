@@ -47,13 +47,14 @@ export default function Calendar({ user }:CalendarProps) {
           description: e.name,
           durationEditable: false,
           id: e.code,
-          status: e.crep_status
+          status: e.crep_status,
+          remark: e.crep_remark
         }
       })
 
       setExams(filteredData);
     })();
-  }, [])
+  }, [modalOpen])
 
   function formatDate(date:Date) {
     const pad = (num:Number) => String(num).padStart(2, '0');
