@@ -7,15 +7,18 @@ interface ModalProps {
     event: any;
     shareLink: string;
     user: User;
+    examStatus?: { value: string; label: string; color: string, needsAdmin: boolean, fcColor: string }[];
 }
 
-export function Modal({ event, shareLink, user }: ModalProps) {
+export function Modal({ event, shareLink, user, examStatus }: ModalProps) {
     const [remark, setRemark] = useState(event?.extendedProps?.remark)
+
+    // Get color of selected exam
+    const examColor = examStatus?.find(status => status.value === event?.extendedProps?.status)?.color;
 
     async function handleSelectChange(arg: any) {
         await updateExamStatusById(event?.id, arg.target.value)
     }
-
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
             await updateExamRemarkById(event?.id, remark)
@@ -23,9 +26,8 @@ export function Modal({ event, shareLink, user }: ModalProps) {
         return () => clearTimeout(delayDebounceFn)
     }, [remark])
     return (
-        //TODO : Use flexbox
         <form method="dialog" className="modal-content flex flex-col gap-4 p-12 w-full text-foreground bg-background accent-red-500 [&_input]:rounded-lg">
-            <h3 className="font-bold basis-full text-lg">{event?.title}</h3>
+            <h3 className={`font-bold basis-full text-lg ${examColor}`}>{event?.title}</h3>
             <button className=" btn p-1 absolute right-5 top-5 hover:bg-gray-100 dark:hover:bg-stone-800" aria-label="Close">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6 size-6 ">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -53,34 +55,20 @@ export function Modal({ event, shareLink, user }: ModalProps) {
             >
             </textarea>
             <div className="flex flex-row justify-between">
-                <select name="from" className="dropdown btn btn-secondary" id="from"
-                    defaultValue={event?.extendedProps?.status}
-                    onChange={handleSelectChange}
-                >
-                    <option value="registered">Registered</option>
-                    <option value="toPrint">To Print</option>
-                    <option value="printing">Printing</option>
-                    <option value="finished">Finished</option>
-                    {/* If the user is administrator, we should display more options. */}
-                    {
-                        user.isAdmin && (
-                            <>
-                                <option value="canceled">Canceled</option>
-                                <option value="prep_teach">Prep-Teach</option>
-                                <option value="prep_2compile">Prep-2compile</option>
-                                <option value="prep_2check">Prep-2check</option>
-                                <option value="pick_up">Pick-up</option>
-                                <option value="picked_up">Picked-up</option>
-                                <option value="wait_scan">Wait-Scan</option>
-                                <option value="rep_cut">Rep-Cut</option>
-                                <option value="2scan">2Scan</option>
-                                <option value="scanned">Scanned</option>
-                                <option value="wait_teach">Wait-Teach</option>
-                                <option value="to_contact">To-Contact</option>
-                            </>
-                        )
-                    }
-                </select>
+                {/* ToDo : use a component */}
+                {user.isAdmin && (
+                    <select name="from" className="dropdown btn btn-secondary" id="from"
+                        defaultValue={event?.extendedProps?.status}
+                        onChange={handleSelectChange}
+                    >
+                        {/* Displays status according to admin privileges */}
+                        {examStatus && examStatus.map((status) => (
+                            (!status.needsAdmin || user.isAdmin && status.needsAdmin) && (
+                                <option key={status.value} value={status.value} className={status.color}>{status.label}</option>
+                            )
+                        ))}
+                    </select>
+                )}
                 <a className="btn btn-secondary" id="openShare" href={shareLink} target="_blank" rel="noreferrer noopener">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 ">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />

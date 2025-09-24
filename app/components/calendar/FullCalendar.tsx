@@ -27,6 +27,26 @@ export default function Calendar({ user }: CalendarProps) {
 
   const [exams, setExams] = useState<EventSourceInput | undefined>();
 
+  // the safelist below is needed for Tailwind to generate the classes used for exam status:
+  // bg-blue-500 bg-yellow-500 bg-green-500 bg-red-500 bg-gray-500 text-blue-500 text-yellow-500 text-green-500 text-red-500 text-gray-500
+  const examStatus = [
+    { value: 'registered', label: 'Registered', color: 'blue-500', fcColor: 'oklch(62.3% 0.214 259.815)', needsAdmin: false },
+    { value: 'toPrint', label: 'To Print', color: 'yellow-500', fcColor: 'oklch(79.5% 0.184 86.047)', needsAdmin: false },
+    { value: 'printing', label: 'Printing', color: 'green-500', fcColor: 'oklch(72.3% 0.219 149.579)', needsAdmin: false },
+    { value: 'finished', label: 'Finished', color: 'red-500', fcColor: '#fb2c36', needsAdmin: false },
+    { value: 'canceled', label: 'Canceled', color: ' ', fcColor: '#000000', needsAdmin: true },
+    { value: 'prep_teach', label: 'Prep-Teach', color: '', fcColor: '#000000', needsAdmin: true },
+    { value: 'prep_2compile', label: 'Prep-2compile', color: ' ', fcColor: '#000000', needsAdmin: true },
+    { value: 'prep_2check', label: 'Prep-2check', color: ' ', fcColor: '#000000', needsAdmin: true },
+    { value: 'pick_up', label: 'Pick-up', color: ' ', fcColor: '#0000000', needsAdmin: true },
+    { value: 'picked_up', label: 'Picked-up', color: ' ', fcColor: '#000000', needsAdmin: true },
+    { value: 'wait_scan', label: 'Wait-Scan', color: ' ', fcColor: '#000000', needsAdmin: true },
+    { value: 'rep_cut', label: 'Rep-Cut', color: ' ', fcColor: '#000000', needsAdmin: true },
+    { value: '2scan', label: '2Scan', color: ' ', fcColor: '#000000', needsAdmin: true },
+    { value: 'scanned', label: 'Scanned', color: ' ', fcColor: '#0000000', needsAdmin: true },
+    { value: 'wait_teach', label: 'Wait-Teach', color: ' ', fcColor: '#000000', needsAdmin: true },
+    { value: 'to_contact', label: 'To-Contact', color: ' ', fcColor: '#000000', needsAdmin: true }
+  ];
   useEffect(() => {
     (async function () {
       const data = await getAllExams()
@@ -39,7 +59,7 @@ export default function Calendar({ user }: CalendarProps) {
 
         const currentEnd = new Date(currentStart);
         currentEnd.setHours(currentStart.getHours() + 1);
-
+        const eventColor = examStatus.find(status => status.value === e.crep_status)?.fcColor;
         return {
           title: `${e.code} - ${e.name}`,
           start: e.crep_print_date ? e.crep_print_date.toISOString().slice(0, 19) : currentStart.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
@@ -48,6 +68,8 @@ export default function Calendar({ user }: CalendarProps) {
           durationEditable: false,
           id: e.code,
           status: e.crep_status,
+          backgroundColor: eventColor,
+          borderColor: eventColor,
           remark: e.crep_remark
         }
       })
@@ -122,6 +144,9 @@ export default function Calendar({ user }: CalendarProps) {
         editable={true}
         selectable={true}
         events={exams}
+        // eventBackgroundColor="red"
+        // eventColor="red"
+        // eventTextColor="black"
         allDaySlot={false}
         eventDrop={handleEventDrop}
       />
@@ -134,6 +159,7 @@ export default function Calendar({ user }: CalendarProps) {
             event={selectedEvent}
             shareLink={shareLink}
             user={user}
+            examStatus={examStatus}
           />
         )}
       </dialog>

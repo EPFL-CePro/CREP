@@ -53,6 +53,10 @@ body {
   }
 }
 
+.modal:focus {
+  outline: none !important;
+}
+
 .fc-button-group,
 .fc-today-button,
 .fc-col-header,
@@ -65,6 +69,11 @@ body {
 
 .fc-event {
   border-radius: var(--radius-lg) !important;
+}
+
+.fc-timegrid-slot {
+  padding-top: --spacing(0.5) !important;
+  padding-bottom: --spacing(0.5) !important;
 }
 
 @layer components {
