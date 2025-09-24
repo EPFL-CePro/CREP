@@ -12,7 +12,7 @@ interface ModalProps {
 export function Modal({ event, shareLink, user }: ModalProps) {
     const [remark, setRemark] = useState(event?.extendedProps?.remark)
 
-    async function handleSelectChange(arg:any) {
+    async function handleSelectChange(arg: any) {
         await updateExamStatusById(event?.id, arg.target.value)
     }
 
@@ -52,35 +52,37 @@ export function Modal({ event, shareLink, user }: ModalProps) {
                 onChange={(e) => setRemark(e.target.value)}
             >
             </textarea>
-            <select name="from" className="dropdown rounded-lg border-1 pl-3 pr-3 ms-1 w-32" id="from"
-                defaultValue={event?.extendedProps?.status}
-                onChange={handleSelectChange}
-            >
-                <option value="registered">Registered</option>
-                <option value="toPrint">To Print</option>
-                <option value="printing">Printing</option>
-                <option value="finished">Finished</option>
-                {/* If the user is administrator, we should display more options. */}
-                {
-                    user.isAdmin && (
-                        <>                        
-                            <option value="canceled">Canceled</option>
-                            <option value="prep_teach">Prep-Teach</option>
-                            <option value="prep_2compile">Prep-2compile</option>
-                            <option value="prep_2check">Prep-2check</option>
-                            <option value="pick_up">Pick-up</option>
-                            <option value="picked_up">Picked-up</option>
-                            <option value="wait_scan">Wait-Scan</option>
-                            <option value="rep_cut">Rep-Cut</option>
-                            <option value="2scan">2Scan</option>
-                            <option value="scanned">Scanned</option>
-                            <option value="wait_teach">Wait-Teach</option>
-                            <option value="to_contact">To-Contact</option>
-                        </>
-                    )
-                }
-            </select>
-            <a className="btn rounded-lg border-1 pl-1 ms-1 w-32" id="openShare" href={shareLink} target="_blank" rel="noreferrer noopener">Open folder</a>
+            <div className="flex flex-row justify-between">
+                <select name="from" className="dropdown btn btn-secondary" id="from"
+                    defaultValue={event?.extendedProps?.status}
+                    onChange={handleSelectChange}
+                >
+                    <option value="registered">Registered</option>
+                    <option value="toPrint">To Print</option>
+                    <option value="printing">Printing</option>
+                    <option value="finished">Finished</option>
+                    {/* If the user is administrator, we should display more options. */}
+                    {
+                        user.isAdmin && (
+                            <>
+                                <option value="canceled">Canceled</option>
+                                <option value="prep_teach">Prep-Teach</option>
+                                <option value="prep_2compile">Prep-2compile</option>
+                                <option value="prep_2check">Prep-2check</option>
+                                <option value="pick_up">Pick-up</option>
+                                <option value="picked_up">Picked-up</option>
+                                <option value="wait_scan">Wait-Scan</option>
+                                <option value="rep_cut">Rep-Cut</option>
+                                <option value="2scan">2Scan</option>
+                                <option value="scanned">Scanned</option>
+                                <option value="wait_teach">Wait-Teach</option>
+                                <option value="to_contact">To-Contact</option>
+                            </>
+                        )
+                    }
+                </select>
+                <a className="btn btn-secondary" id="openShare" href={shareLink} target="_blank" rel="noreferrer noopener">Open folder</a>
+            </div>
         </form>
     );
 }

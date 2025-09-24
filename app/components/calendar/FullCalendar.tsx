@@ -20,7 +20,7 @@ interface CalendarProps {
 }
 
 
-export default function Calendar({ user }:CalendarProps) {
+export default function Calendar({ user }: CalendarProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [shareLink, setShareLink] = useState('#');
@@ -56,8 +56,8 @@ export default function Calendar({ user }:CalendarProps) {
     })();
   }, [modalOpen])
 
-  function formatDate(date:Date) {
-    const pad = (num:Number) => String(num).padStart(2, '0');
+  function formatDate(date: Date) {
+    const pad = (num: Number) => String(num).padStart(2, '0');
 
     const year = date.getFullYear();
     const month = pad(date.getMonth() + 1); // month starting at 0
@@ -69,7 +69,7 @@ export default function Calendar({ user }:CalendarProps) {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   }
 
-  const handleEventDrop = async (arg:EventDropArg) => {
+  const handleEventDrop = async (arg: EventDropArg) => {
     const id = arg.event.id;
     const startDate = arg.event.start;
     const endDate = arg.event.end;
