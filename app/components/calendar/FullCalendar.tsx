@@ -76,7 +76,7 @@ export default function Calendar({ user }: CalendarProps) {
 
       setExams(filteredData);
     })();
-  }, [modalOpen])
+  }, [])
 
   function formatDate(date: Date) {
     const pad = (num: Number) => String(num).padStart(2, '0');
@@ -128,6 +128,9 @@ export default function Calendar({ user }: CalendarProps) {
           listWeek: { buttonText: 'List' },
         }}
         eventClick={(info) => {
+          const clickedExam = exams.find((e) => e.id == info.event.id)
+          info.event.setExtendedProp('status', clickedExam.status);
+          info.event.setExtendedProp('remark', clickedExam.remark);
           setSelectedEvent(info.event);
           // build the share link once and stash in state
           const rawPath = "vpsi1files.epfl.ch/CAPE/REPRO/TEST/" + info.event.extendedProps?.folder_name;
@@ -159,6 +162,8 @@ export default function Calendar({ user }: CalendarProps) {
             event={selectedEvent}
             shareLink={shareLink}
             user={user}
+            exams={exams}
+            setExams={setExams}
             examStatus={examStatus}
           />
         )}
