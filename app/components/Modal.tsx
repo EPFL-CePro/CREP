@@ -1,30 +1,42 @@
 "use client"
 import { User } from "next-auth";
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import { updateExamRemarkById, updateExamStatusById } from "../lib/database";
+import { EventSourceInput } from "@fullcalendar/core/index.js";
 
 interface ModalProps {
     event: any;
     shareLink: string;
     user: User;
     examStatus?: { value: string; label: string; color: string, needsAdmin: boolean, fcColor: string }[];
+    exams: EventSourceInput | undefined;
+    setExams: Dispatch<SetStateAction<EventSourceInput | undefined>>;
 }
 
-export function Modal({ event, shareLink, user, examStatus }: ModalProps) {
+export function Modal({ event, shareLink, user, examStatus, exams, setExams }: ModalProps) {
     const [remark, setRemark] = useState(event?.extendedProps?.remark)
+    const [selectStatus, setSelectStatus] = useState(event?.extendedProps?.status)
+
+    async function save() {
+        // save remark, save status, and update the exams state
+        let updatedExams = exams.map((e) => {
+            if(e.id == event?.id) {
+                e.remark = remark
+                e.status = selectStatus
+            }
+            return e;
+        })
+        await updateExamRemarkById(event?.id, remark)
+        setRemark(remark)
+
+        await updateExamStatusById(event?.id, selectStatus)
+        setSelectStatus(selectStatus)
+
+        setExams(updatedExams)
+    }
 
     // Get color of selected exam
     const examColor = examStatus?.find(status => status.value === event?.extendedProps?.status)?.color;
-
-    async function handleSelectChange(arg: any) {
-        await updateExamStatusById(event?.id, arg.target.value)
-    }
-    useEffect(() => {
-        const delayDebounceFn = setTimeout(async () => {
-            await updateExamRemarkById(event?.id, remark)
-        }, 1000)
-        return () => clearTimeout(delayDebounceFn)
-    }, [remark])
     return (
         <form method="dialog" className="modal-content flex flex-col gap-4 p-12 w-full text-foreground bg-background accent-red-500 [&_input]:rounded-lg">
             <h3 className={`font-bold basis-full text-lg ${examColor}`}>{event?.title}</h3>
@@ -55,25 +67,31 @@ export function Modal({ event, shareLink, user, examStatus }: ModalProps) {
             >
             </textarea>
             <div className="flex flex-row justify-between">
-                {/* ToDo : use a component */}
-                {user.isAdmin && (
-                    <select name="from" className="dropdown btn btn-secondary" id="from"
-                        defaultValue={event?.extendedProps?.status}
-                        onChange={handleSelectChange}
-                    >
-                        {/* Displays status according to admin privileges */}
-                        {examStatus && examStatus.map((status) => (
-                            (!status.needsAdmin || user.isAdmin && status.needsAdmin) && (
-                                <option key={status.value} value={status.value} className={status.color}>{status.label}</option>
-                            )
-                        ))}
-                    </select>
-                )}
-                <a className="btn btn-secondary" id="openShare" href={shareLink} target="_blank" rel="noreferrer noopener">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 ">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
-                    </svg>
-                    Open folder</a>
+                <div className="flex flex-row gap-4">
+                    {/* ToDo : use a component */}
+                    {user.isAdmin && (
+                        <select name="from" className="dropdown btn btn-secondary" id="from"
+                            value={selectStatus}
+                            onChange={(e) => setSelectStatus(e.target.value)}
+                        >
+                            {/* Displays status according to admin privileges */}
+                            {examStatus && examStatus.map((status) => (
+                                (!status.needsAdmin || user.isAdmin && status.needsAdmin) && (
+                                    <option key={status.value} value={status.value} className={status.color}>{status.label}</option>
+                                )
+                            ))}
+                        </select>
+                    )}
+                    <a className="btn btn-secondary" id="openShare" href={shareLink} target="_blank" rel="noreferrer noopener">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 ">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
+                        </svg>
+                        Open folder</a>
+                </div>
+                <div className="flex flex-row gap-4">
+                    <button className="btn btn-secondary">Cancel</button>
+                    <button className="btn btn-primary" onClick={() => save()}>Save</button>
+                </div>
             </div>
         </form>
     );
