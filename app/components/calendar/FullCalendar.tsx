@@ -144,7 +144,7 @@ export default function Calendar({ user }: CalendarProps) {
           dialog.showModal();
           setModalOpen(true);
         }}
-        editable={true}
+        editable={user.isAdmin ? true : false}
         selectable={true}
         events={exams}
         // eventBackgroundColor="red"
