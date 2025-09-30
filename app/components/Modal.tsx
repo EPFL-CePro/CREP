@@ -4,34 +4,52 @@ import React, { Dispatch, SetStateAction, useState } from "react";
 import { updateExamRemarkById, updateExamStatusById } from "../lib/database";
 import { EventSourceInput } from "@fullcalendar/core/index.js";
 
+interface AppUser extends User {
+    isAdmin?: boolean;
+}
+
 interface ModalProps {
     event: any;
     shareLink: string;
-    user: User;
+    user: AppUser;
     examStatus?: { value: string; label: string; color: string, needsAdmin: boolean, fcColor: string }[];
     exams: EventSourceInput | undefined;
     setExams: Dispatch<SetStateAction<EventSourceInput | undefined>>;
+    calRef: React.RefObject<any>;
 }
 
-export function Modal({ event, shareLink, user, examStatus, exams, setExams }: ModalProps) {
+export function Modal({ event, shareLink, user, examStatus, exams, setExams, calRef }: ModalProps) {
     const [remark, setRemark] = useState(event?.extendedProps?.remark)
     const [selectStatus, setSelectStatus] = useState(event?.extendedProps?.status)
 
+    // get current calendar reference in order to update event color on status change
+    const api = calRef.current.getApi();
+
     async function save() {
         // save remark, save status, and update the exams state
-        let updatedExams = exams.map((e) => {
-            if(e.id == event?.id) {
+        const updatedExams = Array.isArray(exams) ? exams.map((e: any) => {
+            if (e.id == event?.id) {
                 e.remark = remark
                 e.status = selectStatus
+                // if we have a calendar ref, update the specific event so FullCalendar re-renders its styling
+                if (api) {
+                    const fcEvent = api.getEventById(String(e.id))
+                    if (fcEvent) {
+                        const newColor = examStatus?.find(status => status.value === selectStatus)?.fcColor || '#000000'
+                        fcEvent.setProp('backgroundColor', newColor)
+                        fcEvent.setProp('borderColor', newColor)
+                        fcEvent.setExtendedProp('status', selectStatus)
+                        fcEvent.setExtendedProp('remark', remark)
+                    }
+                }
             }
             return e;
-        })
+        }) : [];
         await updateExamRemarkById(event?.id, remark)
         setRemark(remark)
 
         await updateExamStatusById(event?.id, selectStatus)
         setSelectStatus(selectStatus)
-
         setExams(updatedExams)
     }
 

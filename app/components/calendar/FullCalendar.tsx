@@ -4,19 +4,18 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction'; // handles event clicks
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EventDropArg, EventSourceInput } from "@fullcalendar/core/index.js";
 import { getAllExams, updateExamDateById } from "@/app/lib/database";
 import { Modal } from "../Modal";
 import { User } from "next-auth";
-// import interactionPlugin from "@fullcalendar/interaction";
-// interface CalendarProps {
-//   currentEvent: any;
-//   setEvent: any;
-// }
 
 interface CalendarProps {
-  user: User
+  user: AppUser
+}
+
+interface AppUser extends User {
+  isAdmin?: boolean;
 }
 
 
@@ -26,6 +25,7 @@ export default function Calendar({ user }: CalendarProps) {
   const [shareLink, setShareLink] = useState('#');
 
   const [exams, setExams] = useState<EventSourceInput | undefined>();
+  const calRef = useRef<FullCalendar | null>(null);
 
   // the safelist below is needed for Tailwind to generate the classes used for exam status:
   // bg-blue-500 bg-yellow-500 bg-green-500 bg-red-500 bg-gray-500 text-blue-500 text-yellow-500 text-green-500 text-red-500 text-gray-500
@@ -49,11 +49,11 @@ export default function Calendar({ user }: CalendarProps) {
   ];
   useEffect(() => {
     (async function () {
-      const data = await getAllExams()
+      const data = await getAllExams() as Array<any>;
 
       const startDate = new Date();
 
-      const filteredData = data.map((e, i) => {
+      const filteredData = data.map((e: any, i: number) => {
         const currentStart = new Date(startDate);
         currentStart.setDate(startDate.getDate() + i);
 
@@ -73,7 +73,6 @@ export default function Calendar({ user }: CalendarProps) {
           remark: e.crep_remark
         }
       })
-
       setExams(filteredData);
     })();
   }, [])
@@ -105,6 +104,7 @@ export default function Calendar({ user }: CalendarProps) {
   return (
     <>
       <FullCalendar
+        ref={calRef}
         plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
         initialView="timeGridWeek"
         height="90vh"
@@ -128,9 +128,9 @@ export default function Calendar({ user }: CalendarProps) {
           listWeek: { buttonText: 'List' },
         }}
         eventClick={(info) => {
-          const clickedExam = exams.find((e) => e.id == info.event.id)
-          info.event.setExtendedProp('status', clickedExam.status);
-          info.event.setExtendedProp('remark', clickedExam.remark);
+          const clickedExam = Array.isArray(exams) ? exams.find((e: any) => e.id == info.event.id) : undefined;
+          info.event.setExtendedProp('status', clickedExam?.status);
+          info.event.setExtendedProp('remark', clickedExam?.remark);
           setSelectedEvent(info.event);
           // build the share link once and stash in state
           const rawPath = "vpsi1files.epfl.ch/CAPE/REPRO/TEST/" + info.event.extendedProps?.folder_name;
@@ -147,9 +147,6 @@ export default function Calendar({ user }: CalendarProps) {
         editable={user.isAdmin ? true : false}
         selectable={true}
         events={exams}
-        // eventBackgroundColor="red"
-        // eventColor="red"
-        // eventTextColor="black"
         allDaySlot={false}
         eventDrop={handleEventDrop}
       />
@@ -165,9 +162,10 @@ export default function Calendar({ user }: CalendarProps) {
             exams={exams}
             setExams={setExams}
             examStatus={examStatus}
+            calRef={calRef}
           />
         )}
-      </dialog>
+      </dialog >
     </>
   );
 }
