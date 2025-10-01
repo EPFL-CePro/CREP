@@ -6,7 +6,7 @@ import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction'; // handles event clicks
 import { useEffect, useRef, useState } from "react";
 import { EventDropArg, EventSourceInput } from "@fullcalendar/core/index.js";
-import { getAllExams, updateExamDateById } from "@/app/lib/database";
+import { getAllExams, getAllNonAdminExams, updateExamDateById } from "@/app/lib/database";
 import { Modal } from "../Modal";
 import { User } from "next-auth";
 
@@ -50,8 +50,8 @@ export default function Calendar({ user }: CalendarProps) {
   ];
   useEffect(() => {
     (async function () {
-      const data = await getAllExams() as Array<any>;
-
+      const data = user.isAdmin ? await getAllExams() as Array<any> : await getAllNonAdminExams() as Array<any>;
+      console.log("Fetched exams:", data);
       const startDate = new Date();
 
       const filteredData = data.map((e: any, i: number) => {
