@@ -105,7 +105,7 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams, cal
                 <label className="font-semibold w-full" htmlFor="description">Description</label>
                 <p className="">{event?.extendedProps?.description}</p>
             </div>
-            <textarea className="resize-none rounded-lg" rows={4} name="remarks" id="remarks" placeholder="Add any remarks"
+            <textarea className="resize-none rounded-lg border border-gray-300 p-3" rows={4} name="remarks" id="remarks" placeholder="Add any remarks"
                 value={remark || ""}
                 onChange={(e) => setRemark(e.target.value)}
             >
