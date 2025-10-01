@@ -34,18 +34,18 @@ export default function Calendar({ user }: CalendarProps) {
     { value: 'toPrint', label: 'To Print', color: 'yellow-500', fcColor: 'oklch(79.5% 0.184 86.047)', needsAdmin: false },
     { value: 'printing', label: 'Printing', color: 'green-500', fcColor: 'oklch(72.3% 0.219 149.579)', needsAdmin: false },
     { value: 'finished', label: 'Finished', color: 'red-500', fcColor: '#fb2c36', needsAdmin: false },
-    { value: 'canceled', label: 'Canceled', color: ' ', fcColor: '#000000', needsAdmin: true },
+    { value: 'canceled', label: 'Canceled', color: '', fcColor: '#000000', needsAdmin: true },
     { value: 'prep_teach', label: 'Prep-Teach', color: '', fcColor: '#000000', needsAdmin: true },
-    { value: 'prep_2compile', label: 'Prep-2compile', color: ' ', fcColor: '#000000', needsAdmin: true },
-    { value: 'prep_2check', label: 'Prep-2check', color: ' ', fcColor: '#000000', needsAdmin: true },
-    { value: 'pick_up', label: 'Pick-up', color: ' ', fcColor: '#0000000', needsAdmin: true },
-    { value: 'picked_up', label: 'Picked-up', color: ' ', fcColor: '#000000', needsAdmin: true },
-    { value: 'wait_scan', label: 'Wait-Scan', color: ' ', fcColor: '#000000', needsAdmin: true },
-    { value: 'rep_cut', label: 'Rep-Cut', color: ' ', fcColor: '#000000', needsAdmin: true },
-    { value: '2scan', label: '2Scan', color: ' ', fcColor: '#000000', needsAdmin: true },
-    { value: 'scanned', label: 'Scanned', color: ' ', fcColor: '#0000000', needsAdmin: true },
-    { value: 'wait_teach', label: 'Wait-Teach', color: ' ', fcColor: '#000000', needsAdmin: true },
-    { value: 'to_contact', label: 'To-Contact', color: ' ', fcColor: '#000000', needsAdmin: true }
+    { value: 'prep_2compile', label: 'Prep-2compile', color: '', fcColor: '#000000', needsAdmin: true },
+    { value: 'prep_2check', label: 'Prep-2check', color: '', fcColor: '#000000', needsAdmin: true },
+    { value: 'pick_up', label: 'Pick-up', color: '', fcColor: '#0000000', needsAdmin: true },
+    { value: 'picked_up', label: 'Picked-up', color: '', fcColor: '#000000', needsAdmin: true },
+    { value: 'wait_scan', label: 'Wait-Scan', color: '', fcColor: '#000000', needsAdmin: true },
+    { value: 'rep_cut', label: 'Rep-Cut', color: '', fcColor: '#000000', needsAdmin: true },
+    { value: '2scan', label: '2Scan', color: '', fcColor: '#000000', needsAdmin: true },
+    { value: 'scanned', label: 'Scanned', color: '', fcColor: '#0000000', needsAdmin: true },
+    { value: 'wait_teach', label: 'Wait-Teach', color: '', fcColor: '#000000', needsAdmin: true },
+    { value: 'to_contact', label: 'To-Contact', color: '', fcColor: '#000000', needsAdmin: true }
   ];
   useEffect(() => {
     (async function () {
