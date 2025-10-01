@@ -29,6 +29,7 @@ export default function Calendar({ user }: CalendarProps) {
 
   // the safelist below is needed for Tailwind to generate the classes used for exam status:
   // bg-blue-500 bg-yellow-500 bg-green-500 bg-red-500 bg-gray-500 text-blue-500 text-yellow-500 text-green-500 text-red-500 text-gray-500
+  // border-blue-500 border-yellow-500 border-green-500 border-red-500
   const examStatus = [
     { value: 'registered', label: 'Registered', color: 'blue-500', fcColor: 'oklch(62.3% 0.214 259.815)', needsAdmin: false },
     { value: 'toPrint', label: 'To Print', color: 'yellow-500', fcColor: 'oklch(79.5% 0.184 86.047)', needsAdmin: false },
