@@ -20,6 +20,25 @@ export async function getAllExams() {
     })
 }
 
+export async function getAllNonAdminExams() {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    })
+
+    connection.connect()
+
+    return new Promise(function(resolve, reject) {
+        connection.query('SELECT * from crep WHERE crep_status IN ("registered", "toPrint", "printing", "finished");', (err, rows, fields) => {
+            if (err) throw err
+            resolve(rows);
+        })
+        connection.end()
+    })
+}
+
 export async function updateExamDateById(id: String, startDate: String, endDate: String) {
     const connection = mysql.createConnection({
         host: process.env.MYSQL_HOST,
