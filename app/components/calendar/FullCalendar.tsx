@@ -4,11 +4,13 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction'; // handles event clicks
-import { useEffect, useRef, useState } from "react";
-import { EventDropArg, EventSourceInput } from "@fullcalendar/core/index.js";
+import { useEffect, useRef, useState, useMemo } from "react";
+import { EventDropArg, EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
 import { getAllExams, getAllNonAdminExams, updateExamDateById } from "@/app/lib/database";
 import { Modal } from "../Modal";
 import { User } from "next-auth";
+import { examStatus } from "@/app/lib/examStatus";
+import { Filters } from "../Filters";
 
 interface CalendarProps {
   user: AppUser
@@ -27,27 +29,11 @@ export default function Calendar({ user }: CalendarProps) {
   const [exams, setExams] = useState<EventSourceInput | undefined>();
   const calRef = useRef<FullCalendar | null>(null);
 
+  const [filters, setFilters] = useState<{ label: string, value: string }[]>([]);
+
   // the safelist below is needed for Tailwind to generate the classes used for exam status:
   // bg-blue-500 bg-yellow-500 bg-green-500 bg-red-500 bg-gray-500 text-blue-500 text-yellow-500 text-green-500 text-red-500 text-gray-500
   // border-blue-500 border-yellow-500 border-green-500 border-red-500
-  const examStatus = [
-    { value: 'registered', label: 'Registered', color: 'blue-500', fcColor: 'oklch(62.3% 0.214 259.815)', needsAdmin: false },
-    { value: 'toPrint', label: 'To Print', color: 'yellow-500', fcColor: 'oklch(79.5% 0.184 86.047)', needsAdmin: false },
-    { value: 'printing', label: 'Printing', color: 'green-500', fcColor: 'oklch(72.3% 0.219 149.579)', needsAdmin: false },
-    { value: 'finished', label: 'Finished', color: 'red-500', fcColor: '#fb2c36', needsAdmin: false },
-    { value: 'canceled', label: 'Canceled', color: '', fcColor: '#000000', needsAdmin: true },
-    { value: 'prep_teach', label: 'Prep-Teach', color: '', fcColor: '#000000', needsAdmin: true },
-    { value: 'prep_2compile', label: 'Prep-2compile', color: '', fcColor: '#000000', needsAdmin: true },
-    { value: 'prep_2check', label: 'Prep-2check', color: '', fcColor: '#000000', needsAdmin: true },
-    { value: 'pick_up', label: 'Pick-up', color: '', fcColor: '#0000000', needsAdmin: true },
-    { value: 'picked_up', label: 'Picked-up', color: '', fcColor: '#000000', needsAdmin: true },
-    { value: 'wait_scan', label: 'Wait-Scan', color: '', fcColor: '#000000', needsAdmin: true },
-    { value: 'rep_cut', label: 'Rep-Cut', color: '', fcColor: '#000000', needsAdmin: true },
-    { value: '2scan', label: '2Scan', color: '', fcColor: '#000000', needsAdmin: true },
-    { value: 'scanned', label: 'Scanned', color: '', fcColor: '#0000000', needsAdmin: true },
-    { value: 'wait_teach', label: 'Wait-Teach', color: '', fcColor: '#000000', needsAdmin: true },
-    { value: 'to_contact', label: 'To-Contact', color: '', fcColor: '#000000', needsAdmin: true }
-  ];
   useEffect(() => {
     (async function () {
       const data = user.isAdmin ? await getAllExams() as Array<any> : await getAllNonAdminExams() as Array<any>;
@@ -101,8 +87,42 @@ export default function Calendar({ user }: CalendarProps) {
     await updateExamDateById(id, formattedStartDate, formattedEndDate)
   }
 
+  const eventsCacheRef = useRef<{ key: string; events: any[] }>({ key: "", events: [] });
+
+  const statusColorMap = useMemo(() => {
+    const m = new Map<string, string>();
+    (examStatus || []).forEach(s => m.set(s.value, s.fcColor || "#000000"));
+    return m;
+  }, [examStatus]);
+
+  function makeEventsKey(
+    examsArr: EventSourceInput,
+    filtersArr: { label: string, value: string }[], 
+    examStatusArr: {
+      value: string;
+      label: string;
+      color: string;
+      hexColor: string;
+      fcColor: string;
+      needsAdmin: boolean;
+    }[]) {
+      const examsPart = Array.isArray(examsArr) ? examsArr.map(e => `${e.id}:${e.status}`).join("|") : "";
+      const filtersPart = (filtersArr || []).map(f => f.value).join(",");
+      const statusPart = (examStatusArr || []).map(s => `${s.value}:${s.fcColor}`).join(",");
+
+      // Key to invalidate the cache if something changed using the exams, the filters or the status.
+      return `${examsPart}::${filtersPart}::${statusPart}`;
+  }
+
   return (
-    <>
+    <div className="flex flex-col gap-3">
+      <div className="ml-auto w-72">
+        <Filters 
+          examStatus={examStatus}
+          user={user}
+          setFilters={setFilters}
+        />
+      </div>
       <FullCalendar
         ref={calRef}
         plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
@@ -146,7 +166,36 @@ export default function Calendar({ user }: CalendarProps) {
         }}
         editable={user.isAdmin ? true : false}
         selectable={true}
-        events={exams}
+        events={(info, successCallback) => {
+          if (!exams) return successCallback([]);
+
+          const key = makeEventsKey(exams, filters, examStatus);
+
+          // If nothing changed, send back the cache
+          if (eventsCacheRef.current.key === key) {
+            return successCallback(eventsCacheRef.current.events);
+          }
+
+          // Else, calculate the exams list + inject colors
+          const allSelectedFiltersValues = filters.map((item:{label:string, value:string}) => item.value);
+          const filteredEvents = allSelectedFiltersValues.length === 0
+            ? exams
+            : (exams as any[]).filter((ev) => allSelectedFiltersValues.includes(ev.status));
+
+          const prepared = (filteredEvents as EventInput[]).map((ev: any) => {
+            const color = statusColorMap.get(ev.status) || "#000000";
+            return {
+              ...ev,
+              backgroundColor: color,
+              borderColor: color,
+              extendedProps: { ...(ev.extendedProps || {}), status: ev.status, remark: ev.remark },
+            };
+          });
+
+          // Put new results in cache
+          eventsCacheRef.current = { key, events: prepared };
+          successCallback(prepared);
+        }}
         allDaySlot={false}
         eventDrop={handleEventDrop}
       />
@@ -166,6 +215,6 @@ export default function Calendar({ user }: CalendarProps) {
           />
         )}
       </dialog >
-    </>
+    </div>
   );
 }
