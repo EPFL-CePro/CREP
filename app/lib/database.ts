@@ -50,7 +50,7 @@ export async function updateExamDateById(id: String, startDate: String, endDate:
     connection.connect()
 
     return new Promise(function(resolve, reject) {
-        connection.query('UPDATE crep SET crep_print_date = ? WHERE code = ?;', [startDate, id], (err, rows, fields) => {
+        connection.query('UPDATE crep SET crep_print_date = ? WHERE id = ?;', [startDate, id], (err, rows, fields) => {
             if (err) throw err
             resolve(JSON.stringify(rows));
         })
@@ -69,7 +69,7 @@ export async function updateExamStatusById(id: String, status: String) {
     connection.connect()
 
     return new Promise(function(resolve, reject) {
-        connection.query('UPDATE crep SET crep_status = ? WHERE code = ?;', [status, id], (err, rows, fields) => {
+        connection.query('UPDATE crep SET crep_status = ? WHERE id = ?;', [status, id], (err, rows, fields) => {
             if (err) throw err
             resolve(JSON.stringify(rows));
         })
@@ -88,7 +88,7 @@ export async function updateExamRemarkById(id: String, remark: String) {
     connection.connect()
 
     return new Promise(function(resolve, reject) {
-        connection.query('UPDATE crep SET crep_remark = ? WHERE code = ?;', [remark, id], (err, rows, fields) => {
+        connection.query('UPDATE crep SET crep_remark = ? WHERE id = ?;', [remark, id], (err, rows, fields) => {
             if (err) throw err
             resolve(JSON.stringify(rows));
         })
