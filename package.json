@@ -15,12 +15,14 @@
     "@fullcalendar/list": "^6.1.19",
     "@fullcalendar/react": "^6.1.19",
     "@fullcalendar/timegrid": "^6.1.19",
+    "chroma-js": "^3.1.2",
     "mysql2": "^3.14.5",
     "net": "^1.0.2",
     "next": "15.5.2",
     "next-auth": "^5.0.0-beta.29",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-select": "^5.10.2",
     "tls": "^0.0.1"
   },
   "devDependencies": {
