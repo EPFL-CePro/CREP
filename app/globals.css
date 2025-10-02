@@ -67,6 +67,14 @@ body {
   padding-bottom: --spacing(0.5) !important;
 }
 
+@media print {
+  #status-selector,
+  #modal-toolbar,
+  button {
+    display: none;
+  }
+}
+
 @layer components {
   .btn {
     display: flex;

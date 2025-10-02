@@ -1,8 +1,9 @@
 "use client"
 import { User } from "next-auth";
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useRef, useState } from "react";
 import { updateExamRemarkById, updateExamStatusById } from "../lib/database";
 import { EventSourceInput } from "@fullcalendar/core/index.js";
+import { PrintButton } from "./print/ReactToPrint";
 
 interface AppUser extends User {
     isAdmin?: boolean;
@@ -21,6 +22,7 @@ interface ModalProps {
 export function Modal({ event, shareLink, user, examStatus, exams, setExams, calRef }: ModalProps) {
     const [remark, setRemark] = useState(event?.extendedProps?.remark)
     const [selectStatus, setSelectStatus] = useState(event?.extendedProps?.status)
+    const modalRef = useRef<HTMLFormElement | null>(null);
 
     // get current calendar reference in order to update event color on status change
     const api = calRef.current.getApi();
@@ -56,15 +58,15 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams, cal
     // Get color of selected exam
     const examColor = examStatus?.find(status => status.value === event?.extendedProps?.status)?.color;
     return (
-        <form method="dialog" className="modal-content flex flex-col gap-4 p-12 w-full text-foreground bg-background accent-red-500 [&_input]:rounded-lg">
-            <h3 className={`font-bold basis-full text-lg ${examColor}`}>{event?.title}</h3>
+        <form ref={modalRef as React.RefObject<HTMLFormElement>} method="dialog" className="modal-content flex flex-col gap-4 p-12 w-full text-foreground bg-background accent-red-500 [&_input]:rounded-lg">
+            <h3 className={`exam-title font-bold basis-full text-lg ${examColor}`}>{event?.title}</h3>
             <button className=" btn p-1 absolute right-5 top-5 hover:bg-gray-100" aria-label="Close">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6 size-6 ">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                 </svg>
             </button>
             {/* status selector for non-admin users. ToDo: Create a component instead?*/}
-            <div className="flex flex-row gap-4 flex-wrap">
+            <div id="status-selector" className="flex flex-row gap-4 flex-wrap">
                 {examStatus && examStatus.map((status) => (
                     !status.needsAdmin && (
                         <div key={status.value} id={status.value} className={`btn rounded-full border-2 border-solid border-${status.color} h-8 ${selectStatus === status.value ? `bg-${status.color} text-white` : "btn-secondary text-gray-800"}`} onClick={
@@ -92,25 +94,25 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams, cal
             <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2">
                 <div className="date-input flex flex-row flex-wrap justify-between gap-y-1 [&_input]:rounded-sm">
                     <label className="font-semibold w-full" htmlFor="start">Start</label>
-                    <input className="basis-full xl:basis-auto" type="date" name="start" disabled defaultValue={event ? new Date(event.start).toISOString().split("T")[0] : ''} />
-                    <input className="time-input basis-full xl:basis-auto" type="time" name="start" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + new Date(event.start).getHours()).slice(-2)}:${("0" + new Date(event.start).getMinutes()).slice(-2)}` : ''} />
+                    <input className="start-date basis-full xl:basis-auto" type="date" name="start" disabled defaultValue={event ? new Date(event.start).toISOString().split("T")[0] : ''} />
+                    <input className="start-time basis-full xl:basis-auto" type="time" name="start" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + new Date(event.start).getHours()).slice(-2)}:${("0" + new Date(event.start).getMinutes()).slice(-2)}` : ''} />
                 </div>
                 <div className="date-input flex flex-row flex-wrap justify-between gap-y-1 [&_input]:rounded-lg">
                     <label className="font-semibold w-full" htmlFor="end">End</label>
-                    <input className="basis-full xl:basis-auto" type="date" name="end" disabled defaultValue={event ? new Date(event.end).toISOString().split("T")[0] : ''} />
-                    <input className="time-input basis-full xl:basis-auto" type="time" name="end" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + new Date(event.end).getHours()).slice(-2)}:${("0" + new Date(event.end).getMinutes()).slice(-2)}` : ''} />
+                    <input className="end-date basis-full xl:basis-auto" type="date" name="end" disabled defaultValue={event ? new Date(event.end).toISOString().split("T")[0] : ''} />
+                    <input className="end-time basis-full xl:basis-auto" type="time" name="end" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + new Date(event.end).getHours()).slice(-2)}:${("0" + new Date(event.end).getMinutes()).slice(-2)}` : ''} />
                 </div>
             </div>
             <div>
                 <label className="font-semibold w-full" htmlFor="description">Description</label>
-                <p className="">{event?.extendedProps?.description}</p>
+                <p className="description">{event?.extendedProps?.description}</p>
             </div>
-            <textarea className="resize-none rounded-lg border border-gray-300 p-3" rows={4} name="remarks" id="remarks" placeholder="Add any remarks"
+            <textarea className="remarks resize-none rounded-lg border border-gray-300 p-3" rows={12} name="remarks" id="remarks" placeholder="Add any remarks"
                 value={remark || ""}
                 onChange={(e) => setRemark(e.target.value)}
             >
             </textarea>
-            <div className="flex flex-row justify-between flex-wrap gap-y-0 xl:flex-nowrap sm:gap-y-2">
+            <div id="modal-toolbar" className="flex flex-row justify-between flex-wrap gap-y-0 xl:flex-nowrap sm:gap-y-2">
                 <div className="flex flex-row gap-4 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 ">
                     {/* ToDo : use a component */}
                     {user.isAdmin && (
@@ -126,6 +128,8 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams, cal
                             ))}
                         </select>
                     )}
+                    <PrintButton ref={modalRef} />
+                    {/* Open the folder where the exam files are stored */}
                     <a className="btn btn-secondary group " id="openShare" href={shareLink} target="_blank" rel="noreferrer noopener">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
                             <path className="opacity-0 group-hover:opacity-100 transition duration-300 ease-out-in" strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
