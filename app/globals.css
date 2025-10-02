@@ -80,6 +80,14 @@ td[role="presentation"] {
   /* filter: brightness(0.9) !important; */
 }
 
+@media print {
+  #status-selector,
+  #modal-toolbar,
+  button {
+    display: none;
+  }
+}
+
 @layer components {
   .btn {
     display: flex;
