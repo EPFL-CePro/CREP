@@ -51,7 +51,6 @@ export default function Calendar({ user }: CalendarProps) {
   useEffect(() => {
     (async function () {
       const data = user.isAdmin ? await getAllExams() as Array<any> : await getAllNonAdminExams() as Array<any>;
-      console.log("Fetched exams:", data);
       const startDate = new Date();
 
       const filteredData = data.map((e: any, i: number) => {
