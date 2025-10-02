@@ -135,7 +135,20 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams, cal
                 </div>
                 <div className="flex flex-row gap-4">
                     <button className="btn btn-secondary">Cancel</button>
-                    <button className="btn btn-primary" onClick={() => save()}>Save</button>
+                    {/* on save, check if the status change into a status that requires admin privileges and confirm with the user */}
+                    <button className="btn btn-primary" onClick={(e) => {
+                        if (event?.extendedProps?.status !== selectStatus && examStatus?.find(status => status.value === selectStatus)?.needsAdmin) {
+                            // proceed only if confirmed, else prevent modal close and save
+                            if (window.confirm("You are changing the status to one that requires admin privileges. It means that this exam will be hidden to non-admin users. Are you sure you want to proceed?")) {
+                                save();
+                                return
+                            }
+                            e.preventDefault();
+                            return;
+                        } else {
+                            save();
+                        }
+                    }}>Save</button>
                 </div>
             </div>
         </form >
