@@ -31,7 +31,7 @@ export async function getAllNonAdminExams() {
     connection.connect()
 
     return new Promise(function(resolve, reject) {
-        connection.query('SELECT * from crep WHERE crep_status IN ("registered", "toPrint", "printing", "finished");', (err, rows, fields) => {
+        connection.query('SELECT * from crep WHERE crep_status IN ("toPrint", "printing", "finished");', (err, rows, fields) => {
             if (err) throw err
             resolve(rows);
         })

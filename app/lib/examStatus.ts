@@ -1,5 +1,5 @@
 export const examStatus = [
-    { value: 'registered', label: 'Registered', color: 'blue-500', hexColor: '#3b82f6', fcColor: 'oklch(62.3% 0.214 259.815)', needsAdmin: false },
+    { value: 'registered', label: 'Registered', color: 'blue-500', hexColor: '#3b82f6', fcColor: 'oklch(62.3% 0.214 259.815)', needsAdmin: true },
     { value: 'toPrint', label: 'To Print', color: 'yellow-500', hexColor: '#eab308', fcColor: 'oklch(79.5% 0.184 86.047)', needsAdmin: false },
     { value: 'printing', label: 'Printing', color: 'green-500', hexColor: '#22c55e', fcColor: 'oklch(72.3% 0.219 149.579)', needsAdmin: false },
     { value: 'finished', label: 'Finished', color: 'red-500', hexColor: '#ef4444', fcColor: '#fb2c36', needsAdmin: false },

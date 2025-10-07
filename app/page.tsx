@@ -6,10 +6,10 @@ import { Modal } from "./components/Modal";
 export default async function Home() {
   const session = await auth();
 
-  if(!session?.user) return;
+  if (!session?.user) return;
   return (
     <>
-      <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
+      <div className="font-sans grid grid-rows-[20px_1fr_0px] items-center justify-items-center min-h-screen p-8 gap-16 sm:p-20 sm:pb-0">
         <div className="header w-full">
           <NavBar user={session?.user} />
         </div>

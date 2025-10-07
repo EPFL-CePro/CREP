@@ -97,7 +97,7 @@ export default function Calendar({ user }: CalendarProps) {
 
   function makeEventsKey(
     examsArr: EventSourceInput,
-    filtersArr: { label: string, value: string }[], 
+    filtersArr: { label: string, value: string }[],
     examStatusArr: {
       value: string;
       label: string;
@@ -106,18 +106,18 @@ export default function Calendar({ user }: CalendarProps) {
       fcColor: string;
       needsAdmin: boolean;
     }[]) {
-      const examsPart = Array.isArray(examsArr) ? examsArr.map(e => `${e.id}:${e.status}`).join("|") : "";
-      const filtersPart = (filtersArr || []).map(f => f.value).join(",");
-      const statusPart = (examStatusArr || []).map(s => `${s.value}:${s.fcColor}`).join(",");
+    const examsPart = Array.isArray(examsArr) ? examsArr.map(e => `${e.id}:${e.status}`).join("|") : "";
+    const filtersPart = (filtersArr || []).map(f => f.value).join(",");
+    const statusPart = (examStatusArr || []).map(s => `${s.value}:${s.fcColor}`).join(",");
 
-      // Key to invalidate the cache if something changed using the exams, the filters or the status.
-      return `${examsPart}::${filtersPart}::${statusPart}`;
+    // Key to invalidate the cache if something changed using the exams, the filters or the status.
+    return `${examsPart}::${filtersPart}::${statusPart}`;
   }
 
   return (
     <div className="flex flex-col gap-3">
       <div className="ml-auto w-72">
-        <Filters 
+        <Filters
           examStatus={examStatus}
           user={user}
           setFilters={setFilters}
@@ -127,10 +127,11 @@ export default function Calendar({ user }: CalendarProps) {
         ref={calRef}
         plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
         initialView="timeGridWeek"
-        height="90vh"
+        height="80vh"
         firstDay={1}
         slotMinTime="07:00:00"
         slotMaxTime="21:00:00"
+        expandRows={true}
         slotLabelFormat={{
           hour: '2-digit',
           minute: '2-digit',
@@ -153,7 +154,7 @@ export default function Calendar({ user }: CalendarProps) {
           info.event.setExtendedProp('remark', clickedExam?.remark);
           setSelectedEvent(info.event);
           // build the share link once and stash in state
-          const rawPath = "vpsi1files.epfl.ch/CAPE/REPRO/TEST/" + info.event.extendedProps?.folder_name;
+          const rawPath = "vpsi1files.epfl.ch/CAPE/REPRO/TEST/" + info.event.extendedProps?.folder_name; //folder name doesn't exist yet. snippet from ludo. ToDo
           const uncURL = `file://///${rawPath}`;
           const smbURL = `smb://${rawPath}`;
           let dialog = document.getElementById("modal") as HTMLDialogElement;
@@ -177,7 +178,7 @@ export default function Calendar({ user }: CalendarProps) {
           }
 
           // Else, calculate the exams list + inject colors
-          const allSelectedFiltersValues = filters.map((item:{label:string, value:string}) => item.value);
+          const allSelectedFiltersValues = filters.map((item: { label: string, value: string }) => item.value);
           const filteredEvents = allSelectedFiltersValues.length === 0
             ? exams
             : (exams as any[]).filter((ev) => allSelectedFiltersValues.includes(ev.status));
