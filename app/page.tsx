@@ -1,7 +1,6 @@
 import Calendar from "./components/calendar/FullCalendar";
 import { auth } from "../auth"
 import { NavBar } from "./components/NavBar";
-import { Modal } from "./components/Modal";
 
 export default async function Home() {
   const session = await auth();

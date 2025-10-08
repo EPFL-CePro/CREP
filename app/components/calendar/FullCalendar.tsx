@@ -4,13 +4,14 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction'; // handles event clicks
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, Dispatch } from "react";
 import { EventDropArg, EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
 import { getAllExams, getAllNonAdminExams, updateExamDateById } from "@/app/lib/database";
 import { Modal } from "../Modal";
 import { User } from "next-auth";
 import { examStatus } from "@/app/lib/examStatus";
 import { Filters } from "../Filters";
+import { QueryResult } from "mysql2";
 
 interface CalendarProps {
   user: AppUser
@@ -23,7 +24,7 @@ interface AppUser extends User {
 
 export default function Calendar({ user }: CalendarProps) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventInput>();
   const [shareLink, setShareLink] = useState('#');
 
   const [exams, setExams] = useState<EventSourceInput | undefined>();
@@ -36,10 +37,10 @@ export default function Calendar({ user }: CalendarProps) {
   // border-blue-500 border-yellow-500 border-green-500 border-red-500
   useEffect(() => {
     (async function () {
-      const data = user.isAdmin ? await getAllExams() as Array<any> : await getAllNonAdminExams() as Array<any>;
+      const data = user.isAdmin ? await getAllExams() as Array<QueryResult> : await getAllNonAdminExams() as Array<QueryResult>;
       const startDate = new Date();
 
-      const filteredData = data.map((e: any, i: number) => {
+      const filteredData = data.map((e:EventInput, i: number) => {
         const currentStart = new Date(startDate);
         currentStart.setDate(startDate.getDate() + i);
 
@@ -61,10 +62,10 @@ export default function Calendar({ user }: CalendarProps) {
       })
       setExams(filteredData);
     })();
-  }, [])
+  }, [user.isAdmin])
 
   function formatDate(date: Date) {
-    const pad = (num: Number) => String(num).padStart(2, '0');
+    const pad = (num: number) => String(num).padStart(2, '0');
 
     const year = date.getFullYear();
     const month = pad(date.getMonth() + 1); // month starting at 0
@@ -79,21 +80,19 @@ export default function Calendar({ user }: CalendarProps) {
   const handleEventDrop = async (arg: EventDropArg) => {
     const id = arg.event.id;
     const startDate = arg.event.start;
-    const endDate = arg.event.end;
 
     const formattedStartDate = formatDate(startDate || new Date())
-    const formattedEndDate = formatDate(endDate || new Date())
 
-    await updateExamDateById(id, formattedStartDate, formattedEndDate)
+    await updateExamDateById(id, formattedStartDate)
   }
 
-  const eventsCacheRef = useRef<{ key: string; events: any[] }>({ key: "", events: [] });
+  const eventsCacheRef = useRef<{ key: string; events: EventInput[] }>({ key: "", events: [] });
 
   const statusColorMap = useMemo(() => {
     const m = new Map<string, string>();
     (examStatus || []).forEach(s => m.set(s.value, s.fcColor || "#000000"));
     return m;
-  }, [examStatus]);
+  }, []);
 
   function makeEventsKey(
     examsArr: EventSourceInput,
@@ -120,7 +119,7 @@ export default function Calendar({ user }: CalendarProps) {
         <Filters
           examStatus={examStatus}
           user={user}
-          setFilters={setFilters}
+          setFilters={setFilters as Dispatch<unknown>}
         />
       </div>
       <FullCalendar
@@ -149,15 +148,15 @@ export default function Calendar({ user }: CalendarProps) {
           listWeek: { buttonText: 'List' },
         }}
         eventClick={(info) => {
-          const clickedExam = Array.isArray(exams) ? exams.find((e: any) => e.id == info.event.id) : undefined;
+          const clickedExam = Array.isArray(exams) ? exams.find((e: EventInput) => e.id == info.event.id) : undefined;
           info.event.setExtendedProp('status', clickedExam?.status);
           info.event.setExtendedProp('remark', clickedExam?.remark);
-          setSelectedEvent(info.event);
+          setSelectedEvent(info.event as EventInput);
           // build the share link once and stash in state
           const rawPath = "vpsi1files.epfl.ch/CAPE/REPRO/TEST/" + info.event.extendedProps?.folder_name; //folder name doesn't exist yet. snippet from ludo. ToDo
           const uncURL = `file://///${rawPath}`;
           const smbURL = `smb://${rawPath}`;
-          let dialog = document.getElementById("modal") as HTMLDialogElement;
+          const dialog = document.getElementById("modal") as HTMLDialogElement;
           const isWindows = () =>
             /windows/i.test(navigator.userAgent);
 
@@ -181,9 +180,9 @@ export default function Calendar({ user }: CalendarProps) {
           const allSelectedFiltersValues = filters.map((item: { label: string, value: string }) => item.value);
           const filteredEvents = allSelectedFiltersValues.length === 0
             ? exams
-            : (exams as any[]).filter((ev) => allSelectedFiltersValues.includes(ev.status));
+            : (exams as EventInput[]).filter((ev) => allSelectedFiltersValues.includes(ev.status));
 
-          const prepared = (filteredEvents as EventInput[]).map((ev: any) => {
+          const prepared = (filteredEvents as EventInput[]).map((ev: EventInput) => {
             const color = statusColorMap.get(ev.status) || "#000000";
             return {
               ...ev,
@@ -206,13 +205,12 @@ export default function Calendar({ user }: CalendarProps) {
       }}>
         {modalOpen && (
           <Modal
-            event={selectedEvent}
+            event={selectedEvent as EventInput}
             shareLink={shareLink}
             user={user}
             exams={exams}
             setExams={setExams}
             examStatus={examStatus}
-            calRef={calRef}
           />
         )}
       </dialog >

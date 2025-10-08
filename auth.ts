@@ -40,7 +40,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 					};
 				}
 
-				const accessToken = decodeJWT(token.access_token);
+				const accessToken = decodeJWT(token.access_token as string);
 				if (Date.now() < accessToken.exp * 1000) {
 					return token;
 				}
@@ -62,7 +62,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 					username: token?.username || '',
 					oid: token.oid || '',
 					tid: token.tid || '',
-					isAdmin: token.groups?.includes('CREP-admin_AppGrpU') || false,
+					isAdmin: (token.groups as Array<string>).includes('CREP-admin_AppGrpU') || false,
 				},
 			};
 		},

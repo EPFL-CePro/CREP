@@ -1,0 +1,13 @@
+services:
+  crep-app:
+    container_name: crep-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: crep-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env
