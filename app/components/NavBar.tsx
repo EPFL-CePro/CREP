@@ -1,8 +1,17 @@
 "use client"
+import { User } from "next-auth";
 import { SignIn } from "./auth/SignInButton";
 import { SignOut } from "./auth/SignOutButton";
 
-export function NavBar(user: any) {
+interface NavBarProps {
+  user: AppUser
+}
+
+interface AppUser extends User {
+  isAdmin?: boolean;
+}
+
+export function NavBar({ user }: NavBarProps) {
     console.log(user);
     return (
         <nav className="navbar">
@@ -11,9 +20,9 @@ export function NavBar(user: any) {
                     <h1 className="text-2xl font-bold">CREP</h1>
                 </div>
                 <div className="flex items-center flex-nowrap">
-                    {user.user ? (
+                    {user ? (
                         <>
-                            <span className="mr-4">Welcome, {user.user.name} !</span>
+                            <span className="mr-4">Welcome, {user.name} !</span>
                             <SignOut />
                         </>
                     ) : (

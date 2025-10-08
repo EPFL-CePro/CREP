@@ -22,7 +22,7 @@ interface StatusOption {
 interface FiltersProps {
     examStatus?: StatusOption[];
     user: AppUser;
-    setFilters: Dispatch<SetStateAction<{ label: string; value: string; }[]>>;
+    setFilters: Dispatch<SetStateAction<unknown>>;
 }
 
 const colourStyles: StylesConfig<StatusOption, true> = {
@@ -92,7 +92,7 @@ export function Filters({ examStatus, user, setFilters }: FiltersProps) {
             className="basic-multi-select z-10"
             classNamePrefix="select"
             placeholder="Filters..."
-            onChange={(filters:{ value: string, label: string }[]) => setFilters(filters)}
+            onChange={(filters:unknown) => setFilters(filters)}
             styles={colourStyles as StylesConfig}
         />
     )

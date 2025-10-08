@@ -2,7 +2,7 @@
 import { User } from "next-auth";
 import React, { Dispatch, SetStateAction, useRef, useState } from "react";
 import { updateExamRemarkById, updateExamStatusById } from "../lib/database";
-import { EventSourceInput } from "@fullcalendar/core/index.js";
+import { EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
 import { PrintButton } from "./print/ReactToPrint";
 
 interface AppUser extends User {
@@ -10,47 +10,32 @@ interface AppUser extends User {
 }
 
 interface ModalProps {
-    event: any;
+    event: EventInput;
     shareLink: string;
     user: AppUser;
     examStatus?: { value: string; label: string; color: string, needsAdmin: boolean, fcColor: string }[];
     exams: EventSourceInput | undefined;
     setExams: Dispatch<SetStateAction<EventSourceInput | undefined>>;
-    calRef: React.RefObject<any>;
 }
 
-export function Modal({ event, shareLink, user, examStatus, exams, setExams, calRef }: ModalProps) {
+export function Modal({ event, shareLink, user, examStatus, exams, setExams }: ModalProps) {
     const [remark, setRemark] = useState(event?.extendedProps?.remark)
     const [selectStatus, setSelectStatus] = useState(event?.extendedProps?.status)
     const modalRef = useRef<HTMLFormElement | null>(null);
 
-    // get current calendar reference in order to update event color on status change
-    const api = calRef.current.getApi();
-
     async function save() {
         // save remark, save status, and update the exams state
-        const updatedExams = Array.isArray(exams) ? exams.map((e: any) => {
+        const updatedExams = Array.isArray(exams) ? exams.map((e: EventInput) => {
             if (e.id == event?.id) {
                 e.remark = remark
                 e.status = selectStatus
-                // if we have a calendar ref, update the specific event so FullCalendar re-renders its styling
-                if (api) {
-                    const fcEvent = api.getEventById(String(e.id))
-                    if (fcEvent) {
-                        const newColor = examStatus?.find(status => status.value === selectStatus)?.fcColor || '#000000'
-                        fcEvent.setProp('backgroundColor', newColor)
-                        fcEvent.setProp('borderColor', newColor)
-                        fcEvent.setExtendedProp('status', selectStatus)
-                        fcEvent.setExtendedProp('remark', remark)
-                    }
-                }
             }
             return e;
         }) : [];
-        await updateExamRemarkById(event?.id, remark)
+        await updateExamRemarkById(event.id || '', remark)
         setRemark(remark)
 
-        await updateExamStatusById(event?.id, selectStatus)
+        await updateExamStatusById(event.id || '', selectStatus)
         setSelectStatus(selectStatus)
         setExams(updatedExams)
     }
@@ -85,7 +70,7 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams, cal
                                 setSelectStatus(status.value);
                             }
                         }>
-                            <input onChange={(e) => { }} className="hidden" type="radio" name="status" id={status.value} value={status.value} checked={selectStatus === status.value} />
+                            <input className="hidden" type="radio" name="status" id={status.value} value={status.value} checked={selectStatus === status.value} />
                             <label className="text-sm cursor-pointer" htmlFor={status.value}>{status.label}</label>
                         </div>
                     )
@@ -94,13 +79,13 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams, cal
             <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2">
                 <div className="date-input flex flex-row flex-wrap justify-between gap-y-1 [&_input]:rounded-sm">
                     <label className="font-semibold w-full" htmlFor="start">Start</label>
-                    <input className="start-date basis-full xl:basis-auto" type="date" name="start" disabled defaultValue={event ? new Date(event.start).toISOString().split("T")[0] : ''} />
-                    <input className="start-time basis-full xl:basis-auto" type="time" name="start" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + new Date(event.start).getHours()).slice(-2)}:${("0" + new Date(event.start).getMinutes()).slice(-2)}` : ''} />
+                    <input className="start-date basis-full xl:basis-auto" type="date" name="start" disabled defaultValue={event ? new Date(event.start as string).toISOString().split("T")[0] : ''} />
+                    <input className="start-time basis-full xl:basis-auto" type="time" name="start" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + new Date(event.start as string).getHours()).slice(-2)}:${("0" + new Date(event.start as string).getMinutes()).slice(-2)}` : ''} />
                 </div>
                 <div className="date-input flex flex-row flex-wrap justify-between gap-y-1 [&_input]:rounded-lg">
                     <label className="font-semibold w-full" htmlFor="end">End</label>
-                    <input className="end-date basis-full xl:basis-auto" type="date" name="end" disabled defaultValue={event ? new Date(event.end).toISOString().split("T")[0] : ''} />
-                    <input className="end-time basis-full xl:basis-auto" type="time" name="end" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + new Date(event.end).getHours()).slice(-2)}:${("0" + new Date(event.end).getMinutes()).slice(-2)}` : ''} />
+                    <input className="end-date basis-full xl:basis-auto" type="date" name="end" disabled defaultValue={event ? new Date(event.end as string).toISOString().split("T")[0] : ''} />
+                    <input className="end-time basis-full xl:basis-auto" type="time" name="end" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + new Date(event.end as string).getHours()).slice(-2)}:${("0" + new Date(event.end as string).getMinutes()).slice(-2)}` : ''} />
                 </div>
             </div>
             <div>
