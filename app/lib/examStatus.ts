@@ -16,3 +16,11 @@ export const examStatus = [
     { value: 'wait_teach', label: 'Wait-Teach', color: '', hexColor: '#020617', fcColor: '#000000', needsAdmin: true },
     { value: 'to_contact', label: 'To-Contact', color: '', hexColor: '#020617', fcColor: '#000000', needsAdmin: true }
 ];
+
+export const examNotAdminStatus = examStatus.filter(status => !status.needsAdmin);
+
+export const examAdminStatus = examStatus.filter(status => status.needsAdmin);
+
+export const getAllowedExamStatus = (isAdmin: boolean) => {
+    return isAdmin ? examStatus : examNotAdminStatus;
+}

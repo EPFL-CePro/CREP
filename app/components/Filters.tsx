@@ -7,7 +7,7 @@ import chroma from "chroma-js";
 import { Dispatch, SetStateAction } from "react";
 
 interface AppUser extends User {
-    isAdmin?: boolean;
+  isAdmin?: boolean;
 }
 
 interface StatusOption {
@@ -20,13 +20,13 @@ interface StatusOption {
 }
 
 interface FiltersProps {
-    examStatus?: StatusOption[];
-    user: AppUser;
-    setFilters: Dispatch<SetStateAction<unknown>>;
+  examStatus?: StatusOption[];
+  user: AppUser;
+  setFilters: Dispatch<SetStateAction<unknown>>;
 }
 
 const colourStyles: StylesConfig<StatusOption, true> = {
-  control: (styles) => ({ ...styles, backgroundColor: 'white' }),
+  control: (styles) => ({ ...styles, backgroundColor: 'white', ":focus-within": { borderColor: 'red', boxShadow: '0 0 0 1px red', }, }),
   option: (styles, { data, isDisabled, isFocused, isSelected }) => {
     const color = chroma(data.hexColor);
     return {
@@ -34,17 +34,17 @@ const colourStyles: StylesConfig<StatusOption, true> = {
       backgroundColor: isDisabled
         ? undefined
         : isSelected
-        ? data.hexColor
-        : isFocused
-        ? color.alpha(0.1).css()
-        : undefined,
+          ? data.hexColor
+          : isFocused
+            ? color.alpha(0.1).css()
+            : undefined,
       color: isDisabled
         ? '#ccc'
         : isSelected
-        ? chroma.contrast(color, 'white') > 2
-          ? 'white'
-          : 'black'
-        : data.hexColor,
+          ? chroma.contrast(color, 'white') > 2
+            ? 'white'
+            : 'black'
+          : data.hexColor,
       cursor: isDisabled ? 'not-allowed' : 'default',
 
       ':active': {
@@ -66,7 +66,7 @@ const colourStyles: StylesConfig<StatusOption, true> = {
   },
   multiValueLabel: (styles, { data }) => ({
     ...styles,
-    color: data.hexColor,
+    color: chroma(data.hexColor).darken(1).css(),
   }),
   multiValueRemove: (styles, { data }) => ({
     ...styles,
@@ -74,26 +74,31 @@ const colourStyles: StylesConfig<StatusOption, true> = {
     ':hover': {
       backgroundColor: data.hexColor,
       color: 'white',
+      cursor: 'pointer',
     },
   }),
 };
 
 export function Filters({ examStatus, user, setFilters }: FiltersProps) {
-    return (
-        <Select
-            isMulti
-            name="colors"
-            options={
-                examStatus?.filter(
-                    (status) =>
-                        !status.needsAdmin || (user.isAdmin && status.needsAdmin)
-                )
-            }
-            className="basic-multi-select z-10"
-            classNamePrefix="select"
-            placeholder="Filters..."
-            onChange={(filters:unknown) => setFilters(filters)}
-            styles={colourStyles as StylesConfig}
-        />
-    )
+  return (
+    <Select
+      isMulti
+      name="colors"
+      options={
+        examStatus?.filter(
+          (status) =>
+            !status.needsAdmin || (user.isAdmin && status.needsAdmin)
+        )
+      }
+      className="basic-multi-select z-10"
+      classNamePrefix="select"
+      placeholder="Filters..."
+      theme={(theme) => ({
+        ...theme,
+        borderRadius: 9,
+      })}
+      onChange={(filters: unknown) => setFilters(filters)}
+      styles={colourStyles as StylesConfig}
+    />
+  )
 }

@@ -9,9 +9,10 @@ import { EventDropArg, EventInput, EventSourceInput } from "@fullcalendar/core/i
 import { getAllExams, getAllNonAdminExams, updateExamDateById } from "@/app/lib/database";
 import { Modal } from "../Modal";
 import { User } from "next-auth";
-import { examStatus } from "@/app/lib/examStatus";
+import { examStatus, getAllowedExamStatus } from "@/app/lib/examStatus";
 import { Filters } from "../Filters";
 import { QueryResult } from "mysql2";
+import { Legend } from "../Legend";
 
 interface CalendarProps {
   user: AppUser
@@ -40,7 +41,7 @@ export default function Calendar({ user }: CalendarProps) {
       const data = user.isAdmin ? await getAllExams() as Array<QueryResult> : await getAllNonAdminExams() as Array<QueryResult>;
       const startDate = new Date();
 
-      const filteredData = data.map((e:EventInput, i: number) => {
+      const filteredData = data.map((e: EventInput, i: number) => {
         const currentStart = new Date(startDate);
         currentStart.setDate(startDate.getDate() + i);
 
@@ -114,13 +115,20 @@ export default function Calendar({ user }: CalendarProps) {
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="ml-auto w-72">
-        <Filters
-          examStatus={examStatus}
-          user={user}
-          setFilters={setFilters as Dispatch<unknown>}
-        />
+    <div className="flex flex-col gap-3 justify-between">
+      <div className=" w-full flex flex-row justify-between">
+        <div className="flex flex-grow-8 flex-row">
+          <div className="flex-col ml-4 gap-2 grid grid-cols-3">
+            <Legend />
+          </div>
+        </div>
+        <div className=" flex-min-2 min-w-80">
+          <Filters
+            examStatus={examStatus}
+            user={user}
+            setFilters={setFilters as Dispatch<unknown>}
+          />
+        </div>
       </div>
       <FullCalendar
         ref={calRef}
