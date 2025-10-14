@@ -84,12 +84,7 @@ export function Filters({ examStatus, user, setFilters }: FiltersProps) {
     <Select
       isMulti
       name="colors"
-      options={
-        examStatus?.filter(
-          (status) =>
-            !status.needsAdmin || (user.isAdmin && status.needsAdmin)
-        )
-      }
+      options={examStatus}
       className="basic-multi-select z-10"
       classNamePrefix="select"
       placeholder="Filters..."

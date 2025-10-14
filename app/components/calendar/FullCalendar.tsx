@@ -32,10 +32,8 @@ export default function Calendar({ user }: CalendarProps) {
   const calRef = useRef<FullCalendar | null>(null);
 
   const [filters, setFilters] = useState<{ label: string, value: string }[]>([]);
+  const availableStatus = getAllowedExamStatus(user.isAdmin || false);
 
-  // the safelist below is needed for Tailwind to generate the classes used for exam status:
-  // bg-blue-500 bg-yellow-500 bg-green-500 bg-red-500 bg-gray-500 text-blue-500 text-yellow-500 text-green-500 text-red-500 text-gray-500
-  // border-blue-500 border-yellow-500 border-green-500 border-red-500
   useEffect(() => {
     (async function () {
       const data = user.isAdmin ? await getAllExams() as Array<QueryResult> : await getAllNonAdminExams() as Array<QueryResult>;
@@ -47,7 +45,7 @@ export default function Calendar({ user }: CalendarProps) {
 
         const currentEnd = new Date(currentStart);
         currentEnd.setHours(currentStart.getHours() + 1);
-        const eventColor = examStatus.find(status => status.value === e.status)?.fcColor;
+        const eventColor = availableStatus.find(status => status.value === e.status)?.fcColor;
         return {
           title: `${e.exam_code} - ${e.exam_name}`,
           start: e.print_date ? e.print_date.toISOString().slice(0, 19) : currentStart.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
@@ -63,7 +61,7 @@ export default function Calendar({ user }: CalendarProps) {
       })
       setExams(filteredData);
     })();
-  }, [user.isAdmin])
+  }, [availableStatus, user.isAdmin])
 
   function formatDate(date: Date) {
     const pad = (num: number) => String(num).padStart(2, '0');
@@ -91,7 +89,7 @@ export default function Calendar({ user }: CalendarProps) {
 
   const statusColorMap = useMemo(() => {
     const m = new Map<string, string>();
-    (examStatus || []).forEach(s => m.set(s.value, s.fcColor || "#000000"));
+    (availableStatus || []).forEach(s => m.set(s.value, s.fcColor || "#000000"));
     return m;
   }, []);
 
@@ -118,13 +116,13 @@ export default function Calendar({ user }: CalendarProps) {
     <div className="flex flex-col gap-3 justify-between">
       <div className=" w-full flex flex-row justify-between">
         <div className="flex flex-grow-8 flex-row">
-          <div className="flex-col ml-4 gap-2 grid grid-cols-3">
+          <div className="flex-col ml-4 gap-2 grid grid-cols-4">
             <Legend />
           </div>
         </div>
         <div className=" flex-min-2 min-w-80">
           <Filters
-            examStatus={examStatus}
+            examStatus={availableStatus}
             user={user}
             setFilters={setFilters as Dispatch<unknown>}
           />
@@ -137,7 +135,8 @@ export default function Calendar({ user }: CalendarProps) {
         height="80vh"
         firstDay={1}
         slotMinTime="07:00:00"
-        slotMaxTime="21:00:00"
+        slotMaxTime="23:00:00"
+        timeZone="Europe/Zurich"
         expandRows={true}
         slotLabelFormat={{
           hour: '2-digit',
@@ -177,7 +176,7 @@ export default function Calendar({ user }: CalendarProps) {
         events={(info, successCallback) => {
           if (!exams) return successCallback([]);
 
-          const key = makeEventsKey(exams, filters, examStatus);
+          const key = makeEventsKey(exams, filters, availableStatus);
 
           // If nothing changed, send back the cache
           if (eventsCacheRef.current.key === key) {
@@ -218,7 +217,7 @@ export default function Calendar({ user }: CalendarProps) {
             user={user}
             exams={exams}
             setExams={setExams}
-            examStatus={examStatus}
+            examStatus={availableStatus}
           />
         )}
       </dialog >
