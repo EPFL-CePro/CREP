@@ -47,18 +47,18 @@ export default function Calendar({ user }: CalendarProps) {
 
         const currentEnd = new Date(currentStart);
         currentEnd.setHours(currentStart.getHours() + 1);
-        const eventColor = examStatus.find(status => status.value === e.crep_status)?.fcColor;
+        const eventColor = examStatus.find(status => status.value === e.status)?.fcColor;
         return {
-          title: `${e.code} - ${e.name}`,
-          start: e.crep_print_date ? e.crep_print_date.toISOString().slice(0, 19) : currentStart.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
-          end: e.crep_print_date ? e.crep_print_date.setHours(e.crep_print_date.getUTCHours() + 1) : currentEnd.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
-          description: e.name,
+          title: `${e.exam_code} - ${e.exam_name}`,
+          start: e.print_date ? e.print_date.toISOString().slice(0, 19) : currentStart.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
+          end: e.print_date ? e.print_date.setHours(e.print_date.getUTCHours() + 1) : currentEnd.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
+          description: e.exam_name,
           durationEditable: false,
           id: e.id,
-          status: e.crep_status,
+          status: e.status,
           backgroundColor: eventColor,
           borderColor: eventColor,
-          remark: e.crep_remark
+          remark: e.remark
         }
       })
       setExams(filteredData);
