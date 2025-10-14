@@ -1,5 +1,6 @@
 'use server';
 import mysql from 'mysql2';
+import { examNotAdminStatus } from './examStatus';
 
 export async function getAllExams() {
     const connection = mysql.createConnection({
@@ -29,9 +30,9 @@ export async function getAllNonAdminExams() {
     })
 
     connection.connect()
-
+    
     return new Promise(function(resolve) {
-        connection.query('SELECT * from crep WHERE status IN ("toPrint", "printing", "finished");', (err, rows) => {
+        connection.query(`SELECT * from crep WHERE status IN (${examNotAdminStatus.map(obj => `"${obj.value}"`).join(", ")});`, (err, rows) => {
             if (err) throw err
             resolve(rows);
         })

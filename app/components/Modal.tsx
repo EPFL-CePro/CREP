@@ -4,6 +4,7 @@ import React, { Dispatch, SetStateAction, useRef, useState } from "react";
 import { updateExamRemarkById, updateExamStatusById } from "../lib/database";
 import { EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
 import { PrintButton } from "./print/ReactToPrint";
+import { examNotAdminStatus } from "../lib/examStatus";
 
 interface AppUser extends User {
     isAdmin?: boolean;
@@ -52,28 +53,26 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
             </button>
             {/* status selector for non-admin users. ToDo: Create a component instead?*/}
             <div id="status-selector" className="flex flex-row gap-4 flex-wrap">
-                {examStatus && examStatus.map((status) => (
-                    !status.needsAdmin && (
-                        <div key={status.value} id={status.value} className={`btn rounded-full border-2 border-solid border-${status.color} h-8 ${selectStatus === status.value ? `bg-${status.color} text-white` : "btn-secondary text-gray-800"}`} onClick={
-                            (e) => {
-                                const currentColor = examStatus?.find(s => s.value === selectStatus)?.color;
-                                // Remove previous color class from all siblings
-                                if (currentColor) {
-                                    e.currentTarget.parentElement?.childNodes.forEach((child) => {
-                                        if (child instanceof HTMLElement) {
-                                            child.classList.remove(currentColor ? `bg-${currentColor}` : "", "text-white");
-                                        }
-                                    });
-                                }
-                                // Add new color class to the clicked element and apply new status
-                                e.currentTarget.classList.add(`bg-${status.color}`, "text-white");
-                                setSelectStatus(status.value);
+                {examNotAdminStatus && examNotAdminStatus.map((status) => (
+                    <div key={status.value} id={status.value} className={`btn rounded-full border-2 border-solid border-${status.color} h-8 ${selectStatus === status.value ? `bg-${status.color} text-white` : "btn-secondary text-gray-800"}`} onClick={
+                        (e) => {
+                            const currentColor = examNotAdminStatus?.find(s => s.value === selectStatus)?.color;
+                            // Remove previous color class from all siblings
+                            if (currentColor) {
+                                e.currentTarget.parentElement?.childNodes.forEach((child) => {
+                                    if (child instanceof HTMLElement) {
+                                        child.classList.remove(currentColor ? `bg-${currentColor}` : "", "text-white");
+                                    }
+                                });
                             }
-                        }>
-                            <input className="hidden" type="radio" name="status" id={status.value} value={status.value} checked={selectStatus === status.value} />
-                            <label className="text-sm cursor-pointer" htmlFor={status.value}>{status.label}</label>
-                        </div>
-                    )
+                            // Add new color class to the clicked element and apply new status
+                            e.currentTarget.classList.add(`bg-${status.color}`, "text-white");
+                            setSelectStatus(status.value);
+                        }
+                    }>
+                        <input className="hidden" type="radio" name="status" id={status.value} value={status.value} checked={selectStatus === status.value} />
+                        <label className="text-sm cursor-pointer" htmlFor={status.value}>{status.label}</label>
+                    </div>
                 ))}
             </div>
             <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2">
@@ -100,16 +99,14 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
             <div id="modal-toolbar" className="flex flex-row justify-between flex-wrap gap-y-0 xl:flex-nowrap sm:gap-y-2">
                 <div className="flex flex-row gap-4 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 ">
                     {/* ToDo : use a component */}
+                    {/* Displays a dropdown if user has admin privileges */}
                     {user.isAdmin && (
                         <select name="from" className="dropdown btn btn-secondary" id="from"
                             value={selectStatus}
                             onChange={(e) => setSelectStatus(e.target.value)}
                         >
-                            {/* Displays status according to admin privileges */}
                             {examStatus && examStatus.map((status) => (
-                                (!status.needsAdmin || user.isAdmin && status.needsAdmin) && (
-                                    <option key={status.value} value={status.value} className={status.color}>{status.label}</option>
-                                )
+                                <option key={status.value} value={status.value} className={status.color}>{status.label}</option>
                             ))}
                         </select>
                     )}
