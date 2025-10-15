@@ -56,7 +56,8 @@ export default function Calendar({ user }: CalendarProps) {
           status: e.status,
           backgroundColor: eventColor,
           borderColor: eventColor,
-          remark: e.remark
+          remark: e.remark,
+          reproRemark: e.repro_remark
         }
       })
       setExams(filteredData);
@@ -158,6 +159,7 @@ export default function Calendar({ user }: CalendarProps) {
           const clickedExam = Array.isArray(exams) ? exams.find((e: EventInput) => e.id == info.event.id) : undefined;
           info.event.setExtendedProp('status', clickedExam?.status);
           info.event.setExtendedProp('remark', clickedExam?.remark);
+          info.event.setExtendedProp('reproRemark', clickedExam?.reproRemark)
           setSelectedEvent(info.event as EventInput);
           // build the share link once and stash in state
           const rawPath = "vpsi1files.epfl.ch/CAPE/REPRO/TEST/" + info.event.extendedProps?.folder_name; //folder name doesn't exist yet. snippet from ludo. ToDo
@@ -195,7 +197,7 @@ export default function Calendar({ user }: CalendarProps) {
               ...ev,
               backgroundColor: color,
               borderColor: color,
-              extendedProps: { ...(ev.extendedProps || {}), status: ev.status, remark: ev.remark },
+              extendedProps: { ...(ev.extendedProps || {}), status: ev.status, remark: ev.remark, reproRemark: ev.reproRemark },
             };
           });
 
