@@ -133,7 +133,7 @@ export default function Calendar({ user }: CalendarProps) {
         ref={calRef}
         plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
         initialView="timeGridWeek"
-        height="80vh"
+        height="75vh"
         firstDay={1}
         slotMinTime="07:00:00"
         slotMaxTime="23:00:00"

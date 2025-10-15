@@ -4,6 +4,9 @@
   --background: #ffffff;
   --background-secondary: #f5f5f5;
   --foreground: #171717;
+  --fc-button-bg-color: var(--background-secondary);
+  --fc-button-active-bg-color: var(--color-primary);
+  --fc-today-bg-color: var(--background-secondary);
 }
 
 @theme inline {
@@ -25,30 +28,45 @@ body {
   border-width: 0 --spacing(2) 0 0;
 }
 
-.fc-button {
-  background-color: var(--background-secondary) !important;
-  border: none !important;
-  color: var(--foreground) !important;
-  font-weight: var(--font-weight-medium) !important;
-  padding-inline: --spacing(5) !important;
-  padding-block: --spacing(2) !important;
-  &:hover {
-    @media (hover: hover) {
-      background-color: var(--background-secondary) !important;
-      filter: contrast(0.9) !important;
-    }
-  }
-  &.fc-button-active {
-    background-color: var(--color-primary) !important;
-    color: var(--color-white) !important;
-  }
-}
-
 .modal:focus {
   outline: none !important;
 }
 
-.fc-button-group,
+.fc-button {
+  border: none !important;
+  color: var(--foreground) !important;
+  font-weight: var(--font-weight-medium) !important;
+  padding-inline: --spacing(5) !important;
+  &:hover {
+    cursor: pointer;
+    filter: contrast(0.9) !important;
+    &:not(.fc-button-active) {
+      background-color: var(--background-secondary) !important;
+      box-shadow: var(--shadow-sm) !important;
+    }
+  }
+}
+
+/* fullcalendar overrides : buttons in toolbar */
+.fc-toolbar-chunk > .fc-button-group {
+  border-radius: var(--radius-4xl) !important;
+  background-color: var(--background-secondary) !important;
+  padding-inline: --spacing(1) !important;
+  gap: --spacing(1) !important;
+  > .fc-button {
+    border-radius: var(--radius-4xl) !important;
+    padding-top: --spacing(1) !important;
+    padding-bottom: --spacing(1) !important;
+    margin-top: --spacing(1) !important;
+    margin-bottom: --spacing(1) !important;
+  }
+  > .fc-button-active {
+    box-shadow: var(--shadow-sm) !important;
+    color: var(--color-white) !important;
+  }
+}
+
+/* fullcalendar overrides : overall borders */
 .fc-today-button,
 .fc-col-header,
 .fc-scrollgrid-section > td,
@@ -73,11 +91,9 @@ td[role="presentation"] {
 }
 
 .fc-event:hover {
-  /* @media (hover: hover) {
-    filter: brightness(0.9) !important;
-  } */
   cursor: pointer;
-  /* filter: brightness(0.9) !important; */
+  filter: brightness(0.9) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
 @media print {
