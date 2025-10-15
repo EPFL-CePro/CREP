@@ -1,7 +1,7 @@
 "use client"
 import { User } from "next-auth";
 import React, { Dispatch, SetStateAction, useRef, useState } from "react";
-import { updateExamRemarkById, updateExamStatusById } from "../lib/database";
+import { updateExamRemarkById, updateExamStatusById, updateExamReproRemarkById } from "../lib/database";
 import { EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
 import { PrintButton } from "./print/ReactToPrint";
 import { examNotAdminStatus } from "../lib/examStatus";
@@ -21,6 +21,7 @@ interface ModalProps {
 
 export function Modal({ event, shareLink, user, examStatus, exams, setExams }: ModalProps) {
     const [remark, setRemark] = useState(event?.extendedProps?.remark)
+    const [reproRemark, setReproRemark] = useState(event?.extendedProps?.reproRemark)
     const [selectStatus, setSelectStatus] = useState(event?.extendedProps?.status)
     const modalRef = useRef<HTMLFormElement | null>(null);
 
@@ -30,11 +31,15 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
             if (e.id == event?.id) {
                 e.remark = remark
                 e.status = selectStatus
+                e.reproRemark = reproRemark
             }
             return e;
         }) : [];
         await updateExamRemarkById(event.id || '', remark)
         setRemark(remark)
+
+        await updateExamReproRemarkById(event.id || '', reproRemark)
+        setReproRemark(reproRemark)
 
         await updateExamStatusById(event.id || '', selectStatus)
         setSelectStatus(selectStatus)
@@ -91,9 +96,15 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                 <label className="font-semibold w-full" htmlFor="description">Description</label>
                 <p className="description">{event?.extendedProps?.description}</p>
             </div>
-            <textarea className="remarks resize-none rounded-lg border border-gray-300 p-3" rows={12} name="remarks" id="remarks" placeholder="Add any remarks"
+            <textarea className="remarks resize-none rounded-lg border border-gray-300 p-3" rows={6} name="remarks" id="remarks" placeholder="Add any remarks"
                 value={remark || ""}
                 onChange={(e) => setRemark(e.target.value)}
+            >
+            </textarea>
+            <label className="font-semibold w-full" htmlFor="description">Repro's remark</label>
+            <textarea className="remarks resize-none rounded-lg border border-gray-300 p-3" rows={6} name="remarks" id="remarks" placeholder="Add any remarks"
+                value={reproRemark || ""}
+                onChange={(e) => setReproRemark(e.target.value)}
             >
             </textarea>
             <div id="modal-toolbar" className="flex flex-row justify-between flex-wrap gap-y-0 xl:flex-nowrap sm:gap-y-2">
