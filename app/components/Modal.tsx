@@ -70,7 +70,7 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                             setSelectStatus(status.value);
                         }
                     }>
-                        <input className="hidden" type="radio" name="status" id={status.value} value={status.value} checked={selectStatus === status.value} />
+                        <input className="hidden" type="radio" name="status" id={status.value} value={status.value} defaultChecked={selectStatus === status.value} />
                         <label className="text-sm cursor-pointer" htmlFor={status.value}>{status.label}</label>
                     </div>
                 ))}
