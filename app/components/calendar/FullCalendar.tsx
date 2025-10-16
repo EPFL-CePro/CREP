@@ -9,7 +9,7 @@ import { EventDropArg, EventInput, EventSourceInput } from "@fullcalendar/core/i
 import { getAllExams, getAllNonAdminExams, updateExamDateById } from "@/app/lib/database";
 import { Modal } from "../Modal";
 import { User } from "next-auth";
-import { examStatus, getAllowedExamStatus } from "@/app/lib/examStatus";
+import { getAllowedExamStatus } from "@/app/lib/examStatus";
 import { Filters } from "../Filters";
 import { QueryResult } from "mysql2";
 import { Legend } from "../Legend";
