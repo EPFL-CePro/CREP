@@ -114,7 +114,7 @@ export default function Calendar({ user }: CalendarProps) {
   }
 
   return (
-    <div className="flex flex-col gap-3 justify-between">
+    <div className="flex flex-col gap-4 justify-between">
       <div className=" w-full flex flex-row justify-between">
         <div className="flex flex-grow-8 flex-row">
           <div className="flex-col ml-4 gap-2 grid grid-cols-4">
@@ -209,7 +209,7 @@ export default function Calendar({ user }: CalendarProps) {
         eventDrop={handleEventDrop}
       />
       {/* dialog modal starts empty, then is populated with event details on click. Closing the modal will reset the state. */}
-      <dialog id="modal" className="modal fixed top-1/4 left-1/4 w-2/4 rounded-xl flex items-center justify-center z-50 drop-shadow-2xl backdrop:backdrop-blur-xs opacity-98" onClose={() => {
+      <dialog id="modal" className="modal fixed top-1/8 left-1/4 w-2/4 rounded-xl flex items-center justify-center z-50 drop-shadow-2xl backdrop:backdrop-blur-xs opacity-98" onClose={() => {
         setModalOpen(false);
       }}>
         {modalOpen && (

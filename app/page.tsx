@@ -9,7 +9,7 @@ export default async function Home() {
   if (!session?.user) return;
   return (
     <>
-      <div className="font-sans grid grid-rows items-center justify-items-center min-h-screen gap-8 sm:px-10 sm:py-10 sm:pb-0">
+      <div className="font-sans grid grid-rows items-center justify-items-center min-h-screen sm:px-12 sm:pt-8 sm:pb-0">
         <div className="header w-full">
           <NavBar user={session?.user} />
         </div>
