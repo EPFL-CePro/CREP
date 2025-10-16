@@ -48,7 +48,6 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
 
     // Get color of selected exam
     const examColor = examStatus?.find(status => status.value === event?.extendedProps?.status)?.color;
-    console.log(event.end);
     return (
         <form ref={modalRef as React.RefObject<HTMLFormElement>} method="dialog" className="modal-content flex flex-col gap-4 p-12 w-full text-foreground bg-background accent-red-500 [&_input]:rounded-lg">
             <h3 className={`exam-title font-bold basis-full text-lg ${examColor}`}>{event?.title}</h3>

@@ -12,10 +12,7 @@ interface AppUser extends User {
 }
 
 export function NavBar({ user }: NavBarProps) {
-    console.log(user);
     const isDevMode = process.env.NODE_ENV === "development" ? true : false;
-    console.log(process.env.NODE_ENV);
-    console.log(isDevMode);
     return (
         <nav className="navbar">
             <div className="flex w-full justify-between items-center">
