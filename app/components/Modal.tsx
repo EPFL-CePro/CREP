@@ -101,7 +101,7 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                 onChange={(e) => setRemark(e.target.value)}
             >
             </textarea>
-            <label className="font-semibold w-full" htmlFor="description">Repro's remark</label>
+            <label className="font-semibold w-full" htmlFor="description">Repro&apos;s remark</label>
             <textarea className="remarks resize-none rounded-lg border border-gray-300 p-3" rows={6} name="remarks" id="remarks" placeholder="Add any remarks"
                 value={reproRemark || ""}
                 onChange={(e) => setReproRemark(e.target.value)}

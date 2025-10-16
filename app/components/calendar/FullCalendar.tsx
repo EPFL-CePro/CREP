@@ -92,7 +92,7 @@ export default function Calendar({ user }: CalendarProps) {
     const m = new Map<string, string>();
     (availableStatus || []).forEach(s => m.set(s.value, s.fcColor || "#000000"));
     return m;
-  }, []);
+  }, [availableStatus]);
 
   function makeEventsKey(
     examsArr: EventSourceInput,

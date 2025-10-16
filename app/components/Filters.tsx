@@ -79,7 +79,7 @@ const colourStyles: StylesConfig<StatusOption, true> = {
   }),
 };
 
-export function Filters({ examStatus, user, setFilters }: FiltersProps) {
+export function Filters({ examStatus, setFilters }: FiltersProps) {
   return (
     <Select
       isMulti
