@@ -70,7 +70,7 @@ export default function Calendar({ user }: CalendarProps) {
     const year = date.getFullYear();
     const month = pad(date.getMonth() + 1); // month starting at 0
     const day = pad(date.getDate());
-    const hours = pad(date.getHours());
+    const hours = pad(date.getUTCHours());
     const minutes = pad(date.getMinutes());
     const seconds = pad(date.getSeconds());
 
