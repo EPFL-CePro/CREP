@@ -144,6 +144,11 @@ export default function Calendar({ user }: CalendarProps) {
           minute: '2-digit',
           hour12: false
         }}
+        eventTimeFormat={{
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }}
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
