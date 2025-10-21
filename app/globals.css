@@ -104,6 +104,34 @@ td[role="presentation"] {
   }
 }
 
+/* responsive styles */
+@media (max-width: 48rem) {
+  .fc-header-toolbar {
+    flex-wrap: wrap !important;
+    gap: --spacing(2) !important;
+    .fc-toolbar-chunk {
+      &:first-child {
+        order: 2 !important;
+      }
+      &:nth-child(2) {
+        width: 100% !important;
+      }
+      &:last-child {
+        order: 3 !important;
+      }
+    }
+  }
+  .fc-button {
+    padding-inline: --spacing(3) !important;
+  }
+}
+
+@media (max-width: 64rem) {
+  .fc-button {
+    padding-inline: --spacing(2) !important;
+  }
+}
+
 @layer components {
   .btn {
     display: flex;
