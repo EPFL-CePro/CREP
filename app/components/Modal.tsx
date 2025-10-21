@@ -107,8 +107,8 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                 onChange={(e) => setReproRemark(e.target.value)}
             >
             </textarea>
-            <div id="modal-toolbar" className="flex flex-row justify-between flex-wrap gap-y-0 xl:flex-nowrap sm:gap-y-2">
-                <div className="flex flex-row gap-4 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 ">
+            <div id="modal-toolbar" className="flex flex-row justify-between flex-wrap xxl:flex-nowrap gap-y-2">
+                <div className="flex flex-row gap-4 flex-wrap md:flex-nowrap gap-y-2 ">
                     {/* ToDo : use a component */}
                     {/* Displays a dropdown if user has admin privileges */}
                     {user.isAdmin && (
