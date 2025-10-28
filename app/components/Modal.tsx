@@ -84,12 +84,12 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                 <div className="date-input flex flex-row flex-wrap justify-between gap-y-1 [&_input]:rounded-sm">
                     <label className="font-semibold w-full" htmlFor="start">Start</label>
                     <input className="start-date basis-full xl:basis-auto" type="date" name="start" disabled defaultValue={event ? new Date(event.start as string).toISOString().split("T")[0] : ''} />
-                    <input className="start-time basis-full xl:basis-auto" type="time" name="start" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + new Date(event.start as string).getHours()).slice(-2)}:${("0" + new Date(event.start as string).getMinutes()).slice(-2)}` : ''} />
+                    <input className="start-time basis-full xl:basis-auto" type="time" name="start" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + (new Date(event.start as string).getHours() - 1)).slice(-2)}:${("0" + new Date(event.start as string).getMinutes()).slice(-2)}` : ''} />
                 </div>
                 <div className="date-input flex flex-row flex-wrap justify-between gap-y-1 [&_input]:rounded-lg">
                     <label className="font-semibold w-full" htmlFor="end">End</label>
                     <input className="end-date basis-full xl:basis-auto" type="date" name="end" disabled defaultValue={event ? new Date(event.end as string).toISOString().split("T")[0] : ''} />
-                    <input className="end-time basis-full xl:basis-auto" type="time" name="end" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + new Date(event.end as string).getHours()).slice(-2)}:${("0" + new Date(event.end as string).getMinutes()).slice(-2)}` : ''} />
+                    <input className="end-time basis-full xl:basis-auto" type="time" name="end" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + (new Date(event.end as string).getHours() - 1)).slice(-2)}:${("0" + new Date(event.end as string).getMinutes()).slice(-2)}` : ''} />
                 </div>
             </div>
             <div>
