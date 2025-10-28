@@ -49,7 +49,7 @@ export default function Calendar({ user }: CalendarProps) {
         return {
           title: `${e.exam_code} - ${e.exam_name}`,
           start: e.print_date ? e.print_date.toISOString().slice(0, 19) : currentStart.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
-          end: e.print_date ? e.print_date.setHours(e.print_date.getUTCHours() + 1) : currentEnd.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
+          end: e.print_date ? new Date(e.print_date.setHours(e.print_date.getUTCHours() + 2)).toISOString().slice(0, 19) : currentEnd.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
           description: e.exam_name,
           durationEditable: false,
           id: e.id,
