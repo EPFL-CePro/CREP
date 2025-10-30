@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, JetBrains_Mono } from "next/font/google";
+import 'rsuite/dist/rsuite-no-reset.min.css';
 import "./globals.css";
+import { CustomProvider } from "rsuite";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +30,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${jetBrainsMono.variable} antialiased`}
       >
-        {children}
+        <CustomProvider>{children}</CustomProvider>
       </body>
     </html>
   );

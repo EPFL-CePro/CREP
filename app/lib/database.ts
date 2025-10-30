@@ -2,6 +2,19 @@
 import mysql from 'mysql2';
 import { examNotAdminStatus } from './examStatus';
 
+interface Exam {
+    id: number;
+    exam_code: string;
+    exam_date: Date;
+    exam_name: string;
+    exam_pages: number;
+    exam_students: number;
+    print_date: Date;
+    remark: string;
+    repro_remark: string;
+    status: string;
+}
+
 export async function getAllExams() {
     const connection = mysql.createConnection({
         host: process.env.MYSQL_HOST,
@@ -111,6 +124,44 @@ export async function updateExamReproRemarkById(id: string, reproRemark: string)
         connection.query('UPDATE crep SET repro_remark = ? WHERE id = ?;', [reproRemark, id], (err, rows) => {
             if (err) throw err
             resolve(JSON.stringify(rows));
+        })
+        connection.end()
+    })
+}
+
+export async function getAllExamsByStatus(status: Array<string>): Promise<Exam[]> {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    })
+
+    connection.connect()
+    
+    return new Promise(function(resolve) {
+        connection.query(`SELECT * from crep WHERE status IN (${status.map(obj => `"${obj}"`).join(", ")});`, (err:mysql.QueryError, rows:Exam[]) => {
+            if (err) throw err
+            resolve(rows);
+        })
+        connection.end()
+    })
+}
+
+export async function getAllExamsBetweenDates(beginDate: Date, endDate: Date): Promise<Exam[]> {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    })
+
+    connection.connect()
+    
+    return new Promise(function(resolve) {
+        connection.query(`SELECT * from crep WHERE print_date between '${beginDate.toISOString().replace('T', ' ').slice(0, 19)}' and '${endDate.toISOString().replace('T', ' ').slice(0, 19)}'`, (err:mysql.QueryError, rows:Exam[]) => {
+            if (err) throw err
+            resolve(rows);
         })
         connection.end()
     })
