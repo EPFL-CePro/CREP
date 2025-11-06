@@ -25,8 +25,8 @@ type Inputs = {
 
 
 export default function App() {
-    const { control, register, handleSubmit, formState: { errors }, setError, clearErrors } = useForm<Inputs>()
-    const onSubmit: SubmitHandler<Inputs> = (data) => {
+    const { control, register, handleSubmit, formState: { errors }, setError, clearErrors, reset } = useForm<Inputs>()
+    const onSubmit: SubmitHandler<Inputs> = async (data) => {
         // validate that desiredDate is not later than examDate
         const { examDate, desiredDate } = data;
         if (examDate && desiredDate) {
@@ -41,7 +41,57 @@ export default function App() {
             }
         }
 
-        console.log(data);
+        try {
+            if (!data.course) {
+                alert('Please select a course.');
+                return;
+            }
+
+            const pers = data.authorizedPersons as unknown as Array<string>;
+            const authorizedPersons = pers.map(id => {
+                const user = users.find(u => u.id === Number(id));
+                return {
+                    id: user?.id,
+                    email: user?.email,
+                    name: user ? `${user.firstname} ${user.lastname}` : '',
+                };
+            });
+
+            const contact = users.find(u => u.id === Number(data.contact));
+            const payload = {
+                course: courses.find(c => c.id === data.course?.value)?.name,
+                examCode: courses.find(c => c.id === data.course?.value)?.code,
+                examDate: data.examDate,
+                desiredDate: data.desiredDate,
+                nbStudents: data.nbStudents,
+                nbPages: data.nbPages,
+                contact: contact?.firstname + ' ' + contact?.lastname + ' (' + contact?.email + ')',
+                // contact: data.contact, //if we want the id only
+                authorizedPersons: JSON.stringify(authorizedPersons),
+                paperFormat: data.paperFormat,
+                paperColor: data.paperColor,
+                remark: data.remark,
+            };
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const result = await res.json();
+            if (!res.ok) {
+                console.error('Registration failed', result);
+                alert('Registration failed: ' + (result.error || 'unknown'));
+                return;
+            }
+
+            // success
+            alert('Exam registered (id: ' + result.id + ')');
+            reset();
+        } catch (err) {
+            console.error(err);
+            alert('An unexpected error occurred while registering the exam.');
+        }
     }
     const [courses, setCourses] = useState<Array<{ id: number; name: string, code: string, teacher: string }>>([]);
     const [users, setUsers] = useState<Array<{ id: number; lastname: string; firstname: string; sciper: string; email: string }>>([]);
@@ -84,6 +134,7 @@ export default function App() {
                     render={({ field }) => (
                         <Select<SelectOption>
                             {...field}
+                            instanceId={1}
                             options={courses.map((course) => ({ value: course.id, label: `${course.code} - ${course.name} ${course.teacher ? ''.concat("(", course.teacher.split("|").map((t: string) => t.split(";")[2]).join(", "), ")") : ''}` }))}
                             theme={(theme) => ({
                                 ...theme,
@@ -167,6 +218,8 @@ export default function App() {
                 <label>Paper color:</label>
                 <div className="flex items-end align-middle flex-row justify-between [&>div]:flex [&>div]:flex-col [&>div]:gap-2">
                     <div className="[&>p]:italic">
+                        <p>In black and white</p>
+                        <p>With colors, at your expense</p>
                     </div>
                     <div className="[&>div]:flex [&>div]:justify-end [&>div]:gap-3">
                         <div onClick={(e) => { const input = e.currentTarget.querySelector('input') as HTMLInputElement | null; if (input) { input.click(); } }}>
@@ -178,9 +231,9 @@ export default function App() {
                     </div>
                 </div>
                 <label>Contact:</label>
-                <ReactSelect control={control} data={usersData} value={""} label={"contact"} baseArray={users} name={"contact"} isMultiChoice={false} />
+                <ReactSelect control={control} data={usersData} label={"contact"} baseArray={users} name={"contact"} isMultiChoice={false} />
                 <label>Authorized persons:</label>
-                <ReactSelect control={control} data={usersData} value={""} label={"authorized persons"} baseArray={users} name={"authorizedPersons"} isMultiChoice={true} />
+                <ReactSelect control={control} data={usersData} label={"authorized persons"} baseArray={users} name={"authorizedPersons"} isMultiChoice={true} />
                 <label>Additional remarks:</label>
                 <textarea {...register("remark")} placeholder="Additional remarks (optional)" />
                 <input className="btn btn-primary hover:cursor-pointer" type="submit" value="Submit exam registration" />

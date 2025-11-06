@@ -1,5 +1,6 @@
 'use server';
 import mysql from 'mysql2';
+import type { ResultSetHeader } from 'mysql2';
 import { examNotAdminStatus } from './examStatus';
 
 interface Exam {
@@ -203,4 +204,55 @@ export async function getAllUsers() {
     connection.end();
   });
 }   
+
+export async function insertExam(exam: {
+    exam_code: string;
+    exam_date: string | Date;
+    exam_name: string;
+    exam_pages: number;
+    exam_students: number;
+    print_date?: string | Date;
+    paper_format?: string;
+    paper_color?: string;
+    contact?: string;
+    authorized_persons?: string;
+    remark?: string | null;
+    repro_remark?: string | null;
+    status?: string;
+}): Promise<number> {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    });
+
+    connection.connect();
+
+    return new Promise((resolve, reject) => {
+        const sql = `INSERT INTO crep (exam_code, exam_date, exam_name, exam_pages, exam_students, print_date, paper_format, paper_color, contact, authorized_persons, remark, repro_remark, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+
+        const params = [
+            exam.exam_code,
+            exam.exam_date,
+            exam.exam_name,
+            exam.exam_pages,
+            exam.exam_students,
+            exam.print_date,
+            exam.paper_format,
+            exam.paper_color,
+            exam.contact,
+            exam.authorized_persons,
+            exam.remark || null,
+            exam.repro_remark || null,
+            exam.status || 'registered'
+        ];
+
+        connection.query(sql, params, (err, result) => {
+            if (err) return reject(err);
+            resolve((result as ResultSetHeader).insertId as number);
+        });
+        connection.end();
+    });
+}
 
