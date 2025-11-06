@@ -22,7 +22,7 @@ type Inputs = {
     course: SelectOption | null
     remark?: string
 }
-// const control = useForm<Inputs>()
+
 export interface SelectProps {
     control: Control<any>;
     data: SelectOption[];
@@ -42,6 +42,7 @@ export default function SelectController({ control, data, label, name, baseArray
                     return (
                         <Select<SelectOption, true, GroupBase<SelectOption>>
                             {...field}
+                            instanceId={2}
                             options={data}
                             formatOptionLabel={(option) => {
                                 const user = baseArray?.find((u) => u.id === option.value);
@@ -91,6 +92,7 @@ export default function SelectController({ control, data, label, name, baseArray
                 return (
                     <Select<SelectOption, false, GroupBase<SelectOption>>
                         {...field}
+                        instanceId={3}
                         options={data}
                         formatOptionLabel={(option) => {
                             const user = baseArray?.find((u) => u.id === option.value);
