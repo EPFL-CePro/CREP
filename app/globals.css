@@ -107,6 +107,20 @@ td[role="presentation"] {
   }
 }
 
+.custom-option__option {
+  transition: background 60ms;
+}
+.custom-option__option:hover {
+  transition-delay: 60ms;
+  background: var(--color-red-100) !important;
+}
+.custom-option__option--is-focused {
+  background: none !important;
+}
+.custom-option__option--is-selected {
+  background: var(--color-red-500) !important;
+}
+
 /* responsive styles */
 @media (max-width: 48rem) {
   .fc-header-toolbar {

@@ -166,3 +166,41 @@ export async function getAllExamsBetweenDates(beginDate: Date, endDate: Date): P
         connection.end()
     })
 }
+export async function getAllCourses() {
+  const connection = mysql.createConnection({
+    host: process.env.MYSQL_HOST,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE,
+  });
+
+  connection.connect();
+  
+  return new Promise((resolve, reject) => {
+    connection.query('SELECT * FROM course;', (err, rows) => {
+      if (err) return reject(err);
+      resolve(rows);
+    });
+    connection.end();
+  });
+}   
+
+export async function getAllUsers() {
+  const connection = mysql.createConnection({
+    host: process.env.MYSQL_HOST,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE,
+  });
+
+  connection.connect();
+  
+  return new Promise((resolve, reject) => {
+    connection.query('SELECT * FROM user;', (err, rows) => {
+      if (err) return reject(err);
+      resolve(rows);
+    });
+    connection.end();
+  });
+}   
+
