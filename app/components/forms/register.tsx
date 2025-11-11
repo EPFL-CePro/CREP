@@ -25,7 +25,7 @@ type Inputs = {
 
 
 export default function App() {
-    const { control, register, handleSubmit, formState: { errors }, setError, clearErrors, reset } = useForm<Inputs>()
+    const { control, register, handleSubmit, formState: { errors }, setError, clearErrors, reset, setValue } = useForm<Inputs>()
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
         // validate that desiredDate is not later than examDate
         const { examDate, desiredDate } = data;
@@ -173,9 +173,8 @@ export default function App() {
                                     const yyyy = d.getFullYear();
                                     const mm = String(d.getMonth() + 1).padStart(2, "0");
                                     const dd = String(d.getDate()).padStart(2, "0");
-                                    desiredInput.value = `${yyyy}-${mm}-${dd}`;
-                                    // notify react-hook-form about the programmatic change
-                                    desiredInput.dispatchEvent(new Event("input", { bubbles: true }));
+                                    const formatted =  `${yyyy}-${mm}-${dd}`;
+                                    setValue("desiredDate", formatted, { shouldDirty: true, shouldValidate: true });
                                 },
                             })}
                         />
