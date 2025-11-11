@@ -1,7 +1,7 @@
 "use client";
 // This form allows users to register their exams into the system.
 import { useForm, SubmitHandler, Controller } from "react-hook-form"
-import { getAllCourses, getAllUsers } from "@/app/lib/database";
+import { getAllCourses, getAllUsers, insertExam } from "@/app/lib/database";
 import Select from "react-select"
 import { QueryResult } from "mysql2";
 import { useEffect, useState } from "react";
@@ -58,35 +58,31 @@ export default function App() {
             });
 
             const contact = users.find(u => u.id === Number(data.contact));
-            const payload = {
-                course: courses.find(c => c.id === data.course?.value)?.name,
-                examCode: courses.find(c => c.id === data.course?.value)?.code,
-                examDate: data.examDate,
-                desiredDate: data.desiredDate,
-                nbStudents: data.nbStudents,
-                nbPages: data.nbPages,
-                contact: contact?.firstname + ' ' + contact?.lastname + ' (' + contact?.email + ')',
-                // contact: data.contact, //if we want the id only
-                authorizedPersons: JSON.stringify(authorizedPersons),
-                paperFormat: data.paperFormat,
-                paperColor: data.paperColor,
-                remark: data.remark,
-            };
-            const res = await fetch('/api/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            const result = await res.json();
-            if (!res.ok) {
-                console.error('Registration failed', result);
-                alert('Registration failed: ' + (result.error || 'unknown'));
-                return;
-            }
+            const insertedExam = await insertExam(
+                {
+                    exam_name: courses.find(c => c.id === data.course?.value)?.name || '',
+                    exam_code: courses.find(c => c.id === data.course?.value)?.code || '',
+                    exam_date: data.examDate,
+                    print_date: data.desiredDate,
+                    exam_students: data.nbStudents,
+                    exam_pages: data.nbPages,
+                    contact: contact?.firstname + ' ' + contact?.lastname + ' (' + contact?.email + ')',
+                    // contact: data.contact, //if we want the id only
+                    authorized_persons: JSON.stringify(authorizedPersons),
+                    paper_format: data.paperFormat,
+                    paper_color: data.paperColor,
+                    remark: data.remark,
+                    repro_remark: null,
+                    status: 'registered'
+                }
+            )
 
             // success
-            alert('Exam registered (id: ' + result.id + ')');
+            if(typeof(insertedExam) == 'number') {
+                alert('Exam registered (id: ' + insertedExam + ')');
+            } else {
+                alert('An unexpected error occurred while registering the exam.');
+            }
             reset();
         } catch (err) {
             console.error(err);
