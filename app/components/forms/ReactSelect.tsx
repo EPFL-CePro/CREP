@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AsyncSelect from "react-select/async";
 import type { OptionProps, GroupBase } from "react-select";
 import type { ComponentType } from "react";
@@ -39,17 +39,23 @@ async function fetchPersonById(id: number): Promise<SelectOption | null> {
 }
 
 export default function SelectController({ control, label, name, isMultiChoice }: SelectProps) {
+    const timeoutRef = useRef<NodeJS.Timeout | number>(0);
     const [selected, setSelected] = useState<SelectOption | SelectOption[] | null>(null);
 
     const loadOptions = useCallback(async (inputValue: string) => {
-        if (!inputValue || inputValue.length < 5) return [];
-        try {
-            const items = await fetchPersons(inputValue);
-            return items;
-        } catch (e) {
-            console.error("Failed to fetch persons", e);
-            return [];
-        }
+        if (!inputValue || inputValue.length < 3) return [];
+        return new Promise((resolve) => {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = setTimeout(async () => {
+                try {
+                    const items = await fetchPersons(inputValue);
+                    resolve(items);
+                } catch (e) {
+                    console.error("Failed to fetch persons", e);
+                    resolve([]);
+                }
+            }, 1000);
+        });
     }, []);
 
     const formatOption = useCallback((option: SelectOption) => {
