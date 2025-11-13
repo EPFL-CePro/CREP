@@ -1,11 +1,12 @@
 "use client";
 // This form allows users to register their exams into the system.
 import { useForm, SubmitHandler, Controller } from "react-hook-form"
-import { getAllCourses, getAllUsers, insertExam } from "@/app/lib/database";
+import { getAllCourses, insertExam } from "@/app/lib/database";
 import Select from "react-select"
 import { QueryResult } from "mysql2";
 import { useEffect, useState } from "react";
 import ReactSelect from "./ReactSelect";
+import { fetchMultiplePersonsBySciper, fetchPersonBySciper } from "@/app/lib/api";
 
 type SelectOption = { value: number; label: string };
 
@@ -48,8 +49,8 @@ export default function App() {
             }
 
             const pers = data.authorizedPersons as unknown as Array<string>;
-            const authorizedPersons = pers.map(id => {
-                const user = users.find(u => u.id === Number(id));
+            const authorizedPersonsList = await fetchMultiplePersonsBySciper(pers.join(','));
+            const authorizedPersons = authorizedPersonsList.map(user => {
                 return {
                     id: user?.id,
                     email: user?.email,
@@ -57,7 +58,7 @@ export default function App() {
                 };
             });
 
-            const contact = users.find(u => u.id === Number(data.contact));
+            const contact = await fetchPersonBySciper(data.contact);
             const insertedExam = await insertExam(
                 {
                     exam_name: courses.find(c => c.id === data.course?.value)?.name || '',
@@ -90,12 +91,10 @@ export default function App() {
         }
     }
     const [courses, setCourses] = useState<Array<{ id: number; name: string, code: string, teacher: string }>>([]);
-    const [users, setUsers] = useState<Array<{ id: number; lastname: string; firstname: string; sciper: string; email: string }>>([]);
 
     useEffect(() => {
         (async function () {
             const courses = await getAllCourses() as Array<QueryResult>;
-            const users = await getAllUsers() as Array<QueryResult>;
 
             const filteredCoursesData = courses.map((c: any) => ({
                 id: c.id,
@@ -103,18 +102,9 @@ export default function App() {
                 name: c.name,
                 teacher: c.teachers,
             }));
-            const filteredUsersData = users.map((u: any) => ({
-                id: u.id,
-                lastname: u.lastname,
-                firstname: u.firstname,
-                sciper: u.sciper,
-                email: u.email,
-            }));
-            setUsers(filteredUsersData);
             setCourses(filteredCoursesData);
         })();
     }, []);
-    const usersData = users.map((user) => ({ value: user.id, label: `${user.sciper}: ${user.firstname} ${user.lastname} (${user.email})` }));
 
     return (
         /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
@@ -226,9 +216,9 @@ export default function App() {
                     </div>
                 </div>
                 <label>Contact:</label>
-                <ReactSelect control={control} data={usersData} label={"contact"} baseArray={users} name={"contact"} isMultiChoice={false} />
+                <ReactSelect control={control} label={"contact"} name={"contact"} isMultiChoice={false} />
                 <label>Authorized persons:</label>
-                <ReactSelect control={control} data={usersData} label={"authorized persons"} baseArray={users} name={"authorizedPersons"} isMultiChoice={true} />
+                <ReactSelect control={control} label={"authorized persons"} name={"authorizedPersons"} isMultiChoice={true} />
                 <label>Additional remarks:</label>
                 <textarea {...register("remark")} placeholder="Additional remarks (optional)" />
                 <input className="btn btn-primary hover:cursor-pointer" type="submit" value="Submit exam registration" />
