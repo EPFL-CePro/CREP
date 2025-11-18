@@ -3,7 +3,6 @@
 import { useForm, SubmitHandler, Controller } from "react-hook-form"
 import { getAllCourses, insertExam } from "@/app/lib/database";
 import Select from "react-select"
-import { QueryResult } from "mysql2";
 import { useEffect, useState } from "react";
 import ReactSelect from "./ReactSelect";
 import { fetchMultiplePersonsBySciper, fetchPersonBySciper } from "@/app/lib/api";
@@ -94,13 +93,18 @@ export default function App() {
 
     useEffect(() => {
         (async function () {
-            const courses = await getAllCourses() as Array<QueryResult>;
+            const courses = await getAllCourses() as Array<{
+                id: number;
+                name: string;
+                code: string;
+                teachers: string;
+            }>;
 
-            const filteredCoursesData = courses.map((c: any) => ({
-                id: c.id,
-                code: c.code,
-                name: c.name,
-                teacher: c.teachers,
+            const filteredCoursesData = courses.map(({ id, code, name, teachers }) => ({
+                id,
+                code,
+                name,
+                teacher: teachers,
             }));
             setCourses(filteredCoursesData);
         })();
