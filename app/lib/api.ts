@@ -3,7 +3,7 @@ import { SelectOption } from "../components/forms/ReactSelect";
 
 export async function fetchPersons(query: string): Promise<SelectOption[]> {
     const url = `https://api.epfl.ch/v1/persons?query=${encodeURIComponent(query)}`;
-    let headers = new Headers();
+    const headers = new Headers();
     headers.set('Access-Control-Allow-Origin', '*');
     headers.set('Access-Control-Allow-Headers', '*');
     headers.set('Authorization', 'Basic ' + Buffer.from(process.env.EPFL_API_USERNAME + ":" + process.env.EPFL_API_PASSWORD).toString('base64'));
@@ -11,7 +11,7 @@ export async function fetchPersons(query: string): Promise<SelectOption[]> {
     if (!res.ok) return [];
     const data = await res.json();
     if (!data.persons) return [];
-    return data.persons.map((p: any) => ({
+    return data.persons.map((p: { id: string, firstname: string, lastname: string, email: string }) => ({
         value: Number(p.id),
         label: `${p.firstname} ${p.lastname}`.trim() || (p.email),
         person: {
@@ -26,7 +26,7 @@ export async function fetchPersons(query: string): Promise<SelectOption[]> {
 
 export async function fetchPersonBySciper(sciper: string): Promise<{id: string, firstname: string, lastname: string, email: string}> {
     const url = `https://api.epfl.ch/v1/persons/${sciper}`;
-    let headers = new Headers();
+    const headers = new Headers();
     headers.set('Access-Control-Allow-Origin', '*');
     headers.set('Access-Control-Allow-Headers', '*');
     headers.set('Authorization', 'Basic ' + Buffer.from(process.env.EPFL_API_USERNAME + ":" + process.env.EPFL_API_PASSWORD).toString('base64'));
@@ -37,7 +37,7 @@ export async function fetchPersonBySciper(sciper: string): Promise<{id: string, 
 
 export async function fetchMultiplePersonsBySciper(scipersWithCommas: string): Promise<{id: string, firstname: string, lastname: string, email: string}[]> {
     const url = `https://api.epfl.ch/v1/persons?ids=${encodeURIComponent(scipersWithCommas)}`;
-    let headers = new Headers();
+    const headers = new Headers();
     headers.set('Access-Control-Allow-Origin', '*');
     headers.set('Access-Control-Allow-Headers', '*');
     headers.set('Authorization', 'Basic ' + Buffer.from(process.env.EPFL_API_USERNAME + ":" + process.env.EPFL_API_PASSWORD).toString('base64'));
