@@ -21,7 +21,7 @@ export async function fetchPersons(query: string): Promise<SelectOption[]> {
             email: p.email,
             sciper: p.id,
         }
-    })).filter((o: SelectOption) => !!o.value);
+    })).filter((o: SelectOption) => !!o.value && !!o.person?.email);
 }
 
 export async function fetchPersonBySciper(sciper: string): Promise<{id: string, firstname: string, lastname: string, email: string}> {
