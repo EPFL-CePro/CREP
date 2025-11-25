@@ -6,6 +6,7 @@ import Select from "react-select"
 import { useEffect, useState } from "react";
 import ReactSelect from "./ReactSelect";
 import { fetchMultiplePersonsBySciper, fetchPersonBySciper } from "@/app/lib/api";
+import { sendMail } from "@/app/lib/mail";
 
 type SelectOption = { value: number; label: string };
 
@@ -79,6 +80,22 @@ export default function App() {
 
             // success
             if(typeof(insertedExam) == 'number') {
+                await sendMail(
+                    'cepro-exams@epfl.ch', // TODO : User has to be logged in, send the email to the user who registered the exam + cepro in CC
+                    'CePro - Exam printing service subscription confirmation',
+                    `
+Hello,
+Your subscription to our exam printing service has been successfully registered:
+
+- Course: ${courses.find(c => c.id === data.course?.value)?.code}
+- Exam date: ${data.examDate}
+- Desired print date: ${data.desiredDate}
+- Contact: ${contact?.firstname} ${contact?.lastname} (${contact?.email})
+- Authorized persons: ${authorizedPersons.length == 1 ?
+        authorizedPersons[0].email : 
+        authorizedPersons.map(user => `${user.email}`).join(', ')}
+${data.remark && `- Additional remarks: ${data.remark}`}`
+                );
                 alert('Exam registered (id: ' + insertedExam + ')');
             } else {
                 alert('An unexpected error occurred while registering the exam.');
