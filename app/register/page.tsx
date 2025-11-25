@@ -1,13 +1,16 @@
+import { auth } from "@/auth";
 import RegisterForm from "../components/forms/register"
 
 export const metadata = {
     title: "Register your exam",
 }
 
-export default function Page() {
+export default async function Page() {
+    const session = await auth();
+    if (!session?.user) return;
     return (
         <main>
-            <RegisterForm />
+            <RegisterForm user={session.user}/>
         </main>
     )
 }
