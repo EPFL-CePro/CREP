@@ -63,6 +63,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 					oid: token.oid || '',
 					tid: token.tid || '',
 					isAdmin: (token.groups as Array<string>).includes('CREP-admin_AppGrpU') || false,
+					groups: token.groups as string[],
 				},
 			};
 		},
