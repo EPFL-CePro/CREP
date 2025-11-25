@@ -83,7 +83,8 @@ export default function App({ user }: RegisterProps) {
                     paper_color: data.paperColor,
                     remark: data.remark,
                     repro_remark: null,
-                    status: 'registered'
+                    status: 'registered',
+                    registered_by: user.email || ''
                 }
             )
 
