@@ -33,6 +33,27 @@ interface AppUser extends User {
     isAdmin?: boolean;
 }
 
+function businessDaysBetween(startDate:string, endDate:string) {
+    let start = new Date(startDate);
+    let end = new Date(endDate);
+    let count = 0;
+
+    if (start > end) {
+        [start, end] = [end, start];
+    }
+
+    while (start < end) {
+        const day = start.getDay();
+        // 0 = sunday, 6 = saturday
+        if (day !== 0 && day !== 6) {
+            count++;
+        }
+        start.setDate(start.getDate() + 1);
+    }
+
+    return count;
+}
+
 
 export default function App({ user }: RegisterProps) {
     const { control, register, handleSubmit, formState: { errors }, setError, clearErrors, reset, setValue } = useForm<Inputs>()
@@ -90,12 +111,18 @@ export default function App({ user }: RegisterProps) {
 
             // success
             if(typeof(insertedExam) == 'number') {
+                const daysBetweenExamAndDesired = businessDaysBetween(data.desiredDate, data.examDate)
                 await sendMail(
                     user.email || '',
-                    'CePro - Exam printing service subscription confirmation',
+                    `${daysBetweenExamAndDesired < 3 && 'REQUIRES ATTENTION - '} CePro - Exam printing service subscription confirmation`,
                     `
 Hello,
 Your subscription to our exam printing service has been successfully registered:
+
+${daysBetweenExamAndDesired < 3 && `⚠️ : We would like to inform you that you choose a desired printing date that is inferior to 3 business days before the exam.
+The CePro team will get in touch with you shortly to discuss about your situation.
+Next time, please register to the printing service earlier to make sur that the printing team has the right amount of time to print your exam correctly.
+`}
 
 - Course: ${courses.find(c => c.id === data.course?.value)?.code}
 - Exam date: ${data.examDate}
