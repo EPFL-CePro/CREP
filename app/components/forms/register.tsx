@@ -128,9 +128,7 @@ Next time, please register to the printing service earlier to make sur that the 
 - Exam date: ${data.examDate}
 - Desired delivery date: ${data.desiredDate}
 - Contact: ${contact?.firstname} ${contact?.lastname} (${contact?.email})
-- Authorized persons: ${authorizedPersons.length == 1 ?
-        authorizedPersons[0].email : 
-        authorizedPersons.map(user => `${user.email}`).join(', ')}
+- Authorized persons: ${authorizedPersons.map(user => `${user.email}`).join(', ')}
 ${data.remark && `- Additional remarks: ${data.remark}`}`,
                     'cepro-exams@epfl.ch'
                 );
