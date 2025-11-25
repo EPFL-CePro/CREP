@@ -64,7 +64,7 @@ export default function App({ user }: RegisterProps) {
             const exam = new Date(examDate);
             const desired = new Date(desiredDate);
             if (desired > exam) {
-                setError("desiredDate", { type: "validate", message: "Desired print date cannot be later than the exam date." });
+                setError("desiredDate", { type: "validate", message: "Desired delivery date cannot be later than the exam date." });
                 return;
             } else {
                 // clear any previous date error
@@ -119,14 +119,14 @@ export default function App({ user }: RegisterProps) {
 Hello,
 Your subscription to our exam printing service has been successfully registered:
 
-${daysBetweenExamAndDesired < 8 && `⚠️ : We would like to inform you that you choose a desired printing date that is inferior to 8 business days before the exam.
+${daysBetweenExamAndDesired < 8 && `⚠️ : We would like to inform you that you choose a desired delivery date that is inferior to 8 business days before the exam.
 The CePro team will get in touch with you shortly to discuss about your situation.
 Next time, please register to the printing service earlier to make sur that the printing team has the right amount of time to print your exam correctly.
 `}
 
 - Course: ${courses.find(c => c.id === data.course?.value)?.code}
 - Exam date: ${data.examDate}
-- Desired print date: ${data.desiredDate}
+- Desired delivery date: ${data.desiredDate}
 - Contact: ${contact?.firstname} ${contact?.lastname} (${contact?.email})
 - Authorized persons: ${authorizedPersons.length == 1 ?
         authorizedPersons[0].email : 
@@ -229,7 +229,7 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                         />
                     </div>
                     <div className="flex flex-col w-2/4 gap-3">
-                        <label>Desired print date:</label>
+                        <label>Desired delivery date:</label>
                         <input className="text-right" type="date" {...register("desiredDate", { required: false })} />
                         {errors.desiredDate && <span className="text-red-600">{errors.desiredDate.message}</span>}
                     </div>
