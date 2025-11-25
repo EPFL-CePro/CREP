@@ -114,12 +114,12 @@ export default function App({ user }: RegisterProps) {
                 const daysBetweenExamAndDesired = businessDaysBetween(data.desiredDate, data.examDate)
                 await sendMail(
                     user.email || '',
-                    `${daysBetweenExamAndDesired < 3 && 'REQUIRES ATTENTION - '} CePro - Exam printing service subscription confirmation`,
+                    `${daysBetweenExamAndDesired < 8 && 'REQUIRES ATTENTION - '} CePro - Exam printing service subscription confirmation`,
                     `
 Hello,
 Your subscription to our exam printing service has been successfully registered:
 
-${daysBetweenExamAndDesired < 3 && `⚠️ : We would like to inform you that you choose a desired printing date that is inferior to 3 business days before the exam.
+${daysBetweenExamAndDesired < 8 && `⚠️ : We would like to inform you that you choose a desired printing date that is inferior to 8 business days before the exam.
 The CePro team will get in touch with you shortly to discuss about your situation.
 Next time, please register to the printing service earlier to make sur that the printing team has the right amount of time to print your exam correctly.
 `}
