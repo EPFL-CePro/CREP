@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import ReactSelect from "./ReactSelect";
 import { fetchMultiplePersonsBySciper, fetchPersonBySciper } from "@/app/lib/api";
 import { sendMail } from "@/app/lib/mail";
+import { User } from "next-auth";
 
 type SelectOption = { value: number; label: string };
 
@@ -24,8 +25,16 @@ type Inputs = {
     name: string
 }
 
+interface RegisterProps {
+    user: AppUser
+}
 
-export default function App() {
+interface AppUser extends User {
+    isAdmin?: boolean;
+}
+
+
+export default function App({ user }: RegisterProps) {
     const { control, register, handleSubmit, formState: { errors }, setError, clearErrors, reset, setValue } = useForm<Inputs>()
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
         // validate that desiredDate is not later than examDate
@@ -81,7 +90,7 @@ export default function App() {
             // success
             if(typeof(insertedExam) == 'number') {
                 await sendMail(
-                    'cepro-exams@epfl.ch', // TODO : User has to be logged in, send the email to the user who registered the exam + cepro in CC
+                    user.email || '',
                     'CePro - Exam printing service subscription confirmation',
                     `
 Hello,
@@ -94,7 +103,8 @@ Your subscription to our exam printing service has been successfully registered:
 - Authorized persons: ${authorizedPersons.length == 1 ?
         authorizedPersons[0].email : 
         authorizedPersons.map(user => `${user.email}`).join(', ')}
-${data.remark && `- Additional remarks: ${data.remark}`}`
+${data.remark && `- Additional remarks: ${data.remark}`}`,
+                    'cepro-exams@epfl.ch'
                 );
                 alert('Exam registered (id: ' + insertedExam + ')');
             } else {
