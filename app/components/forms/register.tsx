@@ -25,6 +25,7 @@ type Inputs = {
     remark?: string
     name: string
     needScan: boolean
+    files?: FileList
 }
 
 interface RegisterProps {
@@ -59,6 +60,49 @@ function businessDaysBetween(startDate:string, endDate:string) {
 
 export default function App({ user }: RegisterProps) {
     const { control, register, handleSubmit, formState: { errors }, setError, clearErrors, reset, setValue } = useForm<Inputs>()
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+    const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files) return;
+
+        const newFiles = Array.from(e.target.files);
+
+        setSelectedFiles((prev) => {
+            const merged = [...prev];
+
+            // optional: avoid duplicates (same name + size + lastModified)
+            newFiles.forEach((file) => {
+              const alreadyThere = merged.some(
+                (f) =>
+                  f.name === file.name &&
+                  f.size === file.size &&
+                  f.lastModified === file.lastModified
+              );
+              if (!alreadyThere) {
+                merged.push(file);
+              }
+        });
+
+        return merged;
+      });
+
+      // allow selecting the same file again later
+      e.target.value = "";
+    };
+
+    const handleRemoveFile = (index: number) => {
+        setSelectedFiles(prev => {
+            const updated = prev.filter((_, i) => i !== index);
+            if (updated.length === 0) {
+                setError("files", {
+                    type: "validate",
+                    message: "Please upload at least one file",
+                });
+            }
+            return updated;
+        });
+    };
+
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
         // validate that desiredDate is not later than examDate
         const { examDate, desiredDate } = data;
@@ -72,6 +116,15 @@ export default function App({ user }: RegisterProps) {
                 // clear any previous date error
                 clearErrors("desiredDate");
             }
+        }
+
+        // check uploaded files not empty
+        if (selectedFiles.length === 0) {
+            setError("files", {
+                type: "validate",
+                message: "Please upload at least one file",
+            });
+            return;
         }
 
         try {
@@ -91,10 +144,14 @@ export default function App({ user }: RegisterProps) {
             });
 
             const contact = await fetchPersonBySciper(data.contact);
+
+            const exam_name =  courses.find(c => c.id === data.course?.value)?.name || '';
+            const exam_code = courses.find(c => c.id === data.course?.value)?.code || '';
+            const contact_name = contact?.lastname;
             const insertedExam = await insertExam(
                 {
-                    exam_name: courses.find(c => c.id === data.course?.value)?.name || '',
-                    exam_code: courses.find(c => c.id === data.course?.value)?.code || '',
+                    exam_name: exam_name,
+                    exam_code: exam_code,
                     exam_date: data.examDate,
                     print_date: data.desiredDate,
                     exam_students: data.nbStudents,
@@ -112,12 +169,34 @@ export default function App({ user }: RegisterProps) {
                 }
             )
 
-            // success
-            if(typeof(insertedExam) == 'number') {
-                const daysBetweenExamAndDesired = businessDaysBetween(data.desiredDate, data.examDate)
-                await sendMail(
-                    user.email || '',
-                    `${daysBetweenExamAndDesired < 8 && 'REQUIRES ATTENTION - '} CePro - Exam printing service subscription confirmation`,
+            if(typeof(insertedExam) !== 'number') {
+                alert("Error while registering exam.");
+                return;
+            }
+
+            // send files to backend API
+            const folder_name = exam_code + '_' + contact_name + '_' + data.desiredDate;
+            const formData = new FormData();
+            formData.append("folder_name",folder_name);
+
+            selectedFiles.forEach((file) => {
+                formData.append("files", file);
+            });
+
+            const res = await fetch("/api/upload-exam-files", {
+                method: "POST",
+                body: formData,
+            });
+            if(!res.ok){
+                console.error(await res.text());
+                alert("Error while uploading exam files.");
+                return;
+            }
+            const daysBetweenExamAndDesired = businessDaysBetween(data.desiredDate, data.examDate)
+
+            await sendMail(
+                user.email || '',
+                `${daysBetweenExamAndDesired < 8 && 'REQUIRES ATTENTION - '} CePro - Exam printing service subscription confirmation`,
                     `
 Hello,
 Your subscription to our exam printing service has been successfully registered:
@@ -136,9 +215,6 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                     'cepro-exams@epfl.ch'
                 );
                 alert('Exam registered (id: ' + insertedExam + ')');
-            } else {
-                alert('An unexpected error occurred while registering the exam.');
-            }
             reset();
         } catch (err) {
             console.error(err);
@@ -169,9 +245,10 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
     return (
         /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
         <div className="flex flex-col items-center m-24">
-            <h1 className="text-3xl font-semibold" >Register an Exam</h1>
+            <h1 className="text-3xl font-semibold" >Exam Printing Order</h1>
             <form className="w-2/4 [&>label]:text-lg [&>*]:accent-red-500 p-4 rounded-md flex flex-col gap-3 mt-2 [&>select]:mb-2 [&>input,&>*>*>input]:mb-2 [&>input,&>textarea,&>*>*>input]:border [&>input,&>textarea,&>*>*>input]:border-slate-300 [&>input,&>textarea,&>*>*>input]:rounded-md [&>input,&>*>*>input]:p-2 [&>textarea]:p-2 "
-                onSubmit={handleSubmit(onSubmit)}>
+                onSubmit={handleSubmit(onSubmit)}
+                encType="multipart/form-data">
                 {/* register your input into the hook by invoking the "register" function */}
                 <label>Select your exam <RedAsterisk /></label>
                 <Controller
@@ -237,11 +314,11 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                 </div>
                 <div className="flex flex-row justify-between w-full gap-4 [&>*>label]:text-lg">
                     <div className="flex flex-col w-2/4 gap-3">
-                        <label>Number of students <RedAsterisk /></label>
+                        <label>Number of copies <RedAsterisk /></label>
                         <input className="text-right" type="number" min={1} {...register("nbStudents", { required: true, min: 1 })} />
                     </div>
                     <div className="flex flex-col w-2/4 gap-3">
-                        <label>Number of pages <RedAsterisk /></label>
+                        <label>Pages per copy <RedAsterisk /></label>
                         <input className="text-right" type="number" min={1} {...register("nbPages", { required: true, min: 1 })} />
                     </div>
                 </div>
@@ -285,6 +362,45 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                 <ReactSelect control={control} label={"authorized persons"} name={"authorizedPersons"} isMultiChoice={true} />
                 <label>Additional remarks</label>
                 <textarea {...register("remark")} placeholder="Additional remarks (optional)" />
+
+                <label>Attach exam file(s) to print:</label>
+                <div className="relative w-full">
+                  <div className="border border-slate-300 rounded-md px-4 py-2 bg-white text-left">
+                    Select file...
+                  </div>
+                <input type="file" multiple onChange={handleFilesChange}
+                    className="absolute inset-0 opacity-0 cursor-pointer"/>
+                </div>
+
+                {/* Preview / list of selected files */}
+                <div className="mt-2 border border-slate-300 rounded-md p-2 bg-background"
+                    style={{ "--background": "#f0f0f0" } as React.CSSProperties}>
+                    {selectedFiles.length === 0 && (
+                        <span className="text-sm text-slate-500">
+                            No files selected yet.
+                        </span>
+                    )}
+
+                    {selectedFiles.map((file, index) => (
+                        <div key={file.name + index} className="flex items-center justify-between text-sm py-1">
+                            <div>
+                                <span className="font-medium">{file.name}</span>{" "}
+                                <span className="text-slate-500">
+                                    ({(file.size / 1024).toFixed(1)} KB)
+                                </span>
+                            </div>
+                            <button type="button" className="text-red-600 text-xs underline"
+                                    onClick={() => handleRemoveFile(index)} >
+                                Remove
+                            </button>
+                        </div>
+                    ))}
+                </div>
+
+                {errors.files && (
+                    <span className="text-red-600">{errors.files.message}</span>
+                )}
+
                 <input className="btn btn-primary hover:cursor-pointer" type="submit" value="Submit exam registration" />
             </form >
         </div >
