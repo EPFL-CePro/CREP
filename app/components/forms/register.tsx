@@ -172,7 +172,7 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
             <form className="w-2/4 [&>label]:text-lg [&>*]:accent-red-500 p-4 rounded-md flex flex-col gap-3 mt-2 [&>select]:mb-2 [&>input,&>*>*>input]:mb-2 [&>input,&>textarea,&>*>*>input]:border [&>input,&>textarea,&>*>*>input]:border-slate-300 [&>input,&>textarea,&>*>*>input]:rounded-md [&>input,&>*>*>input]:p-2 [&>textarea]:p-2 "
                 onSubmit={handleSubmit(onSubmit)}>
                 {/* register your input into the hook by invoking the "register" function */}
-                <label>Select your exam:</label>
+                <label>Select your exam</label>
                 <Controller
                     name="course"
                     control={control}
@@ -207,7 +207,7 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                 />
                 <div className="flex flex-row justify-between w-full gap-4 [&>*>label]:text-lg">
                     <div className="flex flex-col w-2/4 gap-3 ">
-                        <label>Exam Date:</label>
+                        <label>Exam Date</label>
                         <input
                             className="text-right"
                             type="date"
@@ -229,22 +229,22 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                         />
                     </div>
                     <div className="flex flex-col w-2/4 gap-3">
-                        <label>Desired delivery date:</label>
+                        <label>Desired delivery date</label>
                         <input className="text-right" type="date" {...register("desiredDate", { required: false })} />
                         {errors.desiredDate && <span className="text-red-600">{errors.desiredDate.message}</span>}
                     </div>
                 </div>
                 <div className="flex flex-row justify-between w-full gap-4 [&>*>label]:text-lg">
                     <div className="flex flex-col w-2/4 gap-3">
-                        <label>Number of students:</label>
+                        <label>Number of students</label>
                         <input className="text-right" type="number" min={1} {...register("nbStudents", { required: true, min: 1 })} />
                     </div>
                     <div className="flex flex-col w-2/4 gap-3">
-                        <label>Number of pages:</label>
+                        <label>Number of pages</label>
                         <input className="text-right" type="number" min={1} {...register("nbPages", { required: true, min: 1 })} />
                     </div>
                 </div>
-                <label>Paper Format:</label>
+                <label>Paper Format</label>
                 <div className="flex items-end align-middle flex-row justify-between [&>div]:flex [&>div]:flex-col [&>div]:gap-2">
                     <div className="[&>p]:italic">
                         <p>Without folding</p>
@@ -259,7 +259,7 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                         </div>
                     </div>
                 </div>
-                <label>Paper color:</label>
+                <label>Paper color</label>
                 <div className="flex items-end align-middle flex-row justify-between [&>div]:flex [&>div]:flex-col [&>div]:gap-2">
                     <div className="[&>p]:italic">
                         <p>In black and white</p>
@@ -275,14 +275,14 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                     </div>
                 </div>
                 <div className="flex gap-3 text-lg">
-                    <label htmlFor="needScan">Needs to be scanned:</label>
+                    <label htmlFor="needScan">Needs to be scanned</label>
                     <input id="needScan" type="checkbox" defaultChecked {...register("needScan")}/>
                 </div>
-                <label>Contact:</label>
+                <label>Contact</label>
                 <ReactSelect control={control} label={"contact"} name={"contact"} isMultiChoice={false} />
-                <label>Authorized persons:</label>
+                <label>Authorized persons</label>
                 <ReactSelect control={control} label={"authorized persons"} name={"authorizedPersons"} isMultiChoice={true} />
-                <label>Additional remarks:</label>
+                <label>Additional remarks</label>
                 <textarea {...register("remark")} placeholder="Additional remarks (optional)" />
                 <input className="btn btn-primary hover:cursor-pointer" type="submit" value="Submit exam registration" />
             </form >
