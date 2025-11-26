@@ -133,15 +133,22 @@ export default function App({ user }: RegisterProps) {
                 return;
             }
 
-            const pers = data.authorizedPersons as unknown as Array<string>;
-            const authorizedPersonsList = await fetchMultiplePersonsBySciper(pers.join(','));
-            const authorizedPersons = authorizedPersonsList.map(user => {
-                return {
-                    id: user?.id,
-                    email: user?.email,
-                    name: user ? `${user.firstname} ${user.lastname}` : '',
-                };
-            });
+            let authorizedPersons:{ id: string, email: string, name: string }[];
+
+            if(data.authorizedPersons) {
+                const pers = data.authorizedPersons as unknown as Array<string>;
+                const authorizedPersonsList = await fetchMultiplePersonsBySciper(pers.join(','));
+                authorizedPersons = authorizedPersonsList.map(user => {
+                    return {
+                        id: user?.id,
+                        email: user?.email,
+                        name: user ? `${user.firstname} ${user.lastname}` : '',
+                    };
+                })
+            } else {
+                authorizedPersons = [];
+            }
+
 
             const contact = await fetchPersonBySciper(data.contact);
 
