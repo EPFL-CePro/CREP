@@ -22,6 +22,7 @@ type Inputs = {
     course: SelectOption | null
     remark?: string
     name: string
+    needScan: boolean
 }
 
 export interface SelectProps {
