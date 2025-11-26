@@ -1,16 +1,15 @@
 "use client";
 // This form allows users to register their exams into the system.
-import { useForm, SubmitHandler, Controller } from "react-hook-form"
+import { useForm, SubmitHandler } from "react-hook-form"
 import { getAllCourses, insertExam } from "@/app/lib/database";
-import Select from "react-select"
 import { useEffect, useState } from "react";
 import ReactSelect from "./ReactSelect";
-import { fetchMultiplePersonsBySciper, fetchPersonBySciper } from "@/app/lib/api";
+import { fetchCourses, fetchMultiplePersonsBySciper, fetchPersonBySciper } from "@/app/lib/api";
 import { sendMail } from "@/app/lib/mail";
 import { User } from "next-auth";
 import { RedAsterisk } from "../RedAsterisk";
 
-type SelectOption = { value: number; label: string };
+type SelectOption = { value: string | number; label: string };
 
 type Inputs = {
     examDate: string
@@ -55,6 +54,12 @@ function businessDaysBetween(startDate:string, endDate:string) {
     }
 
     return count;
+}
+
+async function fetchOasis() {
+    const list = (await fetchCourses());
+    // const found = list.find((l) => Number(l.value) === Number(id));
+    return list ?? null;
 }
 
 
@@ -157,8 +162,8 @@ export default function App({ user }: RegisterProps) {
             const contact_name = contact?.lastname;
             const insertedExam = await insertExam(
                 {
-                    exam_name: exam_name,
-                    exam_code: exam_code,
+                    exam_name: data.course.value.toString(),
+                    exam_code: data.course.label.split(' - ')[0] || '',
                     exam_date: data.examDate,
                     print_date: data.desiredDate,
                     exam_students: data.nbStudents,
@@ -249,6 +254,15 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
         })();
     }, []);
 
+    // fetch oasis courses and store them in local state
+    const [oasisCourses, setOasisCourses] = useState<SelectOption[]>([]);
+    useEffect(() => {
+        (async () => {
+            const list = await fetchOasis();
+            setOasisCourses(list ?? []);
+        })();
+    }, []);
+
     return (
         /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
         <div className="flex flex-col items-center m-24">
@@ -258,38 +272,7 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                 encType="multipart/form-data">
                 {/* register your input into the hook by invoking the "register" function */}
                 <label>Select your exam <RedAsterisk /></label>
-                <Controller
-                    name="course"
-                    control={control}
-                    render={({ field }) => (
-                        <Select<SelectOption>
-                            {...field}
-                            instanceId={1}
-                            options={courses.map((course) => ({ value: course.id, label: `${course.code} - ${course.name} ${course.teacher ? ''.concat("(", course.teacher.split("|").map((t: string) => t.split(";")[2]).join(", "), ")") : ''}` }))}
-                            theme={(theme) => ({
-                                ...theme,
-                                borderRadius: 9,
-                                colors: {
-                                    ...theme.colors,
-                                    primary25: 'rgba(239, 68, 68, 0.1)',
-                                    primary: 'rgba(239, 68, 68, 1)',
-                                },
-                                fontWeight: 'bolder',
-                                fontSize: '24px',
-                            })}
-                            styles={{
-                                control: (styles) => ({ ...styles, backgroundColor: 'white', ":focus-within": { borderColor: 'red', boxShadow: '0 0 0 1px red', }, padding: '4px' }),
-                                multiValueLabel: (styles) => ({ ...styles, fontWeight: '500' }),
-                                option: (styles, { isSelected }) => {
-                                    return {
-                                        ...styles,
-                                        fontWeight: isSelected ? '600' : 'normal',
-                                    };
-                                }
-                            }}
-                        />
-                    )}
-                />
+                <ReactSelect control={control} label={"course"} name={"course"} isMultiChoice={false} containCourses={true} instanceId={1} />
                 <div className="flex flex-row justify-between w-full gap-4 [&>*>label]:text-lg">
                     <div className="flex flex-col w-2/4 gap-3 ">
                         <label>Exam Date <RedAsterisk /></label>
@@ -307,7 +290,7 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                                     const yyyy = d.getFullYear();
                                     const mm = String(d.getMonth() + 1).padStart(2, "0");
                                     const dd = String(d.getDate()).padStart(2, "0");
-                                    const formatted =  `${yyyy}-${mm}-${dd}`;
+                                    const formatted = `${yyyy}-${mm}-${dd}`;
                                     setValue("desiredDate", formatted, { shouldDirty: true, shouldValidate: true });
                                 },
                             })}
@@ -364,9 +347,9 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                     <input id="needScan" type="checkbox" defaultChecked {...register("needScan")}/>
                 </div>
                 <label>Contact <RedAsterisk /></label>
-                <ReactSelect control={control} label={"contact"} name={"contact"} isMultiChoice={false} />
+                <ReactSelect control={control} label={"contact"} name={"contact"} isMultiChoice={false} instanceId={2} />
                 <label>Authorized persons</label>
-                <ReactSelect control={control} label={"authorized persons"} name={"authorizedPersons"} isMultiChoice={true} />
+                <ReactSelect control={control} label={"authorized persons"} name={"authorizedPersons"} isMultiChoice={true} instanceId={3} />
                 <label>Additional remarks</label>
                 <textarea {...register("remark")} placeholder="Additional remarks (optional)" />
 
