@@ -9,5 +9,8 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      - EXAM_FILES_UPLOAD_FOLDER=${EXAM_FILES_UPLOAD_FOLDER}
     env_file:
       - .env
+    volumes:
+      - ${EXAM_FILES_UPLOAD_FOLDER}:${EXAM_FILES_UPLOAD_FOLDER}:rw
