@@ -46,3 +46,40 @@ export async function fetchMultiplePersonsBySciper(scipersWithCommas: string): P
     const data = await res.json();
     return data.persons;
 }
+
+export async function fetchCourses(): Promise<SelectOption[]> {
+    const currentYear= "2025-2026";
+    const url = `https://oasis${process.env.NODE_ENV === "development" ? '-t' : ''}.epfl.ch:8484/enseignant-cours/${currentYear}`;
+    const headers = new Headers();
+    headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('Access-Control-Allow-Headers', '*');
+
+    const bearerToken = process.env.OASIS_BEARER;
+    if (bearerToken) {
+        headers.set('Authorization', `Bearer ${bearerToken}`);
+    }
+
+    const res = await fetch(url, {method: 'GET', headers});
+    const data = await res.json();
+
+    interface OasisCourse {
+        coursNomFr: string;
+        coursCode: string;
+        enseignantPrenom: string;
+        enseignantNom: string;
+        enseignantSciper?: string;
+    }
+    const courses = data as OasisCourse[];
+
+    return courses.map(c => ({
+      value: `${c.coursNomFr} (${c.enseignantPrenom} ${c.enseignantNom})`,
+      label: `${c.coursCode} - ${c.coursNomFr} (${c.enseignantPrenom} ${c.enseignantNom})`,
+      exam: {
+          code: c.coursCode,
+          title: c.coursNomFr,
+          teacherName: c.enseignantNom,
+          teacherFirstname: c.enseignantPrenom,
+          teacherSciper: c.enseignantSciper,
+      }
+    }))
+}
