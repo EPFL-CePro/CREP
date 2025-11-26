@@ -8,6 +8,7 @@ import ReactSelect from "./ReactSelect";
 import { fetchMultiplePersonsBySciper, fetchPersonBySciper } from "@/app/lib/api";
 import { sendMail } from "@/app/lib/mail";
 import { User } from "next-auth";
+import { RedAsterisk } from "../RedAsterisk";
 
 type SelectOption = { value: number; label: string };
 
@@ -172,7 +173,7 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
             <form className="w-2/4 [&>label]:text-lg [&>*]:accent-red-500 p-4 rounded-md flex flex-col gap-3 mt-2 [&>select]:mb-2 [&>input,&>*>*>input]:mb-2 [&>input,&>textarea,&>*>*>input]:border [&>input,&>textarea,&>*>*>input]:border-slate-300 [&>input,&>textarea,&>*>*>input]:rounded-md [&>input,&>*>*>input]:p-2 [&>textarea]:p-2 "
                 onSubmit={handleSubmit(onSubmit)}>
                 {/* register your input into the hook by invoking the "register" function */}
-                <label>Select your exam</label>
+                <label>Select your exam <RedAsterisk /></label>
                 <Controller
                     name="course"
                     control={control}
@@ -207,7 +208,7 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                 />
                 <div className="flex flex-row justify-between w-full gap-4 [&>*>label]:text-lg">
                     <div className="flex flex-col w-2/4 gap-3 ">
-                        <label>Exam Date</label>
+                        <label>Exam Date <RedAsterisk /></label>
                         <input
                             className="text-right"
                             type="date"
@@ -229,22 +230,22 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                         />
                     </div>
                     <div className="flex flex-col w-2/4 gap-3">
-                        <label>Desired delivery date</label>
+                        <label>Desired delivery date <RedAsterisk /></label>
                         <input className="text-right" type="date" {...register("desiredDate", { required: false })} />
                         {errors.desiredDate && <span className="text-red-600">{errors.desiredDate.message}</span>}
                     </div>
                 </div>
                 <div className="flex flex-row justify-between w-full gap-4 [&>*>label]:text-lg">
                     <div className="flex flex-col w-2/4 gap-3">
-                        <label>Number of students</label>
+                        <label>Number of students <RedAsterisk /></label>
                         <input className="text-right" type="number" min={1} {...register("nbStudents", { required: true, min: 1 })} />
                     </div>
                     <div className="flex flex-col w-2/4 gap-3">
-                        <label>Number of pages</label>
+                        <label>Number of pages <RedAsterisk /></label>
                         <input className="text-right" type="number" min={1} {...register("nbPages", { required: true, min: 1 })} />
                     </div>
                 </div>
-                <label>Paper Format</label>
+                <label>Paper Format <RedAsterisk /></label>
                 <div className="flex items-end align-middle flex-row justify-between [&>div]:flex [&>div]:flex-col [&>div]:gap-2">
                     <div className="[&>p]:italic">
                         <p>Without folding</p>
@@ -259,7 +260,7 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                         </div>
                     </div>
                 </div>
-                <label>Paper color</label>
+                <label>Paper color <RedAsterisk /></label>
                 <div className="flex items-end align-middle flex-row justify-between [&>div]:flex [&>div]:flex-col [&>div]:gap-2">
                     <div className="[&>p]:italic">
                         <p>In black and white</p>
@@ -278,7 +279,7 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                     <label htmlFor="needScan">Needs to be scanned</label>
                     <input id="needScan" type="checkbox" defaultChecked {...register("needScan")}/>
                 </div>
-                <label>Contact</label>
+                <label>Contact <RedAsterisk /></label>
                 <ReactSelect control={control} label={"contact"} name={"contact"} isMultiChoice={false} />
                 <label>Authorized persons</label>
                 <ReactSelect control={control} label={"authorized persons"} name={"authorizedPersons"} isMultiChoice={true} />
