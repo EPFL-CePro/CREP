@@ -23,6 +23,7 @@ type Inputs = {
     course: SelectOption | null
     remark?: string
     name: string
+    needScan: boolean
 }
 
 interface RegisterProps {
@@ -105,7 +106,8 @@ export default function App({ user }: RegisterProps) {
                     remark: data.remark,
                     repro_remark: null,
                     status: 'registered',
-                    registered_by: user.email || ''
+                    registered_by: user.email || '',
+                    need_scan: data.needScan
                 }
             )
 
@@ -271,6 +273,10 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                             <input type="radio" value="color" {...register("paperColor", { required: true })} /><label>Color</label>
                         </div>
                     </div>
+                </div>
+                <div className="flex gap-3 text-lg">
+                    <label htmlFor="needScan">Needs to be scanned:</label>
+                    <input id="needScan" type="checkbox" defaultChecked {...register("needScan")}/>
                 </div>
                 <label>Contact:</label>
                 <ReactSelect control={control} label={"contact"} name={"contact"} isMultiChoice={false} />
