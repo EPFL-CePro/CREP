@@ -6,7 +6,8 @@ import type { OptionProps, GroupBase, OptionsOrGroups, Theme, StylesConfig } fro
 import type { ComponentType } from "react";
 import CustomOption from "./CustomOption";
 import { Control, Controller, ControllerRenderProps, Path } from "react-hook-form";
-import { fetchCourses, fetchPersons } from "@/app/lib/api";
+import { fetchCourses, fetchPersonBySciper, fetchPersons } from "@/app/lib/api";
+import { User } from "next-auth";
 
 export type SelectOption = { value: number | string; label: string; person?: { id: number; firstname?: string; lastname?: string; email?: string; sciper?: string } };
 
@@ -32,6 +33,11 @@ export interface SelectProps {
     isMultiChoice: boolean;
     containCourses?: boolean;
     instanceId?: string | number;
+    user?: AppUser;
+}
+
+export interface AppUser extends User {
+    sciper: string;
 }
 
 async function fetchPersonById(id: number): Promise<SelectOption | null> {
@@ -45,7 +51,7 @@ async function fetchOasisCourses(): Promise<SelectOption[]> {
     return list;
 }
 
-export default function SelectController({ control, label, name, isMultiChoice, containCourses, instanceId }: SelectProps) {
+export default function SelectController({ control, label, name, isMultiChoice, containCourses, instanceId, user }: SelectProps) {
     const timeoutRef = useRef<NodeJS.Timeout | number>(0);
     const PAGE_SIZE = 10;
     const allCoursesRef = useRef<SelectOption[] | null>(null);
@@ -53,6 +59,28 @@ export default function SelectController({ control, label, name, isMultiChoice, 
     const displayedCoursesRef = useRef<SelectOption[]>([]);
     const currentQueryRef = useRef<string>('');
     const pageRef = useRef<number>(1);
+    const [currentUser, setCurrentUser] = useState<SelectOption | undefined>(undefined);
+
+    // Automatically fetch current connected user
+    useEffect(() => {
+        if (!user?.sciper) return;
+        fetchPersonBySciper(user?.sciper).then((person) => {
+            if (person) {
+                const option: SelectOption = {
+                    value: Number(person.id),
+                    label: `${person.firstname} ${person.lastname}`.trim() || (person.email),
+                    person: {
+                        id: Number(person.id),
+                        firstname: person.firstname,
+                        lastname: person.lastname,
+                        email: person.email,
+                        sciper: person.id,
+                    }
+                };
+                setCurrentUser(option);
+            }
+        });
+    }, []);
 
     const loadOptions = useCallback(async (inputValue: string, callback?: (opts: OptionsOrGroups<SelectOption, GroupBase<SelectOption>>) => void) => {
         // For non-course selects, require at least 3 characters.
@@ -170,8 +198,12 @@ export default function SelectController({ control, label, name, isMultiChoice, 
         useEffect(() => {
             let mounted = true;
             (async () => {
-                // Special handling for course selects: field.value may be the SelectOption object
-                // or a string/array of strings. Avoid treating it as numeric id.
+                // On first mount, if no value is selected, set currentUser as default in contact select
+                if (!field.value && currentUser && containCourses !== true && user?.sciper) {
+                    setSelected(currentUser);
+                    field.onChange(currentUser?.value ?? null);
+                    return;
+                }
                 if (name === 'course') {
                     if (isMultiChoice) {
                         const vals = Array.isArray(field.value) ? field.value.filter(Boolean) : [];
@@ -179,7 +211,6 @@ export default function SelectController({ control, label, name, isMultiChoice, 
                             if (mounted) setSelected([]);
                             return;
                         }
-                        // Ensure we have the course list to resolve values to option objects
                         if (!allCoursesRef.current) {
                             allCoursesRef.current = await fetchOasisCourses();
                         }
@@ -227,7 +258,7 @@ export default function SelectController({ control, label, name, isMultiChoice, 
                 }
             })();
             return () => { mounted = false; };
-        }, [field.value]);
+        }, [field.value, currentUser]);
 
         // Helper to load and page courses
         const ensureCoursesLoaded = useCallback(async (query = '') => {
@@ -310,7 +341,7 @@ export default function SelectController({ control, label, name, isMultiChoice, 
         return (
             <AsyncSelect<SelectOption, boolean, GroupBase<SelectOption>>
                 cacheOptions
-                defaultOptions={false}
+                defaultOptions={containCourses ? false : true}
                 loadOptions={loadOptions}
                 value={isMultiChoice ? (Array.isArray(selected) ? selected : []) : (selected as SelectOption | null)}
                 getOptionValue={(opt) => String(opt.value)}
