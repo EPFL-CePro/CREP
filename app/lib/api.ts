@@ -73,12 +73,12 @@ export async function fetchCourses(): Promise<SelectOption[]> {
     const courses = data as OasisCourse[];
 
     const filteredCourses = courses.filter(cours => cours.coursSeanceCode == 'LIP_COURS');
-
+    
     return filteredCourses.map(c => ({
       value: `${c.coursNomFr} (${c.enseignantPrenom} ${c.enseignantNom})`,
-      label: `${c.coursCode} - ${c.coursNomFr} (${c.enseignantPrenom} ${c.enseignantNom})`,
+      label: `${c.coursCode ? c.coursCode : 'Unspecified Code'} - ${c.coursNomFr} (${c.enseignantPrenom} ${c.enseignantNom})`,
       exam: {
-          code: c.coursCode,
+          code: c.coursCode ? c.coursCode : 'Unspecified Code',
           title: c.coursNomFr,
           teacherName: c.enseignantNom,
           teacherFirstname: c.enseignantPrenom,
