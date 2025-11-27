@@ -302,6 +302,7 @@ export default function SelectController({ control, label, name, isMultiChoice, 
                     onInputChange={(newValue) => { ensureCoursesLoaded(newValue || ''); return newValue; }}
                     onMenuScrollToBottom={() => { loadMoreCourses(); }}
                     filterOption={null}
+                    instanceId={1}
                 />
             );
         }
