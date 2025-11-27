@@ -33,9 +33,10 @@ interface RegisterProps {
 
 interface AppUser extends User {
     isAdmin?: boolean;
+    sciper: string;
 }
 
-function businessDaysBetween(startDate:string, endDate:string) {
+function businessDaysBetween(startDate: string, endDate: string) {
     let start = new Date(startDate);
     let end = new Date(endDate);
     let count = 0;
@@ -77,22 +78,22 @@ export default function App({ user }: RegisterProps) {
 
             // optional: avoid duplicates (same name + size + lastModified)
             newFiles.forEach((file) => {
-              const alreadyThere = merged.some(
-                (f) =>
-                  f.name === file.name &&
-                  f.size === file.size &&
-                  f.lastModified === file.lastModified
-              );
-              if (!alreadyThere) {
-                merged.push(file);
-              }
+                const alreadyThere = merged.some(
+                    (f) =>
+                        f.name === file.name &&
+                        f.size === file.size &&
+                        f.lastModified === file.lastModified
+                );
+                if (!alreadyThere) {
+                    merged.push(file);
+                }
+            });
+
+            return merged;
         });
 
-        return merged;
-      });
-
-      // allow selecting the same file again later
-      e.target.value = "";
+        // allow selecting the same file again later
+        e.target.value = "";
     };
 
     const handleRemoveFile = (index: number) => {
@@ -138,9 +139,9 @@ export default function App({ user }: RegisterProps) {
                 return;
             }
 
-            let authorizedPersons:{ id: string, email: string, name: string }[];
+            let authorizedPersons: { id: string, email: string, name: string }[];
 
-            if(data.authorizedPersons) {
+            if (data.authorizedPersons) {
                 const pers = data.authorizedPersons as unknown as Array<string>;
                 const authorizedPersonsList = await fetchMultiplePersonsBySciper(pers.join(','));
                 authorizedPersons = authorizedPersonsList.map(user => {
@@ -157,7 +158,7 @@ export default function App({ user }: RegisterProps) {
 
             const contact = await fetchPersonBySciper(data.contact);
 
-            const exam_name =  data.course.value.toString();
+            const exam_name = data.course.value.toString();
             const exam_code = data.course.label.split(' - ')[0] || '';
             const contact_name = contact?.lastname;
             const insertedExam = await insertExam(
@@ -181,7 +182,7 @@ export default function App({ user }: RegisterProps) {
                 }
             )
 
-            if(typeof(insertedExam) !== 'number') {
+            if (typeof (insertedExam) !== 'number') {
                 alert("Error while registering exam.");
                 return;
             }
@@ -189,7 +190,7 @@ export default function App({ user }: RegisterProps) {
             // send files to backend API
             const folder_name = exam_code + '_' + contact_name + '_' + data.desiredDate;
             const formData = new FormData();
-            formData.append("folder_name",folder_name);
+            formData.append("folder_name", folder_name);
 
             selectedFiles.forEach((file) => {
                 formData.append("files", file);
@@ -199,35 +200,35 @@ export default function App({ user }: RegisterProps) {
                 method: "POST",
                 body: formData,
             });
-            if(!res.ok){
+            if (!res.ok) {
                 console.error(await res.text());
                 alert("Error while uploading exam files.");
                 return;
             }
             const daysBetweenExamAndDesired = businessDaysBetween(data.desiredDate, data.examDate)
 
-            await sendMail(
-                user.email || '',
-                `${daysBetweenExamAndDesired < 8 && 'REQUIRES ATTENTION - '} CePro - Exam printing service subscription confirmation`,
-                    `
-Hello,
-Your subscription to our exam printing service has been successfully registered:
+//             await sendMail(
+//                 user.email || '',
+//                 `${daysBetweenExamAndDesired < 8 && 'REQUIRES ATTENTION - '} CePro - Exam printing service subscription confirmation`,
+//                     `
+// Hello,
+// Your subscription to our exam printing service has been successfully registered:
 
-${daysBetweenExamAndDesired < 8 && `⚠️ : We would like to inform you that you choose a desired delivery date that is inferior to 8 business days before the exam.
-The CePro team will get in touch with you shortly to discuss about your situation.
-Next time, please register to the printing service earlier to make sur that the printing team has the right amount of time to print your exam correctly.
-`}
+// ${daysBetweenExamAndDesired < 8 && `⚠️ : We would like to inform you that you choose a desired delivery date that is inferior to 8 business days before the exam.
+// The CePro team will get in touch with you shortly to discuss about your situation.
+// Next time, please register to the printing service earlier to make sur that the printing team has the right amount of time to print your exam correctly.
+// `}
 
-- Course: ${courses.find(c => c.id === data.course?.value)?.code}
-- Exam date: ${data.examDate}
-- Desired delivery date: ${data.desiredDate}
-- Contact: ${contact?.firstname} ${contact?.lastname} (${contact?.email})
-- Authorized persons: ${authorizedPersons.map(user => `${user.email}`).join(', ')}
-${data.remark && `- Additional remarks: ${data.remark}`}`,
-                    'cepro-exams@epfl.ch'
-                );
-                alert('Exam registered (id: ' + insertedExam + ')');
-            reset();
+// - Course: ${courses.find(c => c.id === data.course?.value)?.code}
+// - Exam date: ${data.examDate}
+// - Desired delivery date: ${data.desiredDate}
+// - Contact: ${contact?.firstname} ${contact?.lastname} (${contact?.email})
+// - Authorized persons: ${authorizedPersons.map(user => `${user.email}`).join(', ')}
+// ${data.remark && `- Additional remarks: ${data.remark}`}`,
+//                     'cepro-exams@epfl.ch'
+//                 );
+//                 alert('Exam registered (id: ' + insertedExam + ')');
+//             reset();
         } catch (err) {
             console.error(err);
             alert('An unexpected error occurred while registering the exam.');
@@ -344,10 +345,10 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                 </div>
                 <div className="flex gap-3 text-lg">
                     <label htmlFor="needScan">Needs to be scanned</label>
-                    <input id="needScan" type="checkbox" defaultChecked {...register("needScan")}/>
+                    <input id="needScan" type="checkbox" defaultChecked {...register("needScan")} />
                 </div>
                 <label>Contact <RedAsterisk /></label>
-                <ReactSelect control={control} label={"contact"} name={"contact"} isMultiChoice={false} instanceId={2} />
+                <ReactSelect control={control} label={"contact"} name={"contact"} isMultiChoice={false} instanceId={2} user={user} />
                 <label>Authorized persons</label>
                 <ReactSelect control={control} label={"authorized persons"} name={"authorizedPersons"} isMultiChoice={true} instanceId={3} />
                 <label>Additional remarks</label>
@@ -355,11 +356,11 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
 
                 <label>Attach exam file(s) to print:</label>
                 <div className="relative w-full">
-                  <div className="border border-slate-300 rounded-md px-4 py-2 bg-white text-left">
-                    Select file...
-                  </div>
-                <input type="file" multiple onChange={handleFilesChange}
-                    className="absolute inset-0 opacity-0 cursor-pointer"/>
+                    <div className="border border-slate-300 rounded-md px-4 py-2 bg-white text-left">
+                        Select file...
+                    </div>
+                    <input type="file" multiple onChange={handleFilesChange}
+                        className="absolute inset-0 opacity-0 cursor-pointer" />
                 </div>
 
                 {/* Preview / list of selected files */}
@@ -380,7 +381,7 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                                 </span>
                             </div>
                             <button type="button" className="text-red-600 text-xs underline"
-                                    onClick={() => handleRemoveFile(index)} >
+                                onClick={() => handleRemoveFile(index)} >
                                 Remove
                             </button>
                         </div>
