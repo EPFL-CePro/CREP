@@ -206,26 +206,26 @@ export default function App({ user }: RegisterProps) {
             }
             const daysBetweenExamAndDesired = businessDaysBetween(data.desiredDate, data.examDate)
 
-//             await sendMail(
-//                 user.email || '',
-//                 `${daysBetweenExamAndDesired < 8 && 'REQUIRES ATTENTION - '} CePro - Exam printing service subscription confirmation`,
-//                     `
-// Hello,
-// Your subscription to our exam printing service has been successfully registered:
+            await sendMail(
+                user.email || '',
+                `${daysBetweenExamAndDesired < 8 && 'REQUIRES ATTENTION - '} CePro - Exam printing service subscription confirmation`,
+                    `
+Hello,
+Your subscription to our exam printing service has been successfully registered:
 
-// ${daysBetweenExamAndDesired < 8 && `⚠️ : We would like to inform you that you choose a desired delivery date that is inferior to 8 business days before the exam.
-// The CePro team will get in touch with you shortly to discuss about your situation.
-// Next time, please register to the printing service earlier to make sur that the printing team has the right amount of time to print your exam correctly.
-// `}
+${daysBetweenExamAndDesired < 8 && `⚠️ : We would like to inform you that you choose a desired delivery date that is inferior to 8 business days before the exam.
+The CePro team will get in touch with you shortly to discuss about your situation.
+Next time, please register to the printing service earlier to make sur that the printing team has the right amount of time to print your exam correctly.
+`}
 
-// - Course: ${courses.find(c => c.id === data.course?.value)?.code}
-// - Exam date: ${data.examDate}
-// - Desired delivery date: ${data.desiredDate}
-// - Contact: ${contact?.firstname} ${contact?.lastname} (${contact?.email})
-// - Authorized persons: ${authorizedPersons.map(user => `${user.email}`).join(', ')}
-// ${data.remark && `- Additional remarks: ${data.remark}`}`,
-//                     'cepro-exams@epfl.ch'
-//                 );
+- Course: ${courses.find(c => c.id === data.course?.value)?.code}
+- Exam date: ${data.examDate}
+- Desired delivery date: ${data.desiredDate}
+- Contact: ${contact?.firstname} ${contact?.lastname} (${contact?.email})
+- Authorized persons: ${authorizedPersons.map(user => `${user.email}`).join(', ')}
+${data.remark && `- Additional remarks: ${data.remark}`}`,
+                    'cepro-exams@epfl.ch'
+                );
                 alert('Exam registered (id: ' + insertedExam + ')');
             reset();
         } catch (err) {
