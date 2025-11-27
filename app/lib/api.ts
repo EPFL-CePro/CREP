@@ -48,7 +48,8 @@ export async function fetchMultiplePersonsBySciper(scipersWithCommas: string): P
 }
 
 export async function fetchCourses(): Promise<SelectOption[]> {
-    const currentYear= "2025-2026";
+    const date = new Date();
+    const currentYear= date.getFullYear().toString() + '-' + (date.getFullYear() +1).toString();
     const url = `https://oasis${process.env.NODE_ENV === "development" ? '-t' : ''}.epfl.ch:8484/enseignant-cours/${currentYear}`;
     const headers = new Headers();
     headers.set('Access-Control-Allow-Origin', '*');
@@ -73,7 +74,7 @@ export async function fetchCourses(): Promise<SelectOption[]> {
     const courses = data as OasisCourse[];
 
     const filteredCourses = courses.filter(cours => cours.coursSeanceCode == 'LIP_COURS');
-    
+
     return filteredCourses.map(c => ({
       value: `${c.coursNomFr} (${c.enseignantPrenom} ${c.enseignantNom})`,
       label: `${c.coursCode ? c.coursCode : 'Unspecified Code'} - ${c.coursNomFr} (${c.enseignantPrenom} ${c.enseignantNom})`,
