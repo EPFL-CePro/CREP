@@ -234,7 +234,7 @@ Next time, please register to the printing service earlier to make sur that the 
 ${data.remark && `- Additional remarks: ${data.remark}`}`,
                     'cepro-exams@epfl.ch'
                 );
-                alert('Exam registered (id: ' + insertedExam + ')');
+                alert('Your Exam ('+ exam_code + ') has been registered and a confirmation has been sent to your email.\nTry resubmitting if you do not receive it shortly.');
             reset();
         } catch (err) {
             console.error(err);
