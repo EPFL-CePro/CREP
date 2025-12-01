@@ -118,7 +118,14 @@ export default function App({ user }: RegisterProps) {
             if (desired > exam) {
                 setError("desiredDate", { type: "validate", message: "Desired delivery date cannot be later than the exam date." });
                 return;
-            } else {
+            }
+            else if (businessDaysBetween(desiredDate, examDate) < 8) {
+                const confirmed = confirm("There must be at least 8 business days between the desired delivery date and the exam date. \n\nDo you still want to submit your exam?");
+                if (!confirmed) {
+                    return;
+                }
+            }
+            else {
                 // clear any previous date error
                 clearErrors("desiredDate");
             }
@@ -207,28 +214,28 @@ export default function App({ user }: RegisterProps) {
             }
             const daysBetweenExamAndDesired = businessDaysBetween(data.desiredDate, data.examDate)
 
-//             await sendMail(
-//                 user.email || '',
-//                 `${daysBetweenExamAndDesired < 8 && 'REQUIRES ATTENTION - '} CePro - Exam printing service subscription confirmation`,
-//                     `
-// Hello,
-// Your subscription to our exam printing service has been successfully registered:
+            await sendMail(
+                user.email || '',
+                `${daysBetweenExamAndDesired < 8 && 'REQUIRES ATTENTION - '} CePro - Exam printing service subscription confirmation`,
+                    `
+Hello,
+Your subscription to our exam printing service has been successfully registered:
 
-// ${daysBetweenExamAndDesired < 8 && `⚠️ : We would like to inform you that you choose a desired delivery date that is inferior to 8 business days before the exam.
-// The CePro team will get in touch with you shortly to discuss about your situation.
-// Next time, please register to the printing service earlier to make sur that the printing team has the right amount of time to print your exam correctly.
-// `}
+${daysBetweenExamAndDesired < 8 && `⚠️ : We would like to inform you that you choose a desired delivery date that is inferior to 8 business days before the exam.
+The CePro team will get in touch with you shortly to discuss about your situation.
+Next time, please register to the printing service earlier to make sur that the printing team has the right amount of time to print your exam correctly.
+`}
 
-// - Course: ${courses.find(c => c.id === data.course?.value)?.code}
-// - Exam date: ${data.examDate}
-// - Desired delivery date: ${data.desiredDate}
-// - Contact: ${contact?.firstname} ${contact?.lastname} (${contact?.email})
-// - Authorized persons: ${authorizedPersons.map(user => `${user.email}`).join(', ')}
-// ${data.remark && `- Additional remarks: ${data.remark}`}`,
-//                     'cepro-exams@epfl.ch'
-//                 );
-//                 alert('Exam registered (id: ' + insertedExam + ')');
-//             reset();
+- Course: ${courses.find(c => c.id === data.course?.value)?.code}
+- Exam date: ${data.examDate}
+- Desired delivery date: ${data.desiredDate}
+- Contact: ${contact?.firstname} ${contact?.lastname} (${contact?.email})
+- Authorized persons: ${authorizedPersons.map(user => `${user.email}`).join(', ')}
+${data.remark && `- Additional remarks: ${data.remark}`}`,
+                    'cepro-exams@epfl.ch'
+                );
+                alert('Exam registered (id: ' + insertedExam + ')');
+            reset();
         } catch (err) {
             console.error(err);
             alert('An unexpected error occurred while registering the exam.');
@@ -287,7 +294,21 @@ export default function App({ user }: RegisterProps) {
                                     const desiredInput = document.querySelector('input[name="desiredDate"]') as HTMLInputElement | null;
                                     if (!exam || !desiredInput || desiredInput.value) return; // only set once when desiredDate is empty
                                     const d = new Date(exam);
-                                    d.setDate(d.getDate() - 3);
+
+                                    for (let i = 0; i < 8; i++) {
+                                        // If it's sunday go back 2 days
+                                        if (d.getDay() === 0) {
+                                            d.setDate(d.getDate() - 2);
+                                        }
+                                        // If it's monday go back 3 days
+                                        else if (d.getDay() === 1) {
+                                            d.setDate(d.getDate() - 3);
+                                        }
+                                        // Else just go back one day
+                                        else {
+                                            d.setDate(d.getDate() - 1);
+                                        }
+                                    }
                                     const yyyy = d.getFullYear();
                                     const mm = String(d.getMonth() + 1).padStart(2, "0");
                                     const dd = String(d.getDate()).padStart(2, "0");
