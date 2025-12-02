@@ -8,6 +8,7 @@ import { fetchCourses, fetchMultiplePersonsBySciper, fetchPersonBySciper } from 
 import { sendMail } from "@/app/lib/mail";
 import { User } from "next-auth";
 import { RedAsterisk } from "../RedAsterisk";
+import { RegisterModal } from "./RegisterModal";
 
 type SelectOption = { value: string | number; label: string };
 
@@ -67,6 +68,37 @@ async function fetchOasis() {
 export default function App({ user }: RegisterProps) {
     const { control, register, handleSubmit, formState: { errors }, setError, clearErrors, reset, setValue } = useForm<Inputs>()
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalTitle, setModalTitle] = useState("Registration Successful");
+    const [modalMessage, setModalMessage] = useState("Your exam has been successfully registered.");
+    const [modalResolver, setModalResolver] = useState<((confirmed: boolean) => void) | null>(null);
+    const [isConfirmModal, setIsConfirmModal] = useState(false);
+
+    const openModal = (title: string, message: string) => {
+        setIsConfirmModal(false);
+        setModalResolver(null);
+        setModalTitle(title);
+        setModalMessage(message);
+        setModalOpen(true);
+        const dialog = document.getElementById("register-modal") as HTMLDialogElement | null;
+        dialog?.showModal?.();
+    };
+    const openConfirmationModal = (title: string, message: string) => new Promise<boolean>((resolve) => {
+        setIsConfirmModal(true);
+        setModalResolver(() => resolve);
+        setModalTitle(title);
+        setModalMessage(message);
+        setModalOpen(true);
+        const dialog = document.getElementById("register-modal") as HTMLDialogElement | null;
+        dialog?.showModal?.();
+    });
+    const handleModalResult = (confirmed: boolean) => {
+        if (modalResolver) {
+            modalResolver(confirmed);
+            setModalResolver(null);
+        }
+        setModalOpen(false);
+    };
 
     const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files) return;
@@ -112,6 +144,11 @@ export default function App({ user }: RegisterProps) {
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
         // validate that desiredDate is not later than examDate
         const { examDate, desiredDate } = data;
+
+        if (!data.course) {
+            openModal("Course Selection Error", "Please select a course.");
+            return;
+        }
         if (examDate && desiredDate) {
             const exam = new Date(examDate);
             const desired = new Date(desiredDate);
@@ -120,7 +157,7 @@ export default function App({ user }: RegisterProps) {
                 return;
             }
             else if (businessDaysBetween(desiredDate, examDate) < 8) {
-                const confirmed = confirm("There must be at least 8 business days between the desired delivery date and the exam date. \n\nDo you still want to submit your exam?");
+                const confirmed = await openConfirmationModal('Date Validation Warning', `There must be at least 8 business days between the desired delivery date and the exam date.\n\nDo you still want to submit your exam?`);
                 if (!confirmed) {
                     return;
                 }
@@ -141,11 +178,6 @@ export default function App({ user }: RegisterProps) {
         }
 
         try {
-            if (!data.course) {
-                alert('Please select a course.');
-                return;
-            }
-
             let authorizedPersons: { id: string, email: string, name: string }[];
 
             if (data.authorizedPersons) {
@@ -190,7 +222,7 @@ export default function App({ user }: RegisterProps) {
             )
 
             if (typeof (insertedExam) !== 'number') {
-                alert("Error while registering exam.");
+                openModal("Registration Error", "An error occurred while registering your exam. Please try again later.");
                 return;
             }
 
@@ -209,14 +241,14 @@ export default function App({ user }: RegisterProps) {
             });
             if (!res.ok) {
                 console.error(await res.text());
-                alert("Error while uploading exam files.");
+                openModal("File Upload Error", "An error occurred while uploading exam files. Please try again.");
                 return;
             }
             const daysBetweenExamAndDesired = businessDaysBetween(data.desiredDate, data.examDate)
-
-            await sendMail(
-                user.email || '',
-                `${daysBetweenExamAndDesired < 8 && 'REQUIRES ATTENTION - '} CePro - Exam printing service subscription confirmation`,
+            if (process.env.NODE_ENV !== "development") {
+                await sendMail(
+                    user.email || '',
+                    `${daysBetweenExamAndDesired < 8 && 'REQUIRES ATTENTION - '} CePro - Exam printing service subscription confirmation`,
                     `
 Hello,
 Your subscription to our exam printing service has been successfully registered:
@@ -234,11 +266,12 @@ Next time, please register to the printing service earlier to make sur that the 
 ${data.remark && `- Additional remarks: ${data.remark}`}`,
                     'cepro-exams@epfl.ch'
                 );
-                alert('Your Exam ('+ exam_code + ') has been registered and a confirmation has been sent to your email.\nTry resubmitting if you do not receive it shortly.');
+            }
+            openModal("Registration Successful", 'Your Exam ' + exam_code + ' has been registered and a confirmation has been sent to your email.');
             reset();
         } catch (err) {
             console.error(err);
-            alert('An unexpected error occurred while registering the exam.');
+            openModal("Unexpected Error", 'An unexpected error occurred while registering the exam.');
         }
     }
     const [courses, setCourses] = useState<Array<{ id: number; name: string, code: string, teacher: string }>>([]);
@@ -274,6 +307,17 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
     return (
         /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
         <div className="flex flex-col items-center m-24">
+            <dialog id="register-modal" className="modal fixed top-3/8 left-1/8 w-3/4 md:left-1/4 md:w-2/4 rounded-xl flex items-center justify-center z-50 drop-shadow-2xl backdrop:backdrop-blur-xs opacity-98" onClose={() => {
+                setModalOpen(false);
+                if (modalResolver) {
+                    modalResolver(false);
+                    setModalResolver(null);
+                }
+            }}>
+                {modalOpen && (
+                    <RegisterModal setModalOpen={setModalOpen} title={modalTitle} message={modalMessage} isConfirm={isConfirmModal} onResult={handleModalResult} />
+                )}
+            </dialog >
             <h1 className="text-3xl font-semibold" >Exam Printing Order</h1>
             <form className="w-2/4 [&>label]:text-lg [&>*]:accent-red-500 p-4 rounded-md flex flex-col gap-3 mt-2 [&>select]:mb-2 [&>input,&>*>*>input]:mb-2 [&>input,&>textarea,&>*>*>input]:border [&>input,&>textarea,&>*>*>input]:border-slate-300 [&>input,&>textarea,&>*>*>input]:rounded-md [&>input,&>*>*>input]:p-2 [&>textarea]:p-2 "
                 onSubmit={handleSubmit(onSubmit)}
