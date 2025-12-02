@@ -419,7 +419,7 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                 <label>Additional remarks</label>
                 <textarea {...register("remark")} placeholder="Additional remarks (optional)" />
 
-                <label>Attach exam file(s) to print:</label>
+                <label>Attach exam file(s) to print <RedAsterisk /></label>
                 <div className="relative w-full">
                     <div className="border border-slate-300 rounded-md px-4 py-2 bg-white text-left">
                         Select file...
