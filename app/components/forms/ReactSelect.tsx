@@ -1,9 +1,8 @@
 "use client";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState, ComponentType } from "react";
 import AsyncSelect from "react-select/async";
 import Select from "react-select";
 import type { OptionProps, GroupBase, OptionsOrGroups, Theme, StylesConfig } from "react-select";
-import type { ComponentType } from "react";
 import CustomOption from "./CustomOption";
 import { Control, Controller, ControllerRenderProps, Path } from "react-hook-form";
 import { fetchCourses, fetchPersonBySciper, fetchPersons } from "@/app/lib/api";
@@ -40,117 +39,55 @@ export interface AppUser extends User {
     sciper: string;
 }
 
-async function fetchPersonById(id: number): Promise<SelectOption | null> {
-    const list = await fetchPersons(String(id));
-    const found = list.find((l) => Number(l.value) === Number(id));
-    return found ?? null;
-}
-
 async function fetchOasisCourses(): Promise<SelectOption[]> {
     const list = (await fetchCourses()) || [];
     return list;
 }
 
-export default function SelectController({ control, label, name, isMultiChoice, containCourses, instanceId, user }: SelectProps) {
+type SelectFieldProps = {
+    field: ControllerRenderProps<Inputs>;
+    label: string;
+    name: Path<Inputs>;
+    isMultiChoice: boolean;
+    containCourses?: boolean;
+    instanceId?: string | number;
+    user?: AppUser;
+};
+
+function SelectField({
+    field,
+    label,
+    name,
+    isMultiChoice,
+    containCourses,
+    instanceId,
+    user,
+}: SelectFieldProps) {
     const timeoutRef = useRef<NodeJS.Timeout | number>(0);
     const PAGE_SIZE = 10;
     const allCoursesRef = useRef<SelectOption[] | null>(null);
     const filteredCoursesRef = useRef<SelectOption[]>([]);
     const displayedCoursesRef = useRef<SelectOption[]>([]);
-    const currentQueryRef = useRef<string>('');
+    const currentQueryRef = useRef<string>("");
     const pageRef = useRef<number>(1);
-    const [currentUser, setCurrentUser] = useState<SelectOption | undefined>(undefined);
 
-    // Automatically fetch current connected user
-    useEffect(() => {
-        if (!user?.sciper) return;
-        fetchPersonBySciper(user?.sciper).then((person) => {
-            if (person) {
-                const option: SelectOption = {
-                    value: Number(person.id),
-                    label: `${person.firstname} ${person.lastname}`.trim() || (person.email),
-                    person: {
-                        id: Number(person.id),
-                        firstname: person.firstname,
-                        lastname: person.lastname,
-                        email: person.email,
-                        sciper: person.id,
-                    }
-                };
-                setCurrentUser(option);
-            }
-        });
-    }, []);
-
-    const loadOptions = useCallback(async (inputValue: string, callback?: (opts: OptionsOrGroups<SelectOption, GroupBase<SelectOption>>) => void) => {
-        // For non-course selects, require at least 3 characters.
-        if (!(containCourses && name === 'course') && (!inputValue || inputValue.length < 3)) return [];
-
-        // Course-select paginated loading
-        if (name === 'course' && containCourses) {
-            clearTimeout(timeoutRef.current as number);
-            return new Promise<OptionsOrGroups<SelectOption, GroupBase<SelectOption>>>((resolve) => {
-                (async () => {
-                    try {
-                        // Load full course list once
-                        if (!allCoursesRef.current) {
-                            const all = await fetchOasisCourses();
-                            allCoursesRef.current = all ?? [];
-                        }
-
-                        const query = inputValue ? inputValue.trim().toLowerCase() : '';
-                        // If query changed, reset paging
-                        if (currentQueryRef.current !== query) {
-                            currentQueryRef.current = query;
-                            pageRef.current = 1;
-                            displayedCoursesRef.current = [];
-                        }
-
-                        // Filter the full list by label
-                        const filtered = (allCoursesRef.current || []).filter((c) => c.label.toLowerCase().includes(query));
-                        filteredCoursesRef.current = filtered;
-
-                        const end = pageRef.current * PAGE_SIZE;
-                        const slice = filtered.slice(0, end);
-                        displayedCoursesRef.current = slice;
-
-                        if (callback) callback(slice);
-                        resolve(slice);
-                    } catch (e) {
-                        console.error("Failed to fetch courses", e);
-                        if (callback) callback([]);
-                        resolve([]);
-                    }
-                })();
-            });
-        }
-
-        // Persons
-        return new Promise<OptionsOrGroups<SelectOption, GroupBase<SelectOption>>>((resolve) => {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = setTimeout(async () => {
-                try {
-                    const items = await fetchPersons(inputValue);
-                    resolve(items);
-                } catch (e) {
-                    console.error("Failed to fetch persons", e);
-                    resolve([]);
-                }
-            }, 1000);
-        });
-    }, []);
+    const [selected, setSelected] = useState<SelectOption | SelectOption[] | null>(
+        null
+    );
+    const [courseDisplayed, setCourseDisplayed] = useState<SelectOption[]>([]);
+    const [courseLoading, setCourseLoading] = useState(false);
 
     const formatOption = useCallback((option: SelectOption) => {
         const p = option.person;
-        if (p) return (
-            <div className="">
-                {p.firstname} {p.lastname} {p.email ? `- ${p.email}` : null}
-            </div>
-        );
+        if (p) {
+            return (
+                <div>
+                    {p.firstname} {p.lastname} {p.email ? `- ${p.email}` : null}
+                </div>
+            );
+        }
         return option.label;
     }, []);
-
-    // react-select theme and styles
 
     const theme = useCallback((themeArg: Theme): Theme => {
         return {
@@ -158,110 +95,115 @@ export default function SelectController({ control, label, name, isMultiChoice, 
             borderRadius: 9,
             colors: {
                 ...themeArg.colors,
-                primary25: 'rgba(239, 68, 68, 0.1)',
-                primary: 'rgba(239, 68, 68, 1)',
+                primary25: "rgba(239, 68, 68, 0.1)",
+                primary: "rgba(239, 68, 68, 1)",
             },
-            fontWeight: 'bolder' as unknown as Theme['spacing'],
-            fontSize: '24px' as unknown as Theme['spacing'],
+            fontWeight: "bolder" as unknown as Theme["spacing"],
+            fontSize: "24px" as unknown as Theme["spacing"],
         } as Theme;
     }, []);
 
-    const customStyles = useMemo<StylesConfig<SelectOption, boolean, GroupBase<SelectOption>>>(
+    const customStyles = useMemo<
+        StylesConfig<SelectOption, boolean, GroupBase<SelectOption>>
+    >(
         () => ({
             control: (styles) => ({
                 ...styles,
-                backgroundColor: 'white',
+                backgroundColor: "white",
                 ":focus-within": {
-                    borderColor: 'red',
-                    boxShadow: '0 0 0 1px red',
+                    borderColor: "red",
+                    boxShadow: "0 0 0 1px red",
                 },
-                padding: '4px',
+                padding: "4px",
             }),
             multiValueLabel: (styles) => ({
                 ...styles,
-                fontWeight: '500',
+                fontWeight: "500",
             }),
             option: (styles, { isSelected }) => ({
                 ...styles,
-                fontWeight: isSelected ? '600' : 'normal',
+                fontWeight: isSelected ? "600" : "normal",
             }),
         }),
         []
     );
 
+    // Load options (people / courses)
+    const loadOptions = useCallback(
+        async (
+            inputValue: string,
+            callback?: (
+                opts: OptionsOrGroups<SelectOption, GroupBase<SelectOption>>
+            ) => void
+        ) => {
+            // If it is not a `courses` select, it means that API calls are made. That's why we wait at least 3 chars.
+            if (!(containCourses && name === "course") && (!inputValue || inputValue.length < 3)) {
+                return [];
+            }
 
-    function SelectField({ field }: { field: ControllerRenderProps<Inputs> }) {
-        const [selected, setSelected] = useState<SelectOption | SelectOption[] | null>(null);
-        const [courseDisplayed, setCourseDisplayed] = useState<SelectOption[]>([]);
-        const [courseLoading, setCourseLoading] = useState(false);
-
-        useEffect(() => {
-            let mounted = true;
-            (async () => {
-                // On first mount, if no value is selected, set currentUser as default in contact select
-                if (!field.value && currentUser && containCourses !== true && user?.sciper) {
-                    setSelected(currentUser);
-                    field.onChange(currentUser?.value ?? null);
-                    return;
-                }
-                if (name === 'course') {
-                    if (isMultiChoice) {
-                        const vals = Array.isArray(field.value) ? field.value.filter(Boolean) : [];
-                        if (vals.length === 0) {
-                            if (mounted) setSelected([]);
-                            return;
-                        }
-                        if (!allCoursesRef.current) {
-                            allCoursesRef.current = await fetchOasisCourses();
-                        }
-                        const results = vals.map((v: SelectOption) => {
-                            if (typeof v === 'object' && v.label) return v as SelectOption;
-                            return (allCoursesRef.current || []).find((c) => String(c.value) === String(v));
-                        }).filter(Boolean) as SelectOption[];
-                        if (mounted) setSelected(results);
-                    } else {
-                        const val = field.value;
-                        if (!val) {
-                            if (mounted) setSelected(null);
-                            return;
-                        }
-                        if (typeof val === 'object' && (val as SelectOption).label) {
-                            if (mounted) setSelected(val as SelectOption);
-                            return;
-                        }
-                        if (!allCoursesRef.current) {
-                            allCoursesRef.current = await fetchOasisCourses();
-                        }
-                        const found = (allCoursesRef.current || []).find((c) => String(c.value) === String(val));
-                        if (mounted) setSelected(found ?? null);
+            // Fetching persons
+            return new Promise<
+                OptionsOrGroups<SelectOption, GroupBase<SelectOption>>
+            >((resolve) => {
+                clearTimeout(timeoutRef.current as number);
+                timeoutRef.current = setTimeout(async () => {
+                    try {
+                        const items = await fetchPersons(inputValue);
+                        resolve(items);
+                        if (callback) callback(items);
+                    } catch (e) {
+                        console.error("Failed to fetch persons", e);
+                        resolve([]);
+                        if (callback) callback([]);
                     }
-                    return;
-                }
+                }, 1000);
+            });
+        },
+        [containCourses, name]
+    );
 
-                if (isMultiChoice) {
-                    const ids = Array.isArray(field.value) ? field.value.map(Number).filter(Boolean) : [];
-                    if (ids.length === 0) {
-                        if (mounted) setSelected([]);
-                        return;
-                    }
-                    const promises = ids.map((id) => fetchPersonById(Number(id)));
-                    const results = (await Promise.all(promises)).filter(Boolean) as SelectOption[];
-                    if (mounted) setSelected(results);
-                } else {
-                    const id = field.value ? Number(field.value) : null;
-                    if (!id) {
-                        if (mounted) setSelected(null);
-                        return;
-                    }
-                    const one = await fetchPersonById(id);
-                    if (mounted) setSelected(one);
-                }
-            })();
-            return () => { mounted = false; };
-        }, [field.value, currentUser]);
+    // Default contact user is the logged in user
+    useEffect(() => {
+        if (!user?.sciper) return;
 
-        // Helper to load and page courses
-        const ensureCoursesLoaded = useCallback(async (query = '') => {
+        let cancelled = false;
+
+        (async () => {
+            try {
+                const person = await fetchPersonBySciper(user.sciper);
+                if (!person || cancelled) return;
+
+                const option: SelectOption = {
+                    value: Number(person.id),
+                    label:
+                        `${person.firstname} ${person.lastname}`.trim() ||
+                        person.email,
+                    person: {
+                        id: Number(person.id),
+                        firstname: person.firstname,
+                        lastname: person.lastname,
+                        email: person.email,
+                        sciper: person.id,
+                    },
+                };
+
+                setSelected(option);
+
+                if (!field.value) {
+                    field.onChange(option.value);
+                }
+            } catch (e) {
+                console.error("Failed to fetch current user person", e);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [name, user?.sciper, field]);
+
+    const ensureCoursesLoaded = useCallback(
+        async (query = "") => {
             if (!allCoursesRef.current) {
                 setCourseLoading(true);
                 try {
@@ -278,106 +220,162 @@ export default function SelectController({ control, label, name, isMultiChoice, 
             const q = query.trim().toLowerCase();
             currentQueryRef.current = q;
             pageRef.current = 1;
-            const filtered = (allCoursesRef.current || []).filter((c) => c.label.toLowerCase().includes(q));
+
+            const filtered = (allCoursesRef.current || []).filter((c) =>
+                c.label.toLowerCase().includes(q)
+            );
             filteredCoursesRef.current = filtered;
+
             const slice = filtered.slice(0, PAGE_SIZE);
             displayedCoursesRef.current = slice;
             setCourseDisplayed(slice);
-        }, []);
+        },
+        [PAGE_SIZE]
+    );
 
-        const loadMoreCourses = useCallback(() => {
-            const filtered = filteredCoursesRef.current || [];
-            if (displayedCoursesRef.current.length >= filtered.length) return;
-            pageRef.current = pageRef.current + 1;
-            const end = pageRef.current * PAGE_SIZE;
-            const slice = filtered.slice(0, end);
-            displayedCoursesRef.current = slice;
-            setCourseDisplayed(slice);
-        }, []);
+    const loadMoreCourses = useCallback(() => {
+        const filtered = filteredCoursesRef.current || [];
+        if (displayedCoursesRef.current.length >= filtered.length) return;
 
-        if (containCourses && name === 'course') {
-            return (
-                <Select<SelectOption, boolean, GroupBase<SelectOption>>
-                    options={courseDisplayed}
-                    isLoading={courseLoading}
-                    value={isMultiChoice ? (Array.isArray(selected) ? selected : []) : (selected as SelectOption | null)}
-                    getOptionValue={(opt) => String(opt.value)}
-                    formatOptionLabel={formatOption}
-                    theme={theme}
-                    styles={customStyles}
-                    isMulti={isMultiChoice}
-                    classNamePrefix="custom-option"
-                    components={{ Option: CustomOption as ComponentType<OptionProps<SelectOption, boolean, GroupBase<SelectOption>>> }}
-                    placeholder={`Select ${label}...`}
-                    onChange={async (selectedOption) => {
-                        // When selecting a course, fetch its full details and store them
-                        if (isMultiChoice) {
-                            const opts = Array.isArray(selectedOption) ? selectedOption : [];
-                            setSelected(opts);
-                        } else {
-                            const opt = selectedOption ? (selectedOption as SelectOption) : null;
-                            setSelected(opt);
-                            if (!opt) {
-                                field.onChange(null);
-                                return;
-                            }
-                            try {
-                                field.onChange((opt ?? opt) as SelectOption);
-                            } catch {
-                                // fallback to the selected option if fetch fails
-                                field.onChange(opt as SelectOption);
-                            }
-                        }
-                    }}
-                    onMenuOpen={() => ensureCoursesLoaded(currentQueryRef.current)}
-                    onInputChange={(newValue) => { ensureCoursesLoaded(newValue || ''); return newValue; }}
-                    onMenuScrollToBottom={() => { loadMoreCourses(); }}
-                    filterOption={null}
-                    instanceId={1}
-                />
-            );
-        }
+        pageRef.current = pageRef.current + 1;
+        const end = pageRef.current * PAGE_SIZE;
+        const slice = filtered.slice(0, end);
+        displayedCoursesRef.current = slice;
+        setCourseDisplayed(slice);
+    }, [PAGE_SIZE]);
 
+    // Courses select
+    if (containCourses && name === "course") {
         return (
-            <AsyncSelect<SelectOption, boolean, GroupBase<SelectOption>>
-                cacheOptions
-                defaultOptions={containCourses ? false : true}
-                loadOptions={loadOptions}
-                value={isMultiChoice ? (Array.isArray(selected) ? selected : []) : (selected as SelectOption | null)}
+            <Select<SelectOption, boolean, GroupBase<SelectOption>>
+                options={courseDisplayed}
+                isLoading={courseLoading}
+                value={
+                    isMultiChoice
+                        ? (Array.isArray(selected) ? selected : [])
+                        : (selected as SelectOption | null)
+                }
                 getOptionValue={(opt) => String(opt.value)}
-                formatOptionLabel={containCourses ? undefined : formatOption}
+                formatOptionLabel={formatOption}
                 theme={theme}
                 styles={customStyles}
                 isMulti={isMultiChoice}
                 classNamePrefix="custom-option"
-                components={{ Option: CustomOption as ComponentType<OptionProps<SelectOption, boolean, GroupBase<SelectOption>>> }}
+                components={{
+                    Option:
+                        CustomOption as ComponentType<
+                            OptionProps<SelectOption, boolean, GroupBase<SelectOption>>
+                        >,
+                }}
                 placeholder={`Select ${label}...`}
-                onChange={(selectedOption) => {
+                onChange={async (selectedOption) => {
                     if (isMultiChoice) {
-                        const arr = Array.isArray(selectedOption) ? selectedOption.map((s) => Number(s.value)) : [];
-                        field.onChange(arr);
-                        setSelected(Array.isArray(selectedOption) ? selectedOption : []);
+                        const opts = Array.isArray(selectedOption)
+                            ? selectedOption
+                            : [];
+                        setSelected(opts);
                     } else {
-                        const val = selectedOption ? Number((selectedOption as SelectOption).value) : null;
-                        field.onChange(val);
-                        setSelected(selectedOption as SelectOption | null);
+                        const opt = selectedOption
+                            ? (selectedOption as SelectOption)
+                            : null;
+                        setSelected(opt);
+                        if (!opt) {
+                            field.onChange(null);
+                            return;
+                        }
+                        field.onChange(opt as SelectOption);
                     }
                 }}
-                filterOption={null}
-                noOptionsMessage={({ inputValue }) => {
-                    if (inputValue) return `No results for "${inputValue}"`;
-                    return `Type at least 3 chars...`;
+                onMenuOpen={() => ensureCoursesLoaded(currentQueryRef.current)}
+                onInputChange={(newValue) => {
+                    void ensureCoursesLoaded(newValue || "");
+                    return newValue;
                 }}
-                instanceId={instanceId}
+                onMenuScrollToBottom={() => {
+                    loadMoreCourses();
+                }}
+                filterOption={null}
+                instanceId={instanceId ?? `${name}-course-select`}
             />
         );
     }
 
+    // People select
+    return (
+        <AsyncSelect<SelectOption, boolean, GroupBase<SelectOption>>
+            cacheOptions
+            defaultOptions={containCourses ? false : true}
+            loadOptions={loadOptions}
+            value={
+                isMultiChoice
+                    ? (Array.isArray(selected) ? selected : [])
+                    : (selected as SelectOption | null)
+            }
+            getOptionValue={(opt) => String(opt.value)}
+            formatOptionLabel={containCourses ? undefined : formatOption}
+            theme={theme}
+            styles={customStyles}
+            isMulti={isMultiChoice}
+            classNamePrefix="custom-option"
+            components={{
+                Option:
+                    CustomOption as ComponentType<
+                        OptionProps<SelectOption, boolean, GroupBase<SelectOption>>
+                    >,
+            }}
+            placeholder={`Select ${label}...`}
+            onChange={(selectedOption) => {
+                if (isMultiChoice) {
+                    const arr = Array.isArray(selectedOption)
+                        ? selectedOption.map((s) => Number(s.value))
+                        : [];
+                    field.onChange(arr);
+                    setSelected(
+                        Array.isArray(selectedOption) ? selectedOption : []
+                    );
+                } else {
+                    const val = selectedOption
+                        ? Number((selectedOption as SelectOption).value)
+                        : null;
+                    field.onChange(val);
+                    setSelected(selectedOption as SelectOption | null);
+                }
+            }}
+            filterOption={null}
+            noOptionsMessage={({ inputValue }) => {
+                if (inputValue) return `No results for "${inputValue}"`;
+                return `Type at least 3 chars...`;
+            }}
+            instanceId={instanceId ?? `${name}-async-select`}
+        />
+    );
+}
+
+// Select wrapper
+export default function SelectController({
+    control,
+    label,
+    name,
+    isMultiChoice,
+    containCourses,
+    instanceId,
+    user,
+}: SelectProps) {
     return (
         <Controller
             name={name}
             control={control}
-            render={({ field }) => <SelectField field={field} />}
+            render={({ field }) => (
+                <SelectField
+                    field={field}
+                    label={label}
+                    name={name}
+                    isMultiChoice={isMultiChoice}
+                    containCourses={containCourses}
+                    instanceId={instanceId}
+                    user={user}
+                />
+            )}
         />
     );
 }
