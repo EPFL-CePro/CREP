@@ -176,6 +176,7 @@ export default function App({ user }: RegisterProps) {
                 type: "validate",
                 message: "Please upload at least one file",
             });
+            openModal("File Upload Error", "You need to upload at least one file before submitting the form.");
             return;
         }
 
