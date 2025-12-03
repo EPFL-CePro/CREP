@@ -26,6 +26,7 @@ type Inputs = {
     name: string
     needScan: boolean
     files?: FileList
+    financialCenter: string
 }
 
 interface RegisterProps {
@@ -220,7 +221,8 @@ export default function App({ user }: RegisterProps) {
                     repro_remark: null,
                     status: 'registered',
                     registered_by: user.email || '',
-                    need_scan: data.needScan
+                    need_scan: data.needScan,
+                    financial_center: data.financialCenter,
                 }
             )
 
@@ -412,9 +414,12 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                     </div>
                 </div>
                 <div className="flex gap-3 text-lg">
-                    <label htmlFor="needScan">Needs to be scanned</label>
+                    <label htmlFor="needScan">Needs to be scanned <RedAsterisk /></label>
                     <input id="needScan" type="checkbox" defaultChecked {...register("needScan")} />
                 </div>
+                <label>Financial Center <RedAsterisk /></label>
+                <input type="text" placeholder={"FCXXXX"} maxLength={8} {...register("financialCenter", { required: true })} />
+                {errors.financialCenter && <span className="text-red-600">This field is required</span>}
                 <label>Contact <RedAsterisk /></label>
                 <ReactSelect control={control} label={"contact"} name={"contact"} isMultiChoice={false} instanceId={2} user={user} />
                 <label>Authorized persons</label>
