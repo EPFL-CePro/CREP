@@ -124,6 +124,8 @@ export default function App({ user }: RegisterProps) {
             return merged;
         });
 
+        clearErrors("files");
+
         // allow selecting the same file again later
         e.target.value = "";
     };
