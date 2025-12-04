@@ -23,6 +23,7 @@ type Inputs = {
     remark?: string
     name: string
     needScan: boolean
+    financialCenter: string
 }
 
 export interface SelectProps {
