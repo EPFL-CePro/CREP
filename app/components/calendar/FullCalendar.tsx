@@ -34,6 +34,14 @@ export default function Calendar({ user }: CalendarProps) {
   const [filters, setFilters] = useState<{ label: string, value: string }[]>([]);
   const availableStatus = getAllowedExamStatus(user.isAdmin || false);
 
+  function getPrintingDurationInMinutes(nbStudents: number): number {
+    return Math.ceil((20 * nbStudents + 3600) / 60 / 60) * 60;
+  }
+
+  function getEndDateOfPrinting(printDate: Date, nbStudents: number): Date {
+      return new Date(printDate.getTime() + getPrintingDurationInMinutes(nbStudents) * 60000);
+  }
+
   useEffect(() => {
     (async function () {
       const data = user.isAdmin ? await getAllExams() as Array<QueryResult> : await getAllNonAdminExams() as Array<QueryResult>;
@@ -48,8 +56,8 @@ export default function Calendar({ user }: CalendarProps) {
         const eventColor = availableStatus.find(status => status.value === e.status)?.fcColor;
         return {
           title: `${e.exam_code} - ${e.exam_name}`,
-          start: e.print_date ? e.print_date.toISOString().slice(0, 19) : currentStart.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
-          end: e.print_date ? new Date(e.print_date.setHours(e.print_date.getUTCHours() + 2)).toISOString().slice(0, 19) : currentEnd.toISOString().slice(0, 19), // TODO: Calculate the print duration by the number of pages
+          start: e.print_date.toISOString().slice(0, 19),
+          end: getEndDateOfPrinting(e.print_date, e.exam_students),
           description: e.exam_name,
           durationEditable: false,
           id: e.id,

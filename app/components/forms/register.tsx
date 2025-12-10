@@ -1,7 +1,7 @@
 "use client";
 // This form allows users to register their exams into the system.
 import { useForm, SubmitHandler } from "react-hook-form"
-import { getAllCourses, insertExam } from "@/app/lib/database";
+import { getAllCourses, getAllExamsBetweenDates, getAllExamsForDate, insertExam } from "@/app/lib/database";
 import { useEffect, useState } from "react";
 import ReactSelect from "./ReactSelect";
 import { fetchCourses, fetchMultiplePersonsBySciper, fetchPersonBySciper } from "@/app/lib/api";
@@ -37,6 +37,31 @@ interface AppUser extends User {
     isAdmin?: boolean;
     sciper: string;
 }
+
+interface Exam {
+    id: number;
+    exam_code: string;
+    exam_date: Date;
+    exam_name: string;
+    exam_pages: number;
+    exam_students: number;
+    print_date: Date;
+    remark: string;
+    repro_remark: string;
+    status: string;
+    paper_format: string;
+    paper_color: string;
+    contact: string;
+    authorized_persons: string;
+    registered_by: string;
+    need_scan: boolean;
+    financial_center: string;
+}
+
+interface Gap {
+    between: [Exam, Exam]; // before exam, end exam
+    gapMinutes: number; // gap between the two exams in minutes
+};
 
 function businessDaysBetween(startDate: string, endDate: string) {
     let start = new Date(startDate);
@@ -204,12 +229,148 @@ export default function App({ user }: RegisterProps) {
             const exam_name = data.course.value.toString();
             const exam_code = data.course.label.split(' - ')[0] || '';
             const contact_name = contact?.lastname;
+
+            function getPrintingDurationInMinutes(nbStudents: number): number {
+                return Math.ceil((20 * nbStudents + 3600) / 60 / 60) * 60;
+            }
+
+            function getEndDateOfPrinting(exam: Exam): Date {
+                return new Date(exam.print_date.getTime() + getPrintingDurationInMinutes(exam.exam_students) * 60000);
+            }
+
+            function formatDateForDb(date: Date): string {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const seconds = String(date.getSeconds()).padStart(2, '0');
+
+                return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            }
+
+
+            function computeGapsBetweenExams(exams: Exam[]): Gap[] {
+                const sorted = [...exams].sort(
+                    (a, b) => a.print_date.getTime() - b.print_date.getTime()
+                );
+
+                const gaps: Gap[] = [];
+
+                for (let i = 0; i < sorted.length - 1; i++) {
+                    const current = sorted[i];
+                    const next = sorted[i + 1];
+
+                    const currentEnd = getEndDateOfPrinting(current);
+
+                    const nextStart = next.print_date;
+
+                    const gapMs = nextStart.getTime() - currentEnd.getTime();
+                    const gapMinutes = gapMs / (1000 * 60);
+
+                    gaps.push({
+                        between: [current, next],
+                        gapMinutes,
+                    });
+                }
+
+                return gaps;
+            }
+
+            let printingDate;
+
+            const desiredDate = new Date(data.desiredDate);
+            const today = new Date();
+
+            // Making sure hours is not a problem
+            desiredDate.setHours(0,0,0,0);
+            today.setHours(0,0,0,0);
+
+            const daysArray = [];
+            let currentDate = new Date(today); // The date that will be manipulated. This will change on every iteration.
+
+            /* `<` so that we stop one day before the desired delivery date.
+            Ex : If desired date is 24, we stop at 23. */
+            while (currentDate < desiredDate) {
+                const day = currentDate.getDay(); // 0 = sunday, 6 = saturday
+
+                if (day !== 0 && day !== 6) { 
+                    // We push the date only if it's not a sunday or a saturday
+                    daysArray.push(new Date(currentDate));
+                }
+
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            const allExamsFromNowToDesired = await getAllExamsBetweenDates(new Date(), new Date(data.desiredDate))
+            if(!allExamsFromNowToDesired) {
+                const firstDayDate = daysArray[0];
+                firstDayDate.setHours(7, 0, 0, 0);
+                printingDate = formatDateForDb(firstDayDate);
+            } else {
+                const necessaryPrintingDurationInMinutes = getPrintingDurationInMinutes(data.nbStudents);
+                
+                for (const date of daysArray.reverse()) {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+
+                    const allExamsForDate = await getAllExamsForDate(`${year}-${month}-${day}`);
+
+                    if (allExamsForDate.length == 0) {
+                        date.setHours(7, 0, 0, 0);
+                        printingDate = formatDateForDb(date);
+                        break;
+                    } else if (allExamsForDate.length == 1) {
+                        // This is necessary because of the 1 hour delay between the database and JavaScript
+                        allExamsForDate[0].print_date.setHours(allExamsForDate[0].print_date.getHours() - 1);
+
+                        const endPrintExam = getEndDateOfPrinting(allExamsForDate[0]);
+                        const endPrintOfWantedExam = new Date(endPrintExam.getTime() + necessaryPrintingDurationInMinutes * 60000);
+
+                        if (endPrintOfWantedExam.getHours() < 22) {
+                            printingDate = formatDateForDb(endPrintExam);
+                            break;
+                        }
+                    } else {
+                        const gaps = computeGapsBetweenExams(allExamsForDate as Exam[]);
+                        const enoughGap = gaps.find(gap => gap.gapMinutes >= necessaryPrintingDurationInMinutes);
+
+                        if (enoughGap) {
+                            // This is necessary because of the 1 hour delay between the database and JavaScript
+                            enoughGap.between[0].print_date.setHours(enoughGap.between[0].print_date.getHours() - 1);
+
+                            const endPrintFirstExam = getEndDateOfPrinting(enoughGap.between[0]);
+                            printingDate = formatDateForDb(endPrintFirstExam);
+                            break;
+                        } else {
+                            const latestGapOfDay = gaps[gaps.length - 1];
+                            const latestExam = latestGapOfDay.between[1];
+                            const latestExamPrintingDurationInMinutes = getPrintingDurationInMinutes(latestExam.exam_students);
+
+                            const latestExamPrintDate = latestExam.print_date;
+                            latestExamPrintDate.setHours(latestExamPrintDate.getHours() - 1);
+
+                            const endPrintingLatestExam = new Date(latestExamPrintDate.getTime() + latestExamPrintingDurationInMinutes * 60000);
+                            const endPrintingWantedExam = new Date(endPrintingLatestExam.getTime() + getPrintingDurationInMinutes(data.nbStudents) * 60000);
+
+                            const printingLimit = new Date(endPrintingLatestExam);
+                            printingLimit.setHours(22, 0, 0, 0);
+                            if (endPrintingWantedExam <= printingLimit) {
+                                printingDate = formatDateForDb(endPrintingLatestExam);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
             const insertedExam = await insertExam(
                 {
                     exam_name: exam_name,
                     exam_code: exam_code,
                     exam_date: data.examDate,
-                    print_date: data.desiredDate,
+                    print_date: printingDate,
                     exam_students: data.nbStudents,
                     exam_pages: data.nbPages,
                     contact: contact?.firstname + ' ' + contact?.lastname + ' (' + contact?.email + ')',

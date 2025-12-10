@@ -14,6 +14,13 @@ interface Exam {
     remark: string;
     repro_remark: string;
     status: string;
+    paper_format: string;
+    paper_color: string;
+    contact: string;
+    authorized_persons: string;
+    registered_by: string;
+    need_scan: boolean;
+    financial_center: string;
 }
 
 export async function getAllExams() {
@@ -240,5 +247,24 @@ export async function insertExam(exam: {
         });
         connection.end();
     });
+}
+
+export async function getAllExamsForDate(date:string): Promise <Exam[]> {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    })
+
+    connection.connect()
+    
+    return new Promise(function(resolve) {
+        connection.query('SELECT * FROM crep WHERE DATE(print_date) = DATE(?);', [date], (err, rows) => {
+            if (err) throw err
+            resolve(rows as Exam[]);
+        })
+        connection.end()
+    })
 }
 
