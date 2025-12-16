@@ -4,7 +4,7 @@ import { useForm, SubmitHandler } from "react-hook-form"
 import { getAllCourses, getAllExamsBetweenDates, getAllExamsForDate, insertExam } from "@/app/lib/database";
 import { useEffect, useState } from "react";
 import ReactSelect from "./ReactSelect";
-import { fetchCourses, fetchMultiplePersonsBySciper, fetchPersonBySciper } from "@/app/lib/api";
+import { fetchMultiplePersonsBySciper, fetchPersonBySciper } from "@/app/lib/api";
 import { sendMail } from "@/app/lib/mail";
 import { User } from "next-auth";
 import { RedAsterisk } from "../RedAsterisk";
@@ -82,12 +82,6 @@ function businessDaysBetween(startDate: string, endDate: string) {
     }
 
     return count;
-}
-
-async function fetchOasis() {
-    const list = (await fetchCourses());
-    // const found = list.find((l) => Number(l.value) === Number(id));
-    return list ?? null;
 }
 
 
@@ -287,7 +281,7 @@ export default function App({ user }: RegisterProps) {
             today.setHours(0,0,0,0);
 
             const daysArray = [];
-            let currentDate = new Date(today); // The date that will be manipulated. This will change on every iteration.
+            const currentDate = new Date(today); // The date that will be manipulated. This will change on every iteration.
 
             /* `<` so that we stop one day before the desired delivery date.
             Ex : If desired date is 24, we stop at 23. */
@@ -458,15 +452,6 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                 teacher: teachers,
             }));
             setCourses(filteredCoursesData);
-        })();
-    }, []);
-
-    // fetch oasis courses and store them in local state
-    const [oasisCourses, setOasisCourses] = useState<SelectOption[]>([]);
-    useEffect(() => {
-        (async () => {
-            const list = await fetchOasis();
-            setOasisCourses(list ?? []);
         })();
     }, []);
 

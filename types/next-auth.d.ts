@@ -3,9 +3,13 @@ import NextAuth from "next-auth";
 declare module "next-auth" {
   interface User {
     groups?: string[];
+    sciper: string;
   }
 
   interface Session {
-    user: User;
+    user: {
+      sciper: string
+      isAdmin?: boolean
+    } & DefaultSession["user"]
   }
 }
