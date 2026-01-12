@@ -288,7 +288,7 @@ export default function App({ user }: RegisterProps) {
             while (currentDate < desiredDate) {
                 const day = currentDate.getDay(); // 0 = sunday, 6 = saturday
 
-                if (day !== 0 && day !== 6) { 
+                if (day !== 0 && day !== 6) {
                     // We push the date only if it's not a sunday or a saturday
                     daysArray.push(new Date(currentDate));
                 }
@@ -297,13 +297,13 @@ export default function App({ user }: RegisterProps) {
             }
 
             const allExamsFromNowToDesired = await getAllExamsBetweenDates(new Date(), new Date(data.desiredDate))
-            if(!allExamsFromNowToDesired) {
+            if (!allExamsFromNowToDesired) {
                 const firstDayDate = daysArray[0];
                 firstDayDate.setHours(7, 0, 0, 0);
                 printingDate = formatDateForDb(firstDayDate);
             } else {
                 const necessaryPrintingDurationInMinutes = getPrintingDurationInMinutes(data.nbStudents);
-                
+
                 for (const date of daysArray.reverse()) {
                     const year = date.getFullYear();
                     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -405,20 +405,21 @@ export default function App({ user }: RegisterProps) {
                 return;
             }
             const daysBetweenExamAndDesired = businessDaysBetween(data.desiredDate, data.examDate)
+            const lessThanEightDays = daysBetweenExamAndDesired < 8;
             if (process.env.NODE_ENV !== "development") {
                 await sendMail(
                     user.email || '',
-                    `${daysBetweenExamAndDesired < 8 && 'REQUIRES ATTENTION - '} CePro - Exam printing service subscription confirmation`,
+                    `${lessThanEightDays ? 'REQUIRES ATTENTION - ' : ''} CePro - Exam printing service subscription confirmation`,
                     `
 Hello,
 Your subscription to our exam printing service has been successfully registered:
 
-${daysBetweenExamAndDesired < 8 && `⚠️ : We would like to inform you that you choose a desired delivery date that is inferior to 8 business days before the exam.
+${lessThanEightDays ? `⚠️ : We would like to inform you that you choose a desired delivery date that is inferior to 8 business days before the exam.
 The CePro team will get in touch with you shortly to discuss about your situation.
 Next time, please register to the printing service earlier to make sur that the printing team has the right amount of time to print your exam correctly.
-`}
+` : ''}
 
-- Course: ${courses.find(c => c.id === data.course?.value)?.code}
+- Course: ${data.course?.label}
 - Exam date: ${data.examDate}
 - Desired delivery date: ${data.desiredDate}
 - Contact: ${contact?.firstname} ${contact?.lastname} (${contact?.email})
