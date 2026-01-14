@@ -174,6 +174,7 @@ export async function getAllExamsBetweenDates(beginDate: Date, endDate: Date): P
         connection.end()
     })
 }
+
 export async function getAllCourses() {
   const connection = mysql.createConnection({
     host: process.env.MYSQL_HOST,
@@ -192,6 +193,7 @@ export async function getAllCourses() {
     connection.end();
   });
 }
+
 export async function insertExam(exam: {
     exam_code: string;
     exam_date: string | Date;
@@ -268,3 +270,48 @@ export async function getAllExamsForDate(date:string): Promise <Exam[]> {
     })
 }
 
+export async function getLogs(sciper: number) {
+  const connection = mysql.createConnection({
+    host: process.env.MYSQL_HOST,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE,
+  });
+
+  connection.connect();
+  
+  return new Promise((resolve, reject) => {
+    connection.query(
+      'SELECT l.*, un.read_at, (un.read_at IS NOT NULL) AS is_read FROM crep_log l LEFT JOIN user_notification un ON un.log_id = l.id AND un.sciper = ? ORDER BY l.date_time DESC, l.id DESC;',
+      [sciper],
+      (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows);
+      }
+    );
+    connection.end();
+  });
+}
+
+export async function markAsRead(sciper: number) {
+  const connection = mysql.createConnection({
+    host: process.env.MYSQL_HOST,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE,
+  });
+
+  connection.connect();
+  
+  return new Promise((resolve, reject) => {
+    connection.query(
+      'INSERT INTO user_notification (log_id, sciper, read_at) SELECT l.id, ?, CURRENT_TIMESTAMP(6) FROM crep_log l ON DUPLICATE KEY UPDATE read_at = IF(user_notification.read_at IS NULL, CURRENT_TIMESTAMP(6), user_notification.read_at);',
+      [sciper],
+      (err) => {
+        if (err) return reject(err);
+        resolve({ ok: true });
+      }
+    );
+    connection.end();
+  });
+}

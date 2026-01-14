@@ -3,6 +3,7 @@ import { User } from "next-auth";
 import { SignIn } from "./auth/SignInButton";
 import { SignOut } from "./auth/SignOutButton";
 import { Export } from "./exportData/Export";
+import Notifications from "./Notifications";
 
 interface NavBarProps {
     user: AppUser
@@ -10,6 +11,7 @@ interface NavBarProps {
 
 interface AppUser extends User {
     isAdmin?: boolean;
+    sciper: number;
 }
 
 export function NavBar({ user }: NavBarProps) {
@@ -24,6 +26,7 @@ export function NavBar({ user }: NavBarProps) {
                     {user ? (
                         <>
                             <span className="mr-4">Welcome, {user.name} !</span>
+                            <Notifications user={user} />
                             <div className="flex gap-2">
                                 <SignOut />
                                 <Export user={user} />
@@ -34,6 +37,6 @@ export function NavBar({ user }: NavBarProps) {
                     )}
                 </div>
             </div>
-        </nav>
+        </nav >
     );
 }
