@@ -11,7 +11,7 @@ interface NavBarProps {
 
 interface AppUser extends User {
     isAdmin?: boolean;
-    sciper: number;
+    sciper: string;
 }
 
 export function NavBar({ user }: NavBarProps) {

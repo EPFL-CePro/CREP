@@ -18,14 +18,14 @@ type Log = {
 
 interface AppUser extends User {
     isAdmin?: boolean;
-    sciper: number;
+    sciper: string;
 }
 
 interface notifProps {
     user: AppUser
 }
 
-async function fetchLogs(sciper: number): Promise<Log[]> {
+async function fetchLogs(sciper: string): Promise<Log[]> {
     const logs = await getLogs(sciper) as Log[];
     const mapLogs = logs.map((log: Log) => ({
         id: log.id,

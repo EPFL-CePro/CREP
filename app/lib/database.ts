@@ -270,7 +270,7 @@ export async function getAllExamsForDate(date:string): Promise <Exam[]> {
     })
 }
 
-export async function getLogs(sciper: number) {
+export async function getLogs(sciper: string) {
   const connection = mysql.createConnection({
     host: process.env.MYSQL_HOST,
     user: process.env.MYSQL_USER,
@@ -293,7 +293,7 @@ export async function getLogs(sciper: number) {
   });
 }
 
-export async function markAsRead(sciper: number) {
+export async function markAsRead(sciper: string) {
   const connection = mysql.createConnection({
     host: process.env.MYSQL_HOST,
     user: process.env.MYSQL_USER,
