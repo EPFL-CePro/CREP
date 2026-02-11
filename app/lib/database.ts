@@ -2,6 +2,10 @@
 import mysql from 'mysql2';
 import type { ResultSetHeader } from 'mysql2';
 import { examNotAdminStatus } from './examStatus';
+import { Service } from '@/types/service';
+import { ExamType } from '@/types/examType';
+import { AcademicYear, FormattedAcademicYear } from '@/types/academicYear';
+import { FormattedSection, Section } from '@/types/section';
 
 interface Exam {
     id: number;
@@ -194,7 +198,7 @@ export async function getAllCourses() {
   });
 }
 
-export async function insertExam(exam: {
+export async function insertExamForPrint(exam: {
     exam_code: string;
     exam_date: string | Date;
     exam_name: string;
@@ -314,4 +318,159 @@ export async function markAsRead(sciper: string) {
     );
     connection.end();
   });
+}
+
+export async function getAllServices(): Promise <Service[]> {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    })
+
+    connection.connect()
+    
+    return new Promise(function(resolve) {
+        connection.query('SELECT * FROM service;', (err, rows) => {
+            if (err) throw err
+            resolve(rows as Service[]);
+        })
+        connection.end()
+    })
+}
+
+export async function getAllExamTypes(): Promise <ExamType[]> {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    })
+
+    connection.connect()
+    
+    return new Promise(function(resolve) {
+        connection.query('SELECT * FROM exam_type;', (err, rows) => {
+            if (err) throw err
+            resolve(rows as ExamType[]);
+        })
+        connection.end()
+    })
+}
+
+export async function insertExam(exam: {
+    code: string;
+    name: string;
+    service_level_id: number;
+    service_id: number;
+    exam_type_id: number;
+    exam_status_id: number;
+    exam_date?: string | Date | null;
+    academic_year_id: number;
+    exam_semester: number;
+    nb_students?: number | null;
+    nb_pages?: number | null;
+    total_pages?: number | null;
+    // deadline_prep: string | Date;
+    // deadline_repro: string | Date;
+    remark?: string | null;
+    section_id: number;
+    responsible_id: number | null;
+    contact: string;
+}): Promise<number> {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    });
+
+    connection.connect();
+
+    return new Promise((resolve, reject) => {
+        const sql = `INSERT INTO exam (code, name, service_level_id, service_id, exam_type_id, exam_status_id, exam_date, academic_year_id, exam_semester, nb_students, nb_pages, total_pages, remark, section_id, responsible_id, contact) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+
+        const params = [
+            exam.code,
+            exam.name,
+            exam.service_level_id,
+            exam.service_id,
+            exam.exam_type_id,
+            exam.exam_status_id,
+            exam.exam_date || null,
+            exam.academic_year_id,
+            exam.exam_semester,
+            exam.nb_students || null,
+            exam.nb_pages || null,
+            exam.total_pages || null,
+            // exam.deadline_prep,
+            // exam.deadline_repro,
+            exam.remark || null,
+            exam.section_id,
+            exam.responsible_id,
+            exam.contact,
+        ];
+
+        connection.query(sql, params, (err, result) => {
+            if (err) return reject(err);
+            resolve((result as ResultSetHeader).insertId as number);
+        });
+        connection.end();
+    });
+}
+
+export async function getAllAcademicYears():Promise <FormattedAcademicYear[]> {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    })
+
+    connection.connect()
+    
+    return new Promise(function(resolve) {
+        connection.query('SELECT * FROM academic_year;', (err:mysql.QueryError | null, rows:AcademicYear[]) => {
+            if (err) throw err
+            const formattedResult = rows.map(academicYear => ({
+                value: academicYear.id,
+                label: academicYear.code,
+                academicYear: {
+                    id: academicYear.id,
+                    code: academicYear.code,
+                    name: academicYear.name,
+                }
+            }))
+            resolve(formattedResult as FormattedAcademicYear[]);
+        })
+        connection.end()
+    })
+}
+
+export async function getAllSections():Promise <FormattedSection[]> {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    })
+
+    connection.connect()
+    
+    return new Promise(function(resolve) {
+        connection.query('SELECT * FROM section;', (err:mysql.QueryError | null, rows:Section[]) => {
+            if (err) throw err
+            const formattedResult = rows.map(section => ({
+                value: section.id,
+                label: section.code,
+                section: {
+                    id: section.id,
+                    code: section.code,
+                    name: section.name,
+                }
+            }))
+            resolve(formattedResult as FormattedSection[]);
+        })
+        connection.end()
+    })
 }
