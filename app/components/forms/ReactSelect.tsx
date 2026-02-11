@@ -7,24 +7,9 @@ import CustomOption from "./CustomOption";
 import { Control, Controller, ControllerRenderProps, Path } from "react-hook-form";
 import { fetchCourses, fetchPersonBySciper, fetchPersons } from "@/app/lib/api";
 import { User } from "next-auth";
+import { Inputs } from "@/types/inputs";
 
 export type SelectOption = { value: number | string; label: string; person?: { id: number; firstname?: string; lastname?: string; email?: string; sciper?: string } };
-
-type Inputs = {
-    examDate: string
-    desiredDate: string
-    nbStudents: number
-    nbPages: number
-    contact: string
-    authorizedPersons: string
-    paperFormat: string
-    paperColor: string
-    course: SelectOption | null
-    remark?: string
-    name: string
-    needScan: boolean
-    financialCenter: string
-}
 
 export interface SelectProps {
     control: Control<Inputs>;
@@ -34,14 +19,16 @@ export interface SelectProps {
     containCourses?: boolean;
     instanceId?: string | number;
     user?: AppUser;
+    disabled?: boolean;
+    academicYear?: string;
 }
 
 export interface AppUser extends User {
     sciper: string;
 }
 
-async function fetchOasisCourses(): Promise<SelectOption[]> {
-    const list = (await fetchCourses()) || [];
+async function fetchOasisCourses(academicYear?: string): Promise<SelectOption[]> {
+    const list = (await fetchCourses(academicYear && academicYear)) || [];
     return list;
 }
 
@@ -53,6 +40,8 @@ type SelectFieldProps = {
     containCourses?: boolean;
     instanceId?: string | number;
     user?: AppUser;
+    disabled?: boolean;
+    academicYear?: string;
 };
 
 function SelectField({
@@ -63,6 +52,8 @@ function SelectField({
     containCourses,
     instanceId,
     user,
+    disabled,
+    academicYear
 }: SelectFieldProps) {
     const timeoutRef = useRef<NodeJS.Timeout | number>(0);
     const PAGE_SIZE = 10;
@@ -208,7 +199,7 @@ function SelectField({
             if (!allCoursesRef.current) {
                 setCourseLoading(true);
                 try {
-                    const all = await fetchOasisCourses();
+                    const all = await fetchOasisCourses(academicYear);
                     allCoursesRef.current = all ?? [];
                 } catch (e) {
                     alert(`Failed to load courses, ${e}`);
@@ -297,6 +288,7 @@ function SelectField({
                 }}
                 filterOption={null}
                 instanceId={instanceId ?? `${name}-course-select`}
+                isDisabled={disabled}
             />
         );
     }
@@ -348,6 +340,7 @@ function SelectField({
                 return `Type at least 3 chars...`;
             }}
             instanceId={instanceId ?? `${name}-async-select`}
+            isDisabled={disabled}
         />
     );
 }
@@ -361,6 +354,8 @@ export default function SelectController({
     containCourses,
     instanceId,
     user,
+    disabled,
+    academicYear
 }: SelectProps) {
     return (
         <Controller
@@ -375,6 +370,8 @@ export default function SelectController({
                     containCourses={containCourses}
                     instanceId={instanceId}
                     user={user}
+                    disabled={disabled}
+                    academicYear={academicYear}
                 />
             )}
         />

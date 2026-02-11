@@ -1,7 +1,7 @@
 "use client";
 // This form allows users to register their exams into the system.
 import { useForm, SubmitHandler } from "react-hook-form"
-import { getAllCourses, getAllExamsBetweenDates, getAllExamsForDate, insertExam } from "@/app/lib/database";
+import { getAllCourses, getAllExamsBetweenDates, getAllExamsForDate, insertExamForPrint } from "@/app/lib/database";
 import { useEffect, useState } from "react";
 import ReactSelect from "./ReactSelect";
 import { fetchMultiplePersonsBySciper, fetchPersonBySciper } from "@/app/lib/api";
@@ -9,25 +9,7 @@ import { sendMail } from "@/app/lib/mail";
 import { User } from "next-auth";
 import { RedAsterisk } from "../RedAsterisk";
 import { RegisterModal } from "./RegisterModal";
-
-type SelectOption = { value: string | number; label: string };
-
-type Inputs = {
-    examDate: string
-    desiredDate: string
-    nbStudents: number
-    nbPages: number
-    contact: string
-    authorizedPersons: string
-    paperFormat: string
-    paperColor: string
-    course: SelectOption | null
-    remark?: string
-    name: string
-    needScan: boolean
-    files?: FileList
-    financialCenter: string
-}
+import { Inputs } from "@/types/inputs";
 
 interface RegisterProps {
     user: AppUser
@@ -359,7 +341,7 @@ export default function App({ user }: RegisterProps) {
                 }
             }
 
-            const insertedExam = await insertExam(
+            const insertedExam = await insertExamForPrint(
                 {
                     exam_name: exam_name,
                     exam_code: exam_code,
