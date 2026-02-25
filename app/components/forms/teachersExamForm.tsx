@@ -266,18 +266,18 @@ export default function App({ user }: RegisterProps) {
                     control={control}
                     render={({ field }) => (
                         <Select<FormattedAcademicYear, false>
-                        options={academicYears}
-                        styles={academicYearStyles}
-                        theme={theme}
-                        value={field.value}
-                        onChange={(val) => {
-                            field.onChange(val)
-                            setSelectedAcademicYear(val?.academicYear.code)
-                        }}
-                        onBlur={field.onBlur}
-                        ref={field.ref}
-                        isClearable
-                        isSearchable
+                            options={academicYears}
+                            styles={academicYearStyles}
+                            theme={theme}
+                            value={field.value}
+                            onChange={(val) => {
+                                field.onChange(val)
+                                setSelectedAcademicYear(val?.academicYear.code)
+                            }}
+                            onBlur={field.onBlur}
+                            ref={field.ref}
+                            isClearable
+                            isSearchable
                         />
                     )}
                 />
