@@ -266,6 +266,7 @@ export default function App({ user }: RegisterProps) {
                     control={control}
                     render={({ field }) => (
                         <Select<FormattedAcademicYear, false>
+                            instanceId="academicYear"
                             options={academicYears}
                             styles={academicYearStyles}
                             theme={theme}
@@ -310,6 +311,7 @@ export default function App({ user }: RegisterProps) {
                     control={control}
                     render={({ field }) => (
                         <Select<FormattedSection, false>
+                            instanceId="section"
                             options={sections}
                             styles={sectionStyles}
                             theme={theme}
