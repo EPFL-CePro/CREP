@@ -118,7 +118,20 @@ export default function App({ user }: RegisterProps) {
             return;
         }
 
-        // TODO: Add a verification if an exam type is checked but doesn't have any date AND `I don't know yet` is not checked too.
+        for (let index = 0; index < data.examType.length; index++) {
+            const examType = data.examType[0]
+            if(!examType.checked) continue;
+
+            if(!examType.dontKnowYet && !examType.date) {
+                openModal("Exam type selection Error", `Please select a date for your exam type "${examType.name}". If you are not sure about the date, please check the "I don't know yet" box.`);
+                return;
+            }
+
+            if(examType.date && examType.dontKnowYet) {
+                openModal("Exam type selection Error", `You have checked the "I don't know yet" box for your "${examType.name}" exam type, but a date is also selected. Please either only check the "I don't know yet" box, or only select a date for the exam.`);
+                return;
+            }
+        }
 
         try {
             const contact = await fetchPersonBySciper(data.contact)
