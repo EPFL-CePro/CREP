@@ -1,7 +1,7 @@
 "use client";
 // This form allows users to register their exams into the system.
 import { useForm, SubmitHandler, useFieldArray, Controller } from "react-hook-form"
-import { getAllExamTypes, getAllServices, insertExam, getAllAcademicYears, getAllSections } from "@/app/lib/database";
+import { getAllExamTypes, getAllServices, insertExam, getAllAcademicYears, getAllSections, getServiceById } from "@/app/lib/database";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ReactSelect from "./ReactSelect";
 import { sendMail } from "@/app/lib/mail";
@@ -15,6 +15,7 @@ import { FormattedAcademicYear } from "@/types/academicYear";
 import Select from "react-select";
 import { GroupBase, StylesConfig, Theme } from "react-select";
 import { FormattedSection } from "@/types/section";
+import { fetchPersonBySciper } from "@/app/lib/api";
 
 interface RegisterProps {
     user: AppUser
@@ -120,7 +121,9 @@ export default function App({ user }: RegisterProps) {
         // TODO: Add a verification if an exam type is checked but doesn't have any date AND `I don't know yet` is not checked too.
 
         try {
-            console.log(data)
+            const contact = await fetchPersonBySciper(data.contact)
+
+            const service = await getServiceById(data.service)
 
             for (let index = 0; index < data.examType.length; index++) {
                 const examType = data.examType[index]
@@ -151,30 +154,47 @@ export default function App({ user }: RegisterProps) {
                     return;
                 }
             }
-//             if (process.env.NODE_ENV !== "development") {
-//                 await sendMail(
-//                     user.email || '',
-//                     `${lessThanEightDays ? 'REQUIRES ATTENTION - ' : ''} CePro - Exam printing service subscription confirmation`,
-//                     `
-// Hello,
-// Your subscription to our exam printing service has been successfully registered:
+            if (process.env.NODE_ENV !== "development") {
+                await sendMail(
+                    user.email || '',
+                    `CePro - exam services subscription confirmation`,
+                    `
+Hello,
+Your subscription to our exam services has been successfully registered:
 
-// ${lessThanEightDays ? `⚠️ : We would like to inform you that you choose a desired delivery date that is inferior to 8 business days before the exam.
-// The CePro team will get in touch with you shortly to discuss about your situation.
-// Next time, please register to the printing service earlier to make sur that the printing team has the right amount of time to print your exam correctly.
-// ` : ''}
+- Course: ${data.course.exam.code}
+- Teacher: ${data.course.exam.teacherFirstname} ${data.course.exam.teacherName} (${data.course.exam.teacherSciper})
+- Contact: ${contact.email}
+- Type${data.examType.filter((examType) => examType.checked).length > 1 ? 's' : ''} of exam: ${data.examType.filter((examType) => examType.checked).map((examType) => examType.name).join(', ')}
+- Service: ${service[0].description}
+- Level of service: Silver
+- Date of exam:
+${data.examType
+  .filter((examType) => examType.checked)
+  .map(
+    (examType) =>
+      `    - ${examType.name} : ${
+        examType.dontKnowYet ? `Don't know yet` : examType.date
+      }`
+  )
+  .join('\n')}
+- Remarks: ${data.remark}
 
-// - Course: ${data.course?.label}
-// - Exam date: ${data.examDate}
-// - Desired delivery date: ${data.desiredDate}
-// - Contact: ${contact?.firstname} ${contact?.lastname} (${contact?.email})
-// - Authorized persons: ${authorizedPersons.map(user => `${user.email}`).join(', ')}
-// ${data.remark && `- Additional remarks: ${data.remark}`}`,
-//                     'cepro-exams@epfl.ch'
-//                 );
-//             }
-//             openModal("Registration Successful", 'Your Exam ' + exam_code + ' has been registered and a confirmation has been sent to your email.');
-//             reset();
+If you have asked to discuss with us which service to use, we will get back to you shortly.
+Your comments will also be taken into account and we will do what is necessary to take them into account and keep you informed if necessary.
+
+You can already browse our moodle pages, which contain all the information you need to prepare and organise your exam.
+https://moodle.epfl.ch/course/view.php?id=16420
+
+Best
+
+CePro
+`,
+                    'cepro-exams@epfl.ch'
+                );
+            }
+            openModal("Registration Successful", 'Your Exam ' + data.course.exam.code + ' has been registered and a confirmation has been sent to your email.');
+            reset();
         } catch (err) {
             console.error(err);
             openModal("Unexpected Error", 'An unexpected error occurred while registering the exam.');

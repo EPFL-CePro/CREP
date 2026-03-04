@@ -474,3 +474,22 @@ export async function getAllSections():Promise <FormattedSection[]> {
         connection.end()
     })
 }
+
+export async function getServiceById(serviceId:string): Promise<Service[]> {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    })
+
+    connection.connect()
+    
+    return new Promise(function(resolve) {
+        connection.query('SELECT * FROM service WHERE id = ?;', [serviceId], (err, rows) => {
+            if (err) throw err
+            resolve(rows as Service[]);
+        })
+        connection.end()
+    })
+}
