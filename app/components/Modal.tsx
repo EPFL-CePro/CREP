@@ -103,6 +103,16 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                         <input className="exam-date basis-full xl:basis-auto" type="date" name="examDate" disabled defaultValue={new Date(event?.extendedProps?.examDate as string).toISOString().split("T")[0]} />
                     </div>
                 </div>
+                <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
+                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
+                        <label className="font-semibold w-full" htmlFor="copiesNumber">Number of copies</label>
+                        <input className="copies-number basis-full xl:basis-auto" type="text" name="copiesNumber" disabled defaultValue={event?.extendedProps?.copiesNumber} />
+                    </div>
+                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
+                        <label className="font-semibold w-full" htmlFor="pagesPerCopy">Pages per copy</label>
+                        <input className="pages-copy basis-full xl:basis-auto" type="text" name="pagesPerCopy" disabled defaultValue={event?.extendedProps?.pagesPerCopy} />
+                    </div>
+                </div>
             </div>
             <div>
                 <label className="font-semibold w-full" htmlFor="description">Description</label>
