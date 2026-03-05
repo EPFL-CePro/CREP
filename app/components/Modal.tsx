@@ -80,16 +80,28 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                     </div>
                 ))}
             </div>
-            <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2">
-                <div className="date-input flex flex-row flex-wrap justify-between gap-y-1 [&_input]:rounded-sm">
-                    <label className="font-semibold w-full" htmlFor="start">Start</label>
-                    <input className="start-date basis-full xl:basis-auto" type="date" name="start" disabled defaultValue={event ? new Date(event.start as string).toISOString().split("T")[0] : ''} />
-                    <input className="start-time basis-full xl:basis-auto" type="time" name="start" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + (new Date(event.start as string).getHours() - 1)).slice(-2)}:${("0" + new Date(event.start as string).getMinutes()).slice(-2)}` : ''} />
+            <div className="flex flex-col sm:flex-row">
+                <div className="flex flex-col justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2">
+                    <div className="date-input flex flex-row flex-wrap gap-12 gap-y-1 [&_input]:rounded-sm">
+                        <label className="font-semibold w-full" htmlFor="start">Estimated print start</label>
+                        <input className="start-date basis-full xl:basis-auto" type="date" name="start" disabled defaultValue={event ? new Date(event.start as string).toISOString().split("T")[0] : ''} />
+                        <input className="start-time basis-full xl:basis-auto" type="time" name="start" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + (new Date(event.start as string).getHours() - 1)).slice(-2)}:${("0" + new Date(event.start as string).getMinutes()).slice(-2)}` : ''} />
+                    </div>
+                    <div className="date-input flex flex-row flex-wrap gap-12 gap-y-1 [&_input]:rounded-lg">
+                        <label className="font-semibold w-full" htmlFor="end">Estimated print end</label>
+                        <input className="end-date basis-full xl:basis-auto" type="date" name="end" disabled defaultValue={event ? new Date(event.end as string).toISOString().split("T")[0] : ''} />
+                        <input className="end-time basis-full xl:basis-auto" type="time" name="end" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + (new Date(event.end as string).getHours() - 1)).slice(-2)}:${("0" + new Date(event.end as string).getMinutes()).slice(-2)}` : ''} />
+                    </div>
                 </div>
-                <div className="date-input flex flex-row flex-wrap justify-between gap-y-1 [&_input]:rounded-lg">
-                    <label className="font-semibold w-full" htmlFor="end">End</label>
-                    <input className="end-date basis-full xl:basis-auto" type="date" name="end" disabled defaultValue={event ? new Date(event.end as string).toISOString().split("T")[0] : ''} />
-                    <input className="end-time basis-full xl:basis-auto" type="time" name="end" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + (new Date(event.end as string).getHours() - 1)).slice(-2)}:${("0" + new Date(event.end as string).getMinutes()).slice(-2)}` : ''} />
+                <div className="flex flex-col justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2">
+                    <div className="date-input flex flex-row flex-wrap gap-12 gap-y-1 [&_input]:rounded-sm">
+                        <label className="font-semibold w-full" htmlFor="financial">Financial center</label>
+                        <input className="financial-center basis-full xl:basis-auto" type="text" name="financial" disabled defaultValue={event?.extendedProps?.financialCenter} />
+                    </div>
+                    <div className="date-input flex flex-row flex-wrap gap-12 gap-y-1 [&_input]:rounded-lg">
+                        <label className="font-semibold w-full" htmlFor="examDate">Exam date</label>
+                        <input className="exam-date basis-full xl:basis-auto" type="date" name="examDate" disabled defaultValue={new Date(event?.extendedProps?.examDate as string).toISOString().split("T")[0]} />
+                    </div>
                 </div>
             </div>
             <div>
