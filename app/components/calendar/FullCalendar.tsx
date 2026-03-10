@@ -74,7 +74,8 @@ export default function Calendar({ user }: CalendarProps) {
           paperColor: e.paper_color,
           needScan: e.need_scan,
           contact: e.contact,
-          authorizedPersons: e.authorized_persons
+          authorizedPersons: e.authorized_persons,
+          files: e.files
         }
       })
       setExams(filteredData);
@@ -191,6 +192,7 @@ export default function Calendar({ user }: CalendarProps) {
           info.event.setExtendedProp('needScan', clickedExam?.needScan)
           info.event.setExtendedProp('contact', clickedExam?.contact)
           info.event.setExtendedProp('authorizedPersons', JSON.parse(clickedExam?.authorizedPersons)) // Necessary since it's an Array of objects.
+          info.event.setExtendedProp('files', JSON.parse(clickedExam?.files)) // Necessary since it's an Array of strings.
           setSelectedEvent(info.event as EventInput);
           // build the share link once and stash in state
           const rawPath = "vpsi1files.epfl.ch/CAPE/REPRO/TEST/" + info.event.extendedProps?.folder_name; //folder name doesn't exist yet. snippet from ludo. ToDo

@@ -215,6 +215,7 @@ export async function insertExamForPrint(exam: {
     registered_by: string;
     need_scan: boolean;
     financial_center: string;
+    files: string;
 }): Promise<number> {
     const connection = mysql.createConnection({
         host: process.env.MYSQL_HOST,
@@ -226,7 +227,7 @@ export async function insertExamForPrint(exam: {
     connection.connect();
 
     return new Promise((resolve, reject) => {
-        const sql = `INSERT INTO crep (exam_code, exam_date, exam_name, exam_pages, exam_students, print_date, paper_format, paper_color, contact, authorized_persons, remark, repro_remark, status, registered_by, need_scan, financial_center) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+        const sql = `INSERT INTO crep (exam_code, exam_date, exam_name, exam_pages, exam_students, print_date, paper_format, paper_color, contact, authorized_persons, remark, repro_remark, status, registered_by, need_scan, financial_center, files) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
         const params = [
             exam.exam_code,
@@ -244,7 +245,8 @@ export async function insertExamForPrint(exam: {
             exam.status || 'registered',
             exam.registered_by,
             exam.need_scan,
-            exam.financial_center
+            exam.financial_center,
+            exam.files
         ];
 
         connection.query(sql, params, (err, result) => {
