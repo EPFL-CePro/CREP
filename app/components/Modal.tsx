@@ -144,6 +144,16 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                             }
                         </ul>
                     </div>
+                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
+                        <label className="font-semibold w-full" htmlFor="files">Files</label>
+                        <ul className={`${event?.extendedProps?.files.length > 0 && 'ml-6'} list-disc`}>
+                            {event?.extendedProps?.files.length > 0 ? 
+                                event?.extendedProps?.files.map((file:string) => (
+                                    <li key={file}>{file}</li>
+                                )) : 'None'
+                            }
+                        </ul>
+                    </div>
                 </div>
             </div>
             <div>

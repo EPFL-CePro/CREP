@@ -341,6 +341,8 @@ export default function App({ user }: RegisterProps) {
                 }
             }
 
+            const filesNamesArray = selectedFiles.map((file) => file.name)
+
             const insertedExam = await insertExamForPrint(
                 {
                     exam_name: exam_name,
@@ -360,6 +362,7 @@ export default function App({ user }: RegisterProps) {
                     registered_by: user.email || '',
                     need_scan: data.needScan,
                     financial_center: data.financialCenter,
+                    files: JSON.stringify(filesNamesArray),
                 }
             )
 
