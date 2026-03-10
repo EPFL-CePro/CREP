@@ -133,6 +133,18 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                         <input className="contact basis-full xl:basis-auto w-full" type="text" name="contact" disabled defaultValue={event?.extendedProps?.contact} />
                     </div>
                 </div>
+                <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
+                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
+                        <label className="font-semibold w-full" htmlFor="authorizedPersons">Authorized persons</label>
+                        <ul className={`${event?.extendedProps?.authorizedPersons.length > 0 && 'ml-6'} list-disc`}>
+                            {event?.extendedProps?.authorizedPersons.length > 0 ? 
+                                event?.extendedProps?.authorizedPersons.map((user:{ email: string, id: string, name: string }) => (
+                                    <li key={user.id}>{user.email}</li>
+                                )) : 'None'
+                            }
+                        </ul>
+                    </div>
+                </div>
             </div>
             <div>
                 <label className="font-semibold w-full" htmlFor="description">Description</label>
