@@ -71,7 +71,9 @@ export default function Calendar({ user }: CalendarProps) {
           copiesNumber: e.exam_students,
           pagesPerCopy: e.exam_pages,
           paperFormat: e.paper_format,
-          paperColor: e.paper_color
+          paperColor: e.paper_color,
+          needScan: e.need_scan,
+          contact: e.contact,
         }
       })
       setExams(filteredData);
@@ -185,6 +187,8 @@ export default function Calendar({ user }: CalendarProps) {
           info.event.setExtendedProp('pagesPerCopy', clickedExam?.pagesPerCopy)
           info.event.setExtendedProp('paperFormat', clickedExam?.paperFormat)
           info.event.setExtendedProp('paperColor', clickedExam?.paperColor)
+          info.event.setExtendedProp('needScan', clickedExam?.needScan)
+          info.event.setExtendedProp('contact', clickedExam?.contact)
           setSelectedEvent(info.event as EventInput);
           // build the share link once and stash in state
           const rawPath = "vpsi1files.epfl.ch/CAPE/REPRO/TEST/" + info.event.extendedProps?.folder_name; //folder name doesn't exist yet. snippet from ludo. ToDo
