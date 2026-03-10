@@ -123,6 +123,16 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                         <input className="paper-color basis-full xl:basis-auto" type="text" name="paperColor" disabled defaultValue={event?.extendedProps?.paperColor} />
                     </div>
                 </div>
+                <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
+                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
+                        <label className="font-semibold w-full" htmlFor="needScan">Needs to be scanned</label>
+                        <input className="need-scan basis-full xl:basis-auto" type="text" name="needScan" disabled defaultValue={event?.extendedProps?.needScan ? 'Yes' : 'No'} />
+                    </div>
+                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
+                        <label className="font-semibold w-full" htmlFor="contact">Contact</label>
+                        <input className="contact basis-full xl:basis-auto w-full" type="text" name="contact" disabled defaultValue={event?.extendedProps?.contact} />
+                    </div>
+                </div>
             </div>
             <div>
                 <label className="font-semibold w-full" htmlFor="description">Description</label>
