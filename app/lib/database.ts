@@ -27,7 +27,7 @@ interface Exam {
     financial_center: string;
 }
 
-export async function getAllExams() {
+export async function getAllCrepExams() {
     const connection = mysql.createConnection({
         host: process.env.MYSQL_HOST,
         user: process.env.MYSQL_USER,
