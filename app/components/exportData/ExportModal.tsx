@@ -1,5 +1,5 @@
 "use client"
-import { getAllExams, getAllExamsBetweenDates, getAllExamsByStatus } from "@/app/lib/database";
+import { getAllCrepExams, getAllExamsBetweenDates, getAllExamsByStatus } from "@/app/lib/database";
 import { getAllowedExamStatus } from "@/app/lib/examStatus";
 import { User } from "next-auth";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
@@ -36,7 +36,7 @@ export function ExportModal({ setModalOpen, user }: ExportModalProps) {
 
     useEffect(() =>  {
         (async function() {
-            const allExams = await getAllExams() as Exam[];
+            const allExams = await getAllCrepExams() as Exam[];
             setExams(allExams);
         })();
     }, [])
