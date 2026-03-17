@@ -6,26 +6,7 @@ import { Service } from '@/types/service';
 import { ExamType } from '@/types/examType';
 import { AcademicYear, FormattedAcademicYear } from '@/types/academicYear';
 import { FormattedSection, Section } from '@/types/section';
-
-interface Exam {
-    id: number;
-    exam_code: string;
-    exam_date: Date;
-    exam_name: string;
-    exam_pages: number;
-    exam_students: number;
-    print_date: Date;
-    remark: string;
-    repro_remark: string;
-    status: string;
-    paper_format: string;
-    paper_color: string;
-    contact: string;
-    authorized_persons: string;
-    registered_by: string;
-    need_scan: boolean;
-    financial_center: string;
-}
+import { CrepExam } from '@/types/crepExam';
 
 export async function getAllCrepExams() {
     const connection = mysql.createConnection({
@@ -141,7 +122,7 @@ export async function updateExamReproRemarkById(id: string, reproRemark: string)
     })
 }
 
-export async function getAllExamsByStatus(status: Array<string>): Promise<Exam[]> {
+export async function getAllExamsByStatus(status: Array<string>): Promise<CrepExam[]> {
     const connection = mysql.createConnection({
         host: process.env.MYSQL_HOST,
         user: process.env.MYSQL_USER,
@@ -152,7 +133,7 @@ export async function getAllExamsByStatus(status: Array<string>): Promise<Exam[]
     connection.connect()
     
     return new Promise(function(resolve) {
-        connection.query(`SELECT * from crep WHERE status IN (${status.map(obj => `"${obj}"`).join(", ")});`, (err:mysql.QueryError, rows:Exam[]) => {
+        connection.query(`SELECT * from crep WHERE status IN (${status.map(obj => `"${obj}"`).join(", ")});`, (err:mysql.QueryError, rows:CrepExam[]) => {
             if (err) throw err
             resolve(rows);
         })
@@ -160,7 +141,7 @@ export async function getAllExamsByStatus(status: Array<string>): Promise<Exam[]
     })
 }
 
-export async function getAllExamsBetweenDates(beginDate: Date, endDate: Date): Promise<Exam[]> {
+export async function getAllExamsBetweenDates(beginDate: Date, endDate: Date): Promise<CrepExam[]> {
     const connection = mysql.createConnection({
         host: process.env.MYSQL_HOST,
         user: process.env.MYSQL_USER,
@@ -171,7 +152,7 @@ export async function getAllExamsBetweenDates(beginDate: Date, endDate: Date): P
     connection.connect()
     
     return new Promise(function(resolve) {
-        connection.query(`SELECT * from crep WHERE print_date between '${beginDate.toISOString().replace('T', ' ').slice(0, 19)}' and '${endDate.toISOString().replace('T', ' ').slice(0, 19)}'`, (err:mysql.QueryError, rows:Exam[]) => {
+        connection.query(`SELECT * from crep WHERE print_date between '${beginDate.toISOString().replace('T', ' ').slice(0, 19)}' and '${endDate.toISOString().replace('T', ' ').slice(0, 19)}'`, (err:mysql.QueryError, rows:CrepExam[]) => {
             if (err) throw err
             resolve(rows);
         })
@@ -257,7 +238,7 @@ export async function insertExamForPrint(exam: {
     });
 }
 
-export async function getAllExamsForDate(date:string): Promise <Exam[]> {
+export async function getAllExamsForDate(date:string): Promise <CrepExam[]> {
     const connection = mysql.createConnection({
         host: process.env.MYSQL_HOST,
         user: process.env.MYSQL_USER,
@@ -270,7 +251,7 @@ export async function getAllExamsForDate(date:string): Promise <Exam[]> {
     return new Promise(function(resolve) {
         connection.query('SELECT * FROM crep WHERE DATE(print_date) = DATE(?);', [date], (err, rows) => {
             if (err) throw err
-            resolve(rows as Exam[]);
+            resolve(rows as CrepExam[]);
         })
         connection.end()
     })
