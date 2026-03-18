@@ -7,6 +7,7 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
@@ -26,6 +27,10 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
   const [exams, setExams] = React.useState<Exam[]>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [academicYears, setAcademicYears] = React.useState<FormattedAcademicYear[]>([]);
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize: 10,
+  })
 
   React.useEffect(() =>  {
     (async function() {
@@ -57,10 +62,12 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
       globalFilter,
       sorting,
       columnFilters,
+      pagination,
     },
     onGlobalFilterChange: setGlobalFilter,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onPaginationChange: setPagination,
     globalFilterFn: (row, _columnId, filterValue) => {
       const search = String(filterValue).toLowerCase()
 
@@ -71,10 +78,14 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
     },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })
 
   const rowCount = table.getRowModel().rows.length
+
+  const startRow = rowCount === 0 ? 0 : table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1
+  const endRow = rowCount === 0 ? 0 : startRow + rowCount - 1
 
   return (
     <div className="min-h-screen px-6 py-10 md:px-10 lg:px-16">
@@ -116,6 +127,42 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
               ))}
             </select>
           </div>
+        </div>
+
+        <div className="mb-4 mt-10 flex items-center justify-between gap-4">
+          <button
+            type="button"
+            className={`${!table.getCanPreviousPage() ? 'opacity-50 hover:cursor-not-allowed' : 'hover:cursor-pointer'} inline-flex items-center gap-3 rounded-lg border bg-white px-3 py-2 text-lg font-semibold text-slate-800 shadow-sm`}
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            <span className="text-xl leading-none">
+              ‹
+            </span>
+            Back
+          </button>
+
+          <div className="flex items-center gap-4 font-semibold text-slate-700">
+            <span>
+              {startRow}-{endRow} of {table.getRowCount()}
+            </span>
+
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-800 shadow-sm">
+              {table.getState().pagination.pageIndex + 1}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className={`${!table.getCanNextPage() ? 'opacity-50 hover:cursor-not-allowed' : 'hover:cursor-pointer'} inline-flex items-center gap-3 rounded-lg border border-slate-300 bg-white px-3 py-2 text-lg font-semibold text-slate-800 shadow-sm`}
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Next
+            <span className="text-xl leading-none">
+              ›
+            </span>
+          </button>
         </div>
 
         <div className="overflow-hidden rounded-none border border-slate-300 bg-white shadow-sm">
