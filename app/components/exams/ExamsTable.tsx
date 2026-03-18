@@ -11,20 +11,29 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { getAllExams } from '@/app/lib/database'
+import { getAllAcademicYears, getExamsByAcademicYear } from '@/app/lib/database'
 import { Exam } from '@/types/exam';
+import { FormattedAcademicYear } from '@/types/academicYear';
+import { redirect } from "next/navigation";
 
-export default function ExamsTable() {
+interface ExamsTableProps {
+  academicYear: string;
+}
+
+export default function ExamsTable({ academicYear }: ExamsTableProps) {
   const [globalFilter, setGlobalFilter] = React.useState(''); // Plain text searching, searching in the whole table
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [exams, setExams] = React.useState<Exam[]>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [academicYears, setAcademicYears] = React.useState<FormattedAcademicYear[]>([]);
 
   React.useEffect(() =>  {
     (async function() {
-        const allExams = await getAllExams() as Exam[];
+        const allExamsForAcademicYear = await  getExamsByAcademicYear(academicYear) as Exam[];
+        setExams(allExamsForAcademicYear);
 
-        setExams(allExams);
+        const allAcademicYears = await getAllAcademicYears() as FormattedAcademicYear[];
+        setAcademicYears(allAcademicYears.reverse()) // Reversing so that the most recent academic year is at the top of the select
     })();
   }, [])
 
@@ -70,7 +79,7 @@ export default function ExamsTable() {
   return (
     <div className="min-h-screen px-6 py-10 md:px-10 lg:px-16">
       <div className="mx-auto">
-        <div className="mb-8">
+        <div className="flex items-center justify-between mb-8">
           <div className="w-1/3 min-w-80 flex h-12 items-center gap-3 rounded-xl border border-slate-300 bg-white px-5 shadow-sm">
             <svg
               aria-hidden="true"
@@ -90,6 +99,22 @@ export default function ExamsTable() {
               placeholder="Search an exam..."
               className="border-none bg-transparent text-lg text-slate-700 outline-none placeholder:text-slate-400"
             />
+          </div>
+          <div>
+            <select
+              value={academicYear}
+              className="border-2 border-red-600 p-3 rounded-2xl"
+              onChange={(e) => redirect(`/exams/${e.target.value}`)}
+            >
+              {academicYears.map((academic) => (
+                <option
+                  key={academic.label}
+                  value={academic.label}
+                >
+                  {academic.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
