@@ -67,11 +67,11 @@ export default function ExamsTable() {
     <div className="min-h-screen px-6 py-10 md:px-10 lg:px-16">
       <div className="mx-auto">
         <div className="mb-8">
-          <div className="w-1/3 min-w-80 flex h-16 items-center gap-3 rounded-xl border border-slate-300 bg-white px-5 shadow-sm">
+          <div className="w-1/3 min-w-80 flex h-12 items-center gap-3 rounded-xl border border-slate-300 bg-white px-5 shadow-sm">
             <svg
               aria-hidden="true"
               viewBox="0 0 24 24"
-              className="h-7 w-7 text-slate-500"
+              className="h-5 w-5 text-slate-500"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -84,7 +84,7 @@ export default function ExamsTable() {
               value={globalFilter}
               onChange={(e) => setGlobalFilter(e.target.value)}
               placeholder="Search an exam..."
-              className="border-none bg-transparent text-2xl text-slate-700 outline-none placeholder:text-slate-400"
+              className="border-none bg-transparent text-lg text-slate-700 outline-none placeholder:text-slate-400"
             />
           </div>
         </div>
