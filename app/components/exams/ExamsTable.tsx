@@ -3,6 +3,7 @@
 import * as React from 'react'
 import {
   ColumnDef,
+  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -17,6 +18,7 @@ export default function ExamsTable() {
   const [globalFilter, setGlobalFilter] = React.useState(''); // Plain text searching, searching in the whole table
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [exams, setExams] = React.useState<Exam[]>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
   React.useEffect(() =>  {
     (async function() {
@@ -45,9 +47,11 @@ export default function ExamsTable() {
     state: {
       globalFilter,
       sorting,
+      columnFilters,
     },
     onGlobalFilterChange: setGlobalFilter,
     onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
     globalFilterFn: (row, _columnId, filterValue) => {
       const search = String(filterValue).toLowerCase()
 
@@ -97,6 +101,7 @@ export default function ExamsTable() {
                   {headerGroup.headers.map((header) => {
                     const isSorted = header.column.getIsSorted()
                     const canSort = header.column.getCanSort()
+                    const canFilter = header.column.getCanFilter()
 
                     return (
                       <th
@@ -104,24 +109,36 @@ export default function ExamsTable() {
                         className="border-r border-slate-300 px-7 py-5 text-left text-2xl font-bold text-slate-900 last:border-r-0"
                       >
                         {header.isPlaceholder ? null : canSort ? (
-                          <button
-                            type="button"
-                            onClick={header.column.getToggleSortingHandler()}
-                            className="inline-flex items-center gap-2"
-                          >
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-
-                            <span
-                              aria-hidden="true"
-                              className="inline-block text-lg text-red-600"
+                          <div className="flex flex-col gap-3">
+                            <button
+                              type="button"
+                              onClick={header.column.getToggleSortingHandler()}
+                              className="inline-flex items-center gap-2"
                             >
-                              {isSorted === 'asc' && '▼'}
-                              {isSorted === 'desc' && '▲'}
-                            </span>
-                          </button>
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+
+                              <span
+                                aria-hidden="true"
+                                className="inline-block text-lg text-red-600"
+                              >
+                                {isSorted === 'asc' && '▼'}
+                                {isSorted === 'desc' && '▲'}
+                              </span>
+                            </button>
+  
+                            {canFilter && (
+                              <input
+                                type="text"
+                                value={(header.column.getFilterValue() ?? '') as string}
+                                onChange={(e) => header.column.setFilterValue(e.target.value)}
+                                placeholder="Filtrer..."
+                                className="w-72 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-normal text-slate-700 outline-none placeholder:text-slate-400"
+                              />
+                            )}
+                          </div>
                         ) : (
                           flexRender(
                             header.column.columnDef.header,
