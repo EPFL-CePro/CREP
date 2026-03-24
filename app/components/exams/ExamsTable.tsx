@@ -137,7 +137,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
                     <input
                       value={globalFilter}
                       onChange={(e) => setGlobalFilter(e.target.value)}
-                      placeholder="Find a course or code"
+                      placeholder="Search an exam..."
                       className="w-full border-none bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 md:text-base"
                     />
                   </div>
