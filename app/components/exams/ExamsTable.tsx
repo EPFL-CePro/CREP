@@ -48,23 +48,23 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
 
   const columns: ColumnDef<Exam>[] = [
     {
-      accessorKey: 'name',
-      header: 'Cours',
-      cell: ({ row }) => (
-        <div className="min-w-0">
-          <div className="truncate text-base font-semibold text-slate-950 md:text-lg">
-            {row.original.name}
-          </div>
-        </div>
-      ),
-    },
-    {
       accessorKey: 'code',
       header: 'Code',
       cell: ({ row }) => (
         <span className="inline-flex rounded-full border border-red-200 bg-red-50 px-3 py-1 font-mono text-sm font-semibold tracking-wide text-red-700">
           {row.original.code}
         </span>
+      ),
+    },
+    {
+      accessorKey: 'name',
+      header: 'Course',
+      cell: ({ row }) => (
+        <div className="min-w-0">
+          <div className="truncate text-base font-semibold text-slate-950 md:text-lg">
+            {row.original.name}
+          </div>
+        </div>
       ),
     },
   ]
