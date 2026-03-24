@@ -13,45 +13,59 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { getAllAcademicYears, getExamsByAcademicYear } from '@/app/lib/database'
-import { Exam } from '@/types/exam';
-import { FormattedAcademicYear } from '@/types/academicYear';
-import { redirect } from "next/navigation";
+import { Exam } from '@/types/exam'
+import { FormattedAcademicYear } from '@/types/academicYear'
+import { useRouter } from 'next/navigation'
 
 interface ExamsTableProps {
-  academicYear: string;
+  academicYear: string
 }
 
 export default function ExamsTable({ academicYear }: ExamsTableProps) {
-  const [globalFilter, setGlobalFilter] = React.useState(''); // Plain text searching, searching in the whole table
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [exams, setExams] = React.useState<Exam[]>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [academicYears, setAcademicYears] = React.useState<FormattedAcademicYear[]>([]);
+  const router = useRouter()
+  const [globalFilter, setGlobalFilter] = React.useState('') // Plain text searching, searching in the whole table
+  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [exams, setExams] = React.useState<Exam[]>([])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [academicYears, setAcademicYears] = React.useState<FormattedAcademicYear[]>([])
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10,
   })
 
-  React.useEffect(() =>  {
-    (async function() {
-        const allExamsForAcademicYear = await  getExamsByAcademicYear(academicYear) as Exam[];
-        setExams(allExamsForAcademicYear);
+  React.useEffect(() => {
+    ;(async function () {
+      const allExamsForAcademicYear = (await getExamsByAcademicYear(
+        academicYear
+      )) as Exam[]
+      setExams(allExamsForAcademicYear)
 
-        const allAcademicYears = await getAllAcademicYears() as FormattedAcademicYear[];
-        setAcademicYears(allAcademicYears.reverse()) // Reversing so that the most recent academic year is at the top of the select
-    })();
-  }, [])
+      const allAcademicYears =
+        (await getAllAcademicYears()) as FormattedAcademicYear[]
+      setAcademicYears(allAcademicYears.reverse()) // Reversing so that the most recent academic year is at the top of the select
+    })()
+  }, [academicYear])
 
-  const columns:ColumnDef<Exam>[] = [
+  const columns: ColumnDef<Exam>[] = [
     {
       accessorKey: 'name',
       header: 'Cours',
-      cell: ({ row }) => row.original.name,
+      cell: ({ row }) => (
+        <div className="min-w-0">
+          <div className="truncate text-base font-semibold text-slate-950 md:text-lg">
+            {row.original.name}
+          </div>
+        </div>
+      ),
     },
     {
       accessorKey: 'code',
       header: 'Code',
-      cell: ({ row }) => row.original.code,
+      cell: ({ row }) => (
+        <span className="inline-flex rounded-full border border-red-200 bg-red-50 px-3 py-1 font-mono text-sm font-semibold tracking-wide text-red-700">
+          {row.original.code}
+        </span>
+      ),
     },
   ]
 
@@ -83,93 +97,98 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
   })
 
   const rowCount = table.getRowModel().rows.length
-
-  const startRow = rowCount === 0 ? 0 : table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1
+  const totalRows = table.getRowCount()
+  const currentPage = table.getState().pagination.pageIndex + 1
+  const totalPages = table.getPageCount()
+  const startRow =
+    rowCount === 0
+      ? 0
+      : table.getState().pagination.pageIndex *
+          table.getState().pagination.pageSize +
+        1
   const endRow = rowCount === 0 ? 0 : startRow + rowCount - 1
 
   return (
-    <div className="min-h-screen px-6 py-10 md:px-10 lg:px-16">
-      <div className="mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div className="w-1/3 min-w-80 flex h-12 items-center gap-3 rounded-xl border border-slate-300 bg-white px-5 shadow-sm">
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              className="h-5 w-5 text-slate-500"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="m20 20-3.5-3.5" />
-            </svg>
+    <div className="min-h-screen px-4 py-8 md:px-8 md:py-10 lg:px-14">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-6 overflow-hidden rounded-[2rem] backdrop-blur">
+          <div className="px-6 py-5 md:px-8">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex w-full flex-col gap-4 lg:flex-row">
+                <label className="group flex h-14 w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 shadow-sm transition focus-within:border-red-300 focus-within:ring-4 focus-within:ring-red-100 lg:max-w-xl">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-red-600 transition group-focus-within:bg-red-100">
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <circle cx="11" cy="11" r="7" />
+                      <path d="m20 20-3.5-3.5" />
+                    </svg>
+                  </div>
 
-            <input
-              value={globalFilter}
-              onChange={(e) => setGlobalFilter(e.target.value)}
-              placeholder="Search an exam..."
-              className="border-none bg-transparent text-lg text-slate-700 outline-none placeholder:text-slate-400"
-            />
-          </div>
-          <div>
-            <select
-              value={academicYear}
-              className="border-2 border-red-600 p-3 rounded-2xl"
-              onChange={(e) => redirect(`/exams/${e.target.value}`)}
-            >
-              {academicYears.map((academic) => (
-                <option
-                  key={academic.label}
-                  value={academic.label}
-                >
-                  {academic.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                      Search
+                    </div>
+                    <input
+                      value={globalFilter}
+                      onChange={(e) => setGlobalFilter(e.target.value)}
+                      placeholder="Find a course or code"
+                      className="w-full border-none bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 md:text-base"
+                    />
+                  </div>
+                </label>
 
-        <div className="mb-4 mt-10 flex items-center justify-between gap-4">
-          <button
-            type="button"
-            className={`${!table.getCanPreviousPage() ? 'opacity-50 hover:cursor-not-allowed' : 'hover:cursor-pointer'} inline-flex items-center gap-3 rounded-lg border bg-white px-3 py-2 text-lg font-semibold text-slate-800 shadow-sm`}
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            <span className="text-xl leading-none">
-              ‹
-            </span>
-            Back
-          </button>
+                <label className="flex h-14 min-w-[16rem] items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 shadow-sm xl:ml-auto">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <path d="M7 4h10" />
+                      <path d="M5 8h14" />
+                      <path d="M8 12h8" />
+                      <path d="M10 16h4" />
+                      <path d="M12 20v-4" />
+                    </svg>
+                  </div>
 
-          <div className="flex items-center gap-4 font-semibold text-slate-700">
-            <span>
-              {startRow}-{endRow} of {table.getRowCount()}
-            </span>
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-800 shadow-sm">
-              {table.getState().pagination.pageIndex + 1}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                      Academic year
+                    </div>
+                    <select
+                      value={academicYear}
+                      className="w-full border-none bg-transparent text-sm font-medium text-slate-700 outline-none md:text-base"
+                      onChange={(e) => router.push(`/exams/${e.target.value}`)}
+                    >
+                      {academicYears.map((academic) => (
+                        <option key={academic.label} value={academic.label}>
+                          {academic.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
-
-          <button
-            type="button"
-            className={`${!table.getCanNextPage() ? 'opacity-50 hover:cursor-not-allowed' : 'hover:cursor-pointer'} inline-flex items-center gap-3 rounded-lg border border-slate-300 bg-white px-3 py-2 text-lg font-semibold text-slate-800 shadow-sm`}
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-            <span className="text-xl leading-none">
-              ›
-            </span>
-          </button>
         </div>
 
-        <div className="overflow-hidden rounded-none border border-slate-300 bg-white shadow-sm">
-          <table className="w-full border-collapse">
-            <thead className="bg-[#f2f2f4]">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id} className="border-b border-slate-300">
+        <div className="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-[0_24px_80px_-36px_rgba(15,23,42,0.35)]">
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-separate border-spacing-0">
+              <thead className="bg-slate-50/80">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id} className="align-top">
                   {headerGroup.headers.map((header) => {
                     const isSorted = header.column.getIsSorted()
                     const canSort = header.column.getCanSort()
@@ -178,14 +197,14 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
                     return (
                       <th
                         key={header.id}
-                        className="border-r border-slate-300 px-7 py-5 text-left text-2xl font-bold text-slate-900 last:border-r-0"
+                        className="border-b border-slate-200 px-6 py-5 text-left align-top first:pl-8 last:pr-8"
                       >
                         {header.isPlaceholder ? null : canSort ? (
                           <div className="flex flex-col gap-3">
                             <button
                               type="button"
                               onClick={header.column.getToggleSortingHandler()}
-                              className="inline-flex items-center gap-2"
+                              className="inline-flex items-center gap-2 text-left text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 transition hover:text-slate-900"
                             >
                               {flexRender(
                                 header.column.columnDef.header,
@@ -194,21 +213,45 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
 
                               <span
                                 aria-hidden="true"
-                                className="inline-block text-lg text-red-600"
+                                className={`inline-flex h-6 min-w-6 items-center justify-center rounded-full border px-1 text-[0.7rem] ${
+                                  isSorted
+                                    ? 'border-red-200 bg-red-50 text-red-600'
+                                    : 'border-slate-200 bg-white text-slate-400'
+                                }`}
                               >
                                 {isSorted === 'asc' && '▼'}
                                 {isSorted === 'desc' && '▲'}
+                                {!isSorted && '•'}
                               </span>
                             </button>
-  
+
                             {canFilter && (
-                              <input
-                                type="text"
-                                value={(header.column.getFilterValue() ?? '') as string}
-                                onChange={(e) => header.column.setFilterValue(e.target.value)}
-                                placeholder="Filtrer..."
-                                className="w-72 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-normal text-slate-700 outline-none placeholder:text-slate-400"
-                              />
+                              <label className="group flex h-11 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 shadow-sm transition focus-within:border-red-300 focus-within:ring-4 focus-within:ring-red-100">
+                                <svg
+                                  aria-hidden="true"
+                                  viewBox="0 0 24 24"
+                                  className="h-4 w-4 shrink-0 text-slate-400 transition group-focus-within:text-red-500"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                >
+                                  <circle cx="11" cy="11" r="7" />
+                                  <path d="m20 20-3.5-3.5" />
+                                </svg>
+                                <input
+                                  type="text"
+                                  value={
+                                    (header.column.getFilterValue() ?? '') as string
+                                  }
+                                  onChange={(e) =>
+                                    header.column.setFilterValue(e.target.value)
+                                  }
+                                  placeholder={`Filter ${String(
+                                    header.column.columnDef.header
+                                  ).toLowerCase()}...`}
+                                  className="w-full min-w-28 border-none bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+                                />
+                              </label>
                             )}
                           </div>
                         ) : (
@@ -220,42 +263,127 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
                       </th>
                     )
                   })}
-                </tr>
-              ))}
-            </thead>
-
-            <tbody>
-              {rowCount === 0 ? (
-                <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="px-7 py-10 text-xl text-slate-500"
-                  >
-                    No result
-                  </td>
-                </tr>
-              ) : (
-                table.getRowModel().rows.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="border-b border-slate-200 last:border-b-0"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <td
-                        key={cell.id}
-                        className="px-7 py-5 text-[2.05rem] leading-none text-slate-900 md:text-[1.1rem]"
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    ))}
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ))}
+              </thead>
+
+              <tbody>
+                {rowCount === 0 ? (
+                  <tr>
+                    <td colSpan={columns.length} className="px-8 py-16">
+                      <div className="flex flex-col items-center justify-center rounded-[1.75rem] border border-dashed border-slate-200 bg-slate-50/80 px-6 py-12 text-center">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
+                          <svg
+                            aria-hidden="true"
+                            viewBox="0 0 24 24"
+                            className="h-8 w-8 text-slate-300"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                          >
+                            <circle cx="11" cy="11" r="7" />
+                            <path d="m20 20-3.5-3.5" />
+                          </svg>
+                        </div>
+                        <h3 className="mt-5 text-xl font-semibold text-slate-900">
+                          No exams match these filters
+                        </h3>
+                        <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
+                          Try broadening your search or clearing a column filter
+                          to bring the hidden rows back into view.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  table.getRowModel().rows.map((row, index) => (
+                    <tr
+                      key={row.id}
+                      className="group transition hover:bg-red-50/50"
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <td
+                          key={cell.id}
+                          className={`border-b border-slate-100 px-6 py-5 align-middle text-slate-900 first:pl-8 last:pr-8 ${
+                            index === table.getRowModel().rows.length - 1
+                              ? 'border-b-0'
+                              : ''
+                          }`}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="mt-5 flex flex-col gap-4 rounded-[1.75rem] border border-slate-200/80 bg-white px-5 py-4 shadow-[0_18px_50px_-36px_rgba(15,23,42,0.35)] md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="text-sm text-slate-500">
+              Showing <span className="font-semibold text-slate-800">{startRow}</span>
+              {' '}- <span className="font-semibold text-slate-800">{endRow}</span>
+              {' '}from <span className="font-semibold text-slate-800">{totalRows}</span>
+              {' '}exams
+            </div>
+            <label className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+              <span className="font-medium text-slate-500">Rows</span>
+              <select
+                value={table.getState().pagination.pageSize}
+                onChange={(e) => {
+                  table.setPageSize(Number(e.target.value))
+                }}
+                className="border-none bg-transparent font-semibold text-slate-800 outline-none"
+              >
+                {[10, 20, 30, 40, 50].map((pageSize) => (
+                  <option key={pageSize} value={pageSize}>
+                    {pageSize} per page
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 sm:justify-end">
+            <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-600">
+              Page <span className="text-slate-900">{currentPage}</span> of{' '}
+              <span className="text-slate-900">{Math.max(totalPages, 1)}</span>
+            </div>
+
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+              <button
+                type="button"
+                className={`inline-flex h-11 w-11 items-center justify-center rounded-full text-lg font-semibold transition ${
+                  !table.getCanPreviousPage()
+                    ? 'cursor-not-allowed text-slate-300'
+                    : 'text-slate-700 hover:bg-slate-100'
+                }`}
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+                aria-label="Previous page"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                className={`inline-flex h-11 w-11 items-center justify-center rounded-full text-lg font-semibold transition ${
+                  !table.getCanNextPage()
+                    ? 'cursor-not-allowed text-slate-300'
+                    : 'bg-red-500 text-white hover:bg-red-600'
+                }`}
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+                aria-label="Next page"
+              >
+                ›
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
