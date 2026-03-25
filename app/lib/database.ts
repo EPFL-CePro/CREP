@@ -8,6 +8,7 @@ import { AcademicYear, FormattedAcademicYear } from '@/types/academicYear';
 import { FormattedSection, Section } from '@/types/section';
 import { CrepExam } from '@/types/crepExam';
 import { Exam } from '@/types/exam';
+import { ServiceLevel } from '@/types/serviceLevel';
 
 export async function getAllCrepExams() {
     const connection = mysql.createConnection({
@@ -492,6 +493,25 @@ export async function getExamsByAcademicYear(academicYear: string): Promise <Exa
         connection.query('SELECT exam.* FROM exam LEFT JOIN academic_year ON exam.academic_year_id = academic_year.id WHERE academic_year.code = ?;', [academicYear], (err, rows) => {
             if (err) throw err
             resolve(rows as Exam[]);
+        })
+        connection.end()
+    })
+}
+
+export async function getAllServiceLevels(): Promise <ServiceLevel[]> {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    })
+
+    connection.connect()
+    
+    return new Promise(function(resolve) {
+        connection.query('SELECT * from service_level;', (err, rows) => {
+            if (err) throw err
+            resolve(rows as ServiceLevel[]);
         })
         connection.end()
     })
