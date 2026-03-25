@@ -81,7 +81,11 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
       header: 'Course',
       cell: ({ row }) => (
         <div className="min-w-0">
-          <div className="truncate text-base font-semibold text-slate-950 md:text-lg">
+          <div className="flex truncate text-base font-semibold text-slate-950 md:text-lg">
+            <span
+              className={`flex h-2 w-2 mt-auto mb-auto rounded-full mr-2`}
+              style={{ backgroundColor: allExamStatus.find((element:ExamStatus) => element.id == row.original.exam_status_id)?.color}}
+            />
             {row.original.name}
           </div>
         </div>
