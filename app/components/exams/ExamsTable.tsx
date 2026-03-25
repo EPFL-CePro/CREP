@@ -275,10 +275,10 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
 
   return (
     <div className="min-h-screen px-4 py-8 md:px-8 md:py-10 lg:px-14">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto">
         <div className="mb-6 overflow-hidden rounded-[2rem] backdrop-blur">
           <div className="px-6 py-5 md:px-8">
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="max-w-7xl ml-auto mr-auto flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex w-full flex-col gap-4 lg:flex-row">
                 <label className="group flex h-14 w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 shadow-sm transition focus-within:border-red-300 focus-within:ring-4 focus-within:ring-red-100 lg:max-w-xl">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-red-600 transition group-focus-within:bg-red-100">
@@ -488,7 +488,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
             </table>
           </div>
         </div>
-        <div className="mt-5 flex flex-col gap-4 rounded-[1.75rem] border border-slate-200/80 bg-white px-5 py-4 shadow-[0_18px_50px_-36px_rgba(15,23,42,0.35)] md:flex-row md:items-center md:justify-between">
+        <div className="max-w-4xl ml-auto mr-auto mt-5 flex flex-col gap-4 rounded-[1.75rem] border border-slate-200/80 bg-white px-5 py-4 shadow-[0_18px_50px_-36px_rgba(15,23,42,0.35)] md:flex-row md:items-center md:justify-between">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="text-sm text-slate-500">
               Showing <span className="font-semibold text-slate-800">{startRow}</span>
