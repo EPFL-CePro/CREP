@@ -12,11 +12,12 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { getAllAcademicYears, getAllServiceLevels, getExamsByAcademicYear } from '@/app/lib/database'
+import { getAllAcademicYears, getAllServiceLevels, getAllServices, getExamsByAcademicYear } from '@/app/lib/database'
 import { Exam } from '@/types/exam'
 import { FormattedAcademicYear } from '@/types/academicYear'
 import { useRouter } from 'next/navigation'
 import { ServiceLevel } from '@/types/serviceLevel'
+import { Service } from '@/types/service'
 
 interface ExamsTableProps {
   academicYear: string
@@ -34,6 +35,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
     pageSize: 10,
   })
   const [allServiceLevels, setAllServiceLevels] = React.useState<ServiceLevel[]>([])
+  const [allServices, setAllServices] = React.useState<Service[]>([])
 
   React.useEffect(() => {
     ;(async function () {
@@ -44,6 +46,9 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
 
       const serviceLevels = await getAllServiceLevels()
       setAllServiceLevels(serviceLevels)
+
+      const services = await getAllServices()
+      setAllServices(services)
 
       const allAcademicYears =
         (await getAllAcademicYears()) as FormattedAcademicYear[]
@@ -121,6 +126,55 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         return serviceLevelNameA.localeCompare(serviceLevelNameB)
       },
     },
+    {
+      accessorKey: 'service_id',
+      header: 'Service',
+      cell: ({ row }) => (
+        <div>
+          <select
+              defaultValue={allServices.find((element:Service) => element.id == row.original.service_id)?.id}
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+              onChange={(e) => console.log(e)}
+            >
+              {allServices.map((service) => (
+                <option key={service.id} value={service.id}>
+                  {service.code}
+                </option>
+              ))}
+            </select>
+        </div>
+      ),
+      filterFn: (row, columnId, filterValue) => {
+        const search = String(filterValue ?? '').trim().toLowerCase()
+        if (!search) return true
+
+        const serviceName =
+          allServices
+            .find(
+              (element: Service) => element.id == row.getValue(columnId)
+            )
+            ?.code.toLowerCase() ?? ''
+
+        return serviceName.includes(search)
+      },
+      sortingFn: (firstRow, secondRow, columnId) => {
+        const serviceCodeA =
+          allServices
+            .find(
+              (element: Service) => element.id == firstRow.getValue(columnId)
+            )
+            ?.code.toLowerCase() ?? ''
+
+        const serviceCodeB =
+          allServices
+            .find(
+              (element: Service) => element.id == secondRow.getValue(columnId)
+            )
+            ?.code.toLowerCase() ?? ''
+
+        return serviceCodeA.localeCompare(serviceCodeB)
+      },
+    },
   ]
 
   const table = useReactTable({
@@ -142,7 +196,8 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
       return (
         row.original.name.toLowerCase().includes(search) ||
         row.original.code.toLowerCase().includes(search) ||
-        (allServiceLevels.find((element:ServiceLevel) => element.id == row.original.service_level_id)?.name.toLowerCase().includes(search) || false)
+        (allServiceLevels.find((element:ServiceLevel) => element.id == row.original.service_level_id)?.name.toLowerCase().includes(search) || false) ||
+        (allServices.find((element:Service) => element.id == row.original.service_id)?.code.toLowerCase().includes(search) || false)
       )
     },
     getCoreRowModel: getCoreRowModel(),
