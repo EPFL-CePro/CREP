@@ -326,6 +326,15 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         )
       },
     },
+    {
+      accessorKey: 'exam_semester',
+      header: 'Semester',
+      cell: ({ row }) => (
+        <div className="min-w-0">
+          {row.original.exam_semester}
+        </div>
+      ),
+    },
   ]
 
   const table = useReactTable({
@@ -356,7 +365,8 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         (allServices.find((element:Service) => element.id == row.original.service_id)?.code.toLowerCase().includes(search) || false) ||
         (allExamTypes.find((element:ExamType) => element.id == row.original.exam_type_id)?.code.toLowerCase().includes(search) || false) ||
         (allExamStatus.find((element:ExamStatus) => element.id == row.original.exam_status_id)?.code.toLowerCase().includes(search) || false) ||
-        formattedExamDate.includes(search)
+        formattedExamDate.includes(search) ||
+        !isNaN(Number(search)) && row.original.exam_semester == Number(search)
       )
     },
     getCoreRowModel: getCoreRowModel(),
