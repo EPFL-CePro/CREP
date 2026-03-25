@@ -148,14 +148,14 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         const search = String(filterValue ?? '').trim().toLowerCase()
         if (!search) return true
 
-        const serviceName =
+        const serviceCode =
           allServices
             .find(
               (element: Service) => element.id == row.getValue(columnId)
             )
             ?.code.toLowerCase() ?? ''
 
-        return serviceName.includes(search)
+        return serviceCode.includes(search)
       },
       sortingFn: (firstRow, secondRow, columnId) => {
         const serviceCodeA =
