@@ -287,6 +287,45 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         return examStatusCodeA.localeCompare(examStatusCodeB)
       },
     },
+    {
+      accessorKey: 'exam_date',
+      header: 'Exam date',
+      cell: ({ row }) => (
+        <div>
+          <input
+            type="date"
+            defaultValue={row.original.exam_date ? (row.original.exam_date as Date).toISOString().split('T')[0] : ''}
+          />
+        </div>
+      ),
+      filterFn: (row, columnId, filterValue) => {
+        const search = String(filterValue ?? '').trim()
+        if (!search) return true
+
+        const examDate = row.getValue(columnId)
+
+        if (!examDate) return false
+
+        const formattedDate = new Date(examDate as string | Date)
+          .toISOString()
+          .split('T')[0]
+
+        return formattedDate.includes(search)
+      },
+      sortingFn: (firstRow, secondRow, columnId) => {
+        const examDateA = firstRow.getValue(columnId)
+        const examDateB = secondRow.getValue(columnId)
+
+        if (!examDateA && !examDateB) return 0
+        if (!examDateA) return 1
+        if (!examDateB) return -1
+
+        return (
+          new Date(examDateA as string | Date).getTime() -
+          new Date(examDateB as string | Date).getTime()
+        )
+      },
+    },
   ]
 
   const table = useReactTable({
@@ -305,13 +344,19 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
     globalFilterFn: (row, _columnId, filterValue) => {
       const search = String(filterValue).toLowerCase()
 
+      const examDate = row.original.exam_date
+      const formattedExamDate = examDate
+        ? new Date(examDate as string | Date).toISOString().split('T')[0]
+        : ''
+
       return (
         row.original.name.toLowerCase().includes(search) ||
         row.original.code.toLowerCase().includes(search) ||
         (allServiceLevels.find((element:ServiceLevel) => element.id == row.original.service_level_id)?.name.toLowerCase().includes(search) || false) ||
         (allServices.find((element:Service) => element.id == row.original.service_id)?.code.toLowerCase().includes(search) || false) ||
         (allExamTypes.find((element:ExamType) => element.id == row.original.exam_type_id)?.code.toLowerCase().includes(search) || false) ||
-        (allExamStatus.find((element:ExamStatus) => element.id == row.original.exam_status_id)?.code.toLowerCase().includes(search) || false)
+        (allExamStatus.find((element:ExamStatus) => element.id == row.original.exam_status_id)?.code.toLowerCase().includes(search) || false) ||
+        formattedExamDate.includes(search)
       )
     },
     getCoreRowModel: getCoreRowModel(),
