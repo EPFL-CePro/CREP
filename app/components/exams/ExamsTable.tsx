@@ -12,12 +12,13 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { getAllAcademicYears, getAllServiceLevels, getAllServices, getExamsByAcademicYear } from '@/app/lib/database'
+import { getAllAcademicYears, getAllExamTypes, getAllServiceLevels, getAllServices, getExamsByAcademicYear } from '@/app/lib/database'
 import { Exam } from '@/types/exam'
 import { FormattedAcademicYear } from '@/types/academicYear'
 import { useRouter } from 'next/navigation'
 import { ServiceLevel } from '@/types/serviceLevel'
 import { Service } from '@/types/service'
+import { ExamType } from '@/types/examType'
 
 interface ExamsTableProps {
   academicYear: string
@@ -36,6 +37,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
   })
   const [allServiceLevels, setAllServiceLevels] = React.useState<ServiceLevel[]>([])
   const [allServices, setAllServices] = React.useState<Service[]>([])
+  const [allExamTypes, setAllExamTypes] = React.useState<ExamType[]>([])
 
   React.useEffect(() => {
     ;(async function () {
@@ -49,6 +51,9 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
 
       const services = await getAllServices()
       setAllServices(services)
+
+      const examTypes = await getAllExamTypes()
+      setAllExamTypes(examTypes)
 
       const allAcademicYears =
         (await getAllAcademicYears()) as FormattedAcademicYear[]
@@ -175,6 +180,55 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         return serviceCodeA.localeCompare(serviceCodeB)
       },
     },
+    {
+      accessorKey: 'exam_type_id',
+      header: 'Exam type',
+      cell: ({ row }) => (
+        <div>
+          <select
+              defaultValue={allExamTypes.find((element:ExamType) => element.id == row.original.exam_type_id)?.id}
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+              onChange={(e) => console.log(e)}
+            >
+              {allExamTypes.map((service) => (
+                <option key={service.id} value={service.id}>
+                  {service.code}
+                </option>
+              ))}
+            </select>
+        </div>
+      ),
+      filterFn: (row, columnId, filterValue) => {
+        const search = String(filterValue ?? '').trim().toLowerCase()
+        if (!search) return true
+
+        const examTypeCode =
+          allExamTypes
+            .find(
+              (element: ExamType) => element.id == row.getValue(columnId)
+            )
+            ?.code.toLowerCase() ?? ''
+
+        return examTypeCode.includes(search)
+      },
+      sortingFn: (firstRow, secondRow, columnId) => {
+        const examTypeCodeA =
+          allExamTypes
+            .find(
+              (element: ExamType) => element.id == firstRow.getValue(columnId)
+            )
+            ?.code.toLowerCase() ?? ''
+
+        const examTypeCodeB =
+          allExamTypes
+            .find(
+              (element: ExamType) => element.id == secondRow.getValue(columnId)
+            )
+            ?.code.toLowerCase() ?? ''
+
+        return examTypeCodeA.localeCompare(examTypeCodeB)
+      },
+    },
   ]
 
   const table = useReactTable({
@@ -197,7 +251,8 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         row.original.name.toLowerCase().includes(search) ||
         row.original.code.toLowerCase().includes(search) ||
         (allServiceLevels.find((element:ServiceLevel) => element.id == row.original.service_level_id)?.name.toLowerCase().includes(search) || false) ||
-        (allServices.find((element:Service) => element.id == row.original.service_id)?.code.toLowerCase().includes(search) || false)
+        (allServices.find((element:Service) => element.id == row.original.service_id)?.code.toLowerCase().includes(search) || false) ||
+        (allExamTypes.find((element:ExamType) => element.id == row.original.exam_type_id)?.code.toLowerCase().includes(search) || false)
       )
     },
     getCoreRowModel: getCoreRowModel(),
