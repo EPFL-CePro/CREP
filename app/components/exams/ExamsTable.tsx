@@ -190,9 +190,9 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
               className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
               onChange={(e) => console.log(e)}
             >
-              {allExamTypes.map((service) => (
-                <option key={service.id} value={service.id}>
-                  {service.code}
+              {allExamTypes.map((examType) => (
+                <option key={examType.id} value={examType.id}>
+                  {examType.code}
                 </option>
               ))}
             </select>
