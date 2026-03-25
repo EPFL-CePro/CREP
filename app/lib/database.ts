@@ -9,6 +9,7 @@ import { FormattedSection, Section } from '@/types/section';
 import { CrepExam } from '@/types/crepExam';
 import { Exam } from '@/types/exam';
 import { ServiceLevel } from '@/types/serviceLevel';
+import { ExamStatus } from '@/types/examStatus';
 
 export async function getAllCrepExams() {
     const connection = mysql.createConnection({
@@ -512,6 +513,25 @@ export async function getAllServiceLevels(): Promise <ServiceLevel[]> {
         connection.query('SELECT * from service_level;', (err, rows) => {
             if (err) throw err
             resolve(rows as ServiceLevel[]);
+        })
+        connection.end()
+    })
+}
+
+export async function getAllExamStatus(): Promise <ExamStatus[]> {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    })
+
+    connection.connect()
+    
+    return new Promise(function(resolve) {
+        connection.query('SELECT * from exam_status;', (err, rows) => {
+            if (err) throw err
+            resolve(rows as ExamStatus[]);
         })
         connection.end()
     })

@@ -12,13 +12,14 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { getAllAcademicYears, getAllExamTypes, getAllServiceLevels, getAllServices, getExamsByAcademicYear } from '@/app/lib/database'
+import { getAllAcademicYears, getAllExamStatus, getAllExamTypes, getAllServiceLevels, getAllServices, getExamsByAcademicYear } from '@/app/lib/database'
 import { Exam } from '@/types/exam'
 import { FormattedAcademicYear } from '@/types/academicYear'
 import { useRouter } from 'next/navigation'
 import { ServiceLevel } from '@/types/serviceLevel'
 import { Service } from '@/types/service'
 import { ExamType } from '@/types/examType'
+import { ExamStatus } from '@/types/examStatus'
 
 interface ExamsTableProps {
   academicYear: string
@@ -38,6 +39,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
   const [allServiceLevels, setAllServiceLevels] = React.useState<ServiceLevel[]>([])
   const [allServices, setAllServices] = React.useState<Service[]>([])
   const [allExamTypes, setAllExamTypes] = React.useState<ExamType[]>([])
+  const [allExamStatus, setAllExamStatus] = React.useState<ExamStatus[]>([])
 
   React.useEffect(() => {
     ;(async function () {
@@ -54,6 +56,9 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
 
       const examTypes = await getAllExamTypes()
       setAllExamTypes(examTypes)
+
+      const examStatus = await getAllExamStatus()
+      setAllExamStatus(examStatus)
 
       const allAcademicYears =
         (await getAllAcademicYears()) as FormattedAcademicYear[]
@@ -229,6 +234,55 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         return examTypeCodeA.localeCompare(examTypeCodeB)
       },
     },
+    {
+      accessorKey: 'exam_status_id',
+      header: 'Exam status',
+      cell: ({ row }) => (
+        <div>
+          <select
+              defaultValue={allExamStatus.find((element:ExamStatus) => element.id == row.original.exam_status_id)?.id}
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+              onChange={(e) => console.log(e)}
+            >
+              {allExamStatus.map((examStatus) => (
+                <option key={examStatus.id} value={examStatus.id}>
+                  {examStatus.code}
+                </option>
+              ))}
+            </select>
+        </div>
+      ),
+      filterFn: (row, columnId, filterValue) => {
+        const search = String(filterValue ?? '').trim().toLowerCase()
+        if (!search) return true
+
+        const examStatusCode =
+          allExamStatus
+            .find(
+              (element: ExamStatus) => element.id == row.getValue(columnId)
+            )
+            ?.code.toLowerCase() ?? ''
+
+        return examStatusCode.includes(search)
+      },
+      sortingFn: (firstRow, secondRow, columnId) => {
+        const examStatusCodeA =
+          allExamStatus
+            .find(
+              (element: ExamStatus) => element.id == firstRow.getValue(columnId)
+            )
+            ?.code.toLowerCase() ?? ''
+
+        const examStatusCodeB =
+          allExamStatus
+            .find(
+              (element: ExamStatus) => element.id == secondRow.getValue(columnId)
+            )
+            ?.code.toLowerCase() ?? ''
+
+        return examStatusCodeA.localeCompare(examStatusCodeB)
+      },
+    },
   ]
 
   const table = useReactTable({
@@ -252,7 +306,8 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         row.original.code.toLowerCase().includes(search) ||
         (allServiceLevels.find((element:ServiceLevel) => element.id == row.original.service_level_id)?.name.toLowerCase().includes(search) || false) ||
         (allServices.find((element:Service) => element.id == row.original.service_id)?.code.toLowerCase().includes(search) || false) ||
-        (allExamTypes.find((element:ExamType) => element.id == row.original.exam_type_id)?.code.toLowerCase().includes(search) || false)
+        (allExamTypes.find((element:ExamType) => element.id == row.original.exam_type_id)?.code.toLowerCase().includes(search) || false) ||
+        (allExamStatus.find((element:ExamStatus) => element.id == row.original.exam_status_id)?.code.toLowerCase().includes(search) || false)
       )
     },
     getCoreRowModel: getCoreRowModel(),
