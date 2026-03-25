@@ -585,7 +585,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
                 className={`inline-flex h-11 w-11 items-center justify-center rounded-full text-lg font-semibold transition ${
                   !table.getCanPreviousPage()
                     ? 'cursor-not-allowed text-slate-300'
-                    : 'text-slate-700 hover:bg-slate-100'
+                    : 'text-slate-700 hover:bg-slate-100 cursor-pointer'
                 }`}
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
@@ -598,7 +598,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
                 className={`inline-flex h-11 w-11 items-center justify-center rounded-full text-lg font-semibold transition ${
                   !table.getCanNextPage()
                     ? 'cursor-not-allowed text-slate-300'
-                    : 'bg-red-500 text-white hover:bg-red-600'
+                    : 'bg-red-500 text-white hover:bg-red-600 cursor-pointer'
                 }`}
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
