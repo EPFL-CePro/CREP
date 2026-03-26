@@ -365,6 +365,17 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         return !isNaN(Number(search)) && row.original.nb_pages == Number(search)
       }
     },
+    {
+      accessorKey: 'remark',
+      header: 'Remark',
+      cell: ({ row }) => (
+        <textarea
+          className="bg-gray-100 p-2 rounded-xl w-96"
+          defaultValue={row.original.remark ? row.original.remark : ''}
+          rows={2}
+        />
+      ),
+    },
   ]
 
   const table = useReactTable({
@@ -398,7 +409,8 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         formattedExamDate.includes(search) ||
         !isNaN(Number(search)) && row.original.exam_semester == Number(search) ||
         !isNaN(Number(search)) && row.original.nb_students == Number(search) ||
-        !isNaN(Number(search)) && row.original.nb_pages == Number(search)
+        !isNaN(Number(search)) && row.original.nb_pages == Number(search) ||
+        !row.original.remark ? false : row.original.remark.toLowerCase().includes(search)
       )
     },
     getCoreRowModel: getCoreRowModel(),
