@@ -21,6 +21,8 @@ import { Service } from '@/types/service'
 import { ExamType } from '@/types/examType'
 import { ExamStatus } from '@/types/examStatus'
 import { FormattedSection } from '@/types/section'
+import { fetchPersonBySciper } from '@/app/lib/api'
+import { EPFLUser } from '@/types/user'
 
 interface ExamsTableProps {
   academicYear: string
@@ -42,6 +44,10 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
   const [allExamTypes, setAllExamTypes] = React.useState<ExamType[]>([])
   const [allExamStatus, setAllExamStatus] = React.useState<ExamStatus[]>([])
   const [allSections, setAllSections] = React.useState<FormattedSection[]>([])
+  const [selectedExam, setSelectedExam] = React.useState<Exam | null>(null)
+  const [selectedContact, setSelectedContact] = React.useState<EPFLUser | null>(null)
+  const [isLoadingContact, setIsLoadingContact] = React.useState(false)
+  const latestContactRequest = React.useRef<string | null>(null)
 
   React.useEffect(() => {
     ;(async function () {
@@ -70,6 +76,26 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
       setAcademicYears(allAcademicYears.reverse()) // Reversing so that the most recent academic year is at the top of the select
     })()
   }, [academicYear])
+
+  const handleOpenExamDetails = async (exam: Exam) => {
+    setSelectedExam(exam)
+    setSelectedContact(null)
+    setIsLoadingContact(true)
+    latestContactRequest.current = exam.contact
+
+    try {
+      const person = await fetchPersonBySciper(exam.contact)
+      if (latestContactRequest.current === exam.contact) {
+        setSelectedContact(person)
+      }
+    } catch (error) {
+      console.error('Failed to fetch contact person', error)
+    } finally {
+      if (latestContactRequest.current === exam.contact) {
+        setIsLoadingContact(false)
+      }
+    }
+  }
 
   const columns: ColumnDef<Exam>[] = [
     {
@@ -428,7 +454,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
     {
       accessorKey: 'actions',
       header: 'Actions',
-      cell: () => (
+      cell: ({ row }) => (
         <div className="flex gap-2">
           <button
             className="
@@ -445,7 +471,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
               ease-in-out
             "
             onClick={() => {
-              // TODO: Open a modal with more informations about the exam on click
+              handleOpenExamDetails(row.original)
             }}
           >
             More
@@ -530,6 +556,39 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
           table.getState().pagination.pageSize +
         1
   const endRow = rowCount === 0 ? 0 : startRow + rowCount - 1
+  const selectedServiceLevel = selectedExam
+    ? allServiceLevels.find(
+        (element: ServiceLevel) => element.id == selectedExam.service_level_id
+      )?.name
+    : ''
+  const selectedService = selectedExam
+    ? allServices.find((element: Service) => element.id == selectedExam.service_id)
+        ?.code
+    : ''
+  const selectedExamType = selectedExam
+    ? allExamTypes.find(
+        (element: ExamType) => element.id == selectedExam.exam_type_id
+      )?.code
+    : ''
+  const selectedExamStatus = selectedExam
+    ? allExamStatus.find(
+        (element: ExamStatus) => element.id == selectedExam.exam_status_id
+      )?.code
+    : ''
+  const selectedSection = selectedExam
+    ? allSections.find(
+        (element: FormattedSection) => element.section.id == selectedExam.section_id
+      )?.section.code
+    : ''
+  const formattedSelectedExamDate =
+    selectedExam?.exam_date
+      ? new Date(selectedExam.exam_date as string | Date).toISOString().split('T')[0]
+      : 'Not set'
+  const formattedSelectedContact = selectedContact
+    ? `${selectedContact.firstname} ${selectedContact.lastname} (${selectedContact.email})`
+    : isLoadingContact
+      ? 'Loading...'
+      : selectedExam?.contact || 'Not set'
 
   return (
     <div className="min-h-screen px-4 py-8 md:px-8 md:py-10 lg:px-14">
@@ -810,6 +869,106 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
             </div>
           </div>
         </div>
+
+        {selectedExam && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/25 backdrop-blur-sm">
+            <dialog
+              open
+              className="modal top-1/8 left-1/8 w-3/4 rounded-xl opacity-98 drop-shadow-2xl md:left-1/4 md:w-2/4"
+              onClose={() => {
+                setSelectedExam(null)
+                setSelectedContact(null)
+                setIsLoadingContact(false)
+              }}
+            >
+              <div className="rounded-xl bg-white p-8 text-slate-900">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+                    Exam details
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold">{selectedExam.name}</h2>
+                  <p className="mt-1 font-mono text-sm text-slate-500">{selectedExam.code}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedExam(null)
+                    setSelectedContact(null)
+                    setIsLoadingContact(false)
+                  }}
+                  className="
+                    rounded-full
+                    border
+                    border-red-400
+                    px-3
+                    py-1
+                    text-sm
+                    text-gray-600
+                    hover:bg-red-600
+                    hover:text-white
+                    hover:cursor-pointer
+                    transition
+                    ease-in-out
+                  "
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Service level</p>
+                  <p className="mt-1 text-sm font-medium">{selectedServiceLevel || 'Unknown'}</p>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Service</p>
+                  <p className="mt-1 text-sm font-medium">{selectedService || 'Unknown'}</p>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Exam type</p>
+                  <p className="mt-1 text-sm font-medium">{selectedExamType || 'Unknown'}</p>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Status</p>
+                  <p className="mt-1 text-sm font-medium">{selectedExamStatus || 'Unknown'}</p>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Exam date</p>
+                  <p className="mt-1 text-sm font-medium">{formattedSelectedExamDate}</p>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Semester</p>
+                  <p className="mt-1 text-sm font-medium">{selectedExam.exam_semester}</p>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Students</p>
+                  <p className="mt-1 text-sm font-medium">{selectedExam.nb_students ?? 'Not set'}</p>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Pages</p>
+                  <p className="mt-1 text-sm font-medium">{selectedExam.nb_pages ?? 'Not set'}</p>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Section</p>
+                  <p className="mt-1 text-sm font-medium">{selectedSection || 'Unknown'}</p>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Contact</p>
+                  <p className="mt-1 text-sm font-medium">{formattedSelectedContact}</p>
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Remark</p>
+                <p className="mt-1 whitespace-pre-wrap text-sm font-medium">
+                  {selectedExam.remark || 'No remark'}
+                </p>
+              </div>
+              </div>
+            </dialog>
+          </div>
+        )}
       </div>
     </div>
   )
