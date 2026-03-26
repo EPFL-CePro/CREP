@@ -350,6 +350,21 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         return !isNaN(Number(search)) && row.original.nb_students == Number(search)
       }
     },
+    {
+      accessorKey: 'nb_pages',
+      header: 'NB Pages',
+      cell: ({ row }) => (
+        <div className="min-w-0">
+          {row.original.nb_pages}
+        </div>
+      ),
+      filterFn: (row, columnId, filterValue) => {
+        const search = String(filterValue ?? '').trim()
+        if (!search) return true
+
+        return !isNaN(Number(search)) && row.original.nb_pages == Number(search)
+      }
+    },
   ]
 
   const table = useReactTable({
@@ -382,7 +397,8 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         (allExamStatus.find((element:ExamStatus) => element.id == row.original.exam_status_id)?.code.toLowerCase().includes(search) || false) ||
         formattedExamDate.includes(search) ||
         !isNaN(Number(search)) && row.original.exam_semester == Number(search) ||
-        !isNaN(Number(search)) && row.original.nb_students == Number(search)
+        !isNaN(Number(search)) && row.original.nb_students == Number(search) ||
+        !isNaN(Number(search)) && row.original.nb_pages == Number(search)
       )
     },
     getCoreRowModel: getCoreRowModel(),
