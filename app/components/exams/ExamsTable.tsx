@@ -425,6 +425,56 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         return sectionCodeA.localeCompare(sectionCodeB)
       },
     },
+    {
+      accessorKey: 'actions',
+      header: 'Actions',
+      cell: () => (
+        <div className="flex gap-2">
+          <button
+            className="
+              border-2
+              border-blue-500
+              rounded-lg
+              p-2
+              text-blue-700
+              hover:cursor-pointer
+              hover:bg-blue-800
+              hover:text-white
+              hover:border-blue-800
+              transition
+              ease-in-out
+            "
+            onClick={() => {
+              // TODO: Open a modal with more informations about the exam on click
+            }}
+          >
+            More
+          </button>
+          <button
+            className="
+              border-2
+              border-red-500
+              rounded-lg
+              p-2
+              text-red-700
+              hover:cursor-pointer
+              hover:bg-red-800
+              hover:text-white
+              hover:border-red-800
+              transition
+              ease-in-out
+            "
+            onClick={() => {
+              // TODO: Delete the exam
+            }}
+          >
+            Delete
+          </button>
+        </div>
+      ),
+      enableSorting: false,
+      enableColumnFilter: false,
+    },
   ]
 
   const table = useReactTable({
@@ -628,10 +678,12 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
                             )}
                           </div>
                         ) : (
-                          flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )
+                          <div className="text-left text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                          </div>
                         )}
                       </th>
                     )
