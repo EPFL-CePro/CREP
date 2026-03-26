@@ -679,7 +679,11 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
                     return (
                       <th
                         key={header.id}
-                        className="border-b border-slate-200 px-6 py-5 text-left align-top first:pl-8 last:pr-8"
+                        className={`border-b border-slate-200 px-6 py-5 text-left align-top first:pl-8 last:pr-8 ${
+                          header.column.id === 'actions'
+                            ? 'sticky right-0 z-20 bg-slate-50/95 min-[3150px]:static min-[3150px]:bg-transparent'
+                            : ''
+                        }`}
                       >
                         {header.isPlaceholder ? null : canSort ? (
                           <div className="flex flex-col gap-3">
@@ -791,6 +795,10 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
                           className={`border-b border-slate-100 px-6 py-5 align-middle text-slate-900 first:pl-8 last:pr-8 ${
                             index === table.getRowModel().rows.length - 1
                               ? 'border-b-0'
+                              : ''
+                          } ${
+                            cell.column.id === 'actions'
+                              ? 'sticky right-0 z-10 bg-white min-[3150px]:static min-[3150px]:bg-transparent'
                               : ''
                           }`}
                         >
