@@ -12,7 +12,7 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { getAllAcademicYears, getAllExamStatus, getAllExamTypes, getAllServiceLevels, getAllServices, getExamsByAcademicYear } from '@/app/lib/database'
+import { getAllAcademicYears, getAllExamStatus, getAllExamTypes, getAllSections, getAllServiceLevels, getAllServices, getExamsByAcademicYear } from '@/app/lib/database'
 import { Exam } from '@/types/exam'
 import { FormattedAcademicYear } from '@/types/academicYear'
 import { useRouter } from 'next/navigation'
@@ -20,6 +20,7 @@ import { ServiceLevel } from '@/types/serviceLevel'
 import { Service } from '@/types/service'
 import { ExamType } from '@/types/examType'
 import { ExamStatus } from '@/types/examStatus'
+import { FormattedSection } from '@/types/section'
 
 interface ExamsTableProps {
   academicYear: string
@@ -40,6 +41,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
   const [allServices, setAllServices] = React.useState<Service[]>([])
   const [allExamTypes, setAllExamTypes] = React.useState<ExamType[]>([])
   const [allExamStatus, setAllExamStatus] = React.useState<ExamStatus[]>([])
+  const [allSections, setAllSections] = React.useState<FormattedSection[]>([])
 
   React.useEffect(() => {
     ;(async function () {
@@ -59,6 +61,9 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
 
       const examStatus = await getAllExamStatus()
       setAllExamStatus(examStatus)
+
+      const sections = await getAllSections()
+      setAllSections(sections)
 
       const allAcademicYears =
         (await getAllAcademicYears()) as FormattedAcademicYear[]
@@ -376,6 +381,50 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         />
       ),
     },
+    {
+      accessorKey: 'section_id',
+      header: 'Section',
+      cell: ({ row }) => (
+        <div>
+            <input
+              className="bg-gray-100 p-2 rounded-xl w-12 opacity-50"
+              defaultValue={allSections.find((element:FormattedSection) => element.section.id == row.original.section_id)?.section.code}
+              type="text"
+              disabled
+            />
+        </div>
+      ),
+      filterFn: (row, columnId, filterValue) => {
+        const search = String(filterValue ?? '').trim().toLowerCase()
+        if (!search) return true
+
+        const sectionCode =
+          allSections
+            .find(
+              (element: FormattedSection) => element.section.id == row.getValue(columnId)
+            )
+            ?.section.code.toLowerCase() ?? ''
+
+        return sectionCode.includes(search)
+      },
+      sortingFn: (firstRow, secondRow, columnId) => {
+        const sectionCodeA =
+          allSections
+            .find(
+              (element: FormattedSection) => element.section.id == firstRow.getValue(columnId)
+            )
+            ?.section.code.toLowerCase() ?? ''
+
+        const sectionCodeB =
+          allSections
+            .find(
+              (element: FormattedSection) => element.section.id == secondRow.getValue(columnId)
+            )
+            ?.section.code.toLowerCase() ?? ''
+
+        return sectionCodeA.localeCompare(sectionCodeB)
+      },
+    },
   ]
 
   const table = useReactTable({
@@ -410,7 +459,8 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         !isNaN(Number(search)) && row.original.exam_semester == Number(search) ||
         !isNaN(Number(search)) && row.original.nb_students == Number(search) ||
         !isNaN(Number(search)) && row.original.nb_pages == Number(search) ||
-        !row.original.remark ? false : row.original.remark.toLowerCase().includes(search)
+        !row.original.remark ? false : row.original.remark.toLowerCase().includes(search) ||
+        (allSections.find((element:FormattedSection) => element.section.id == row.original.section_id)?.section.code.toLowerCase().includes(search) || false)
       )
     },
     getCoreRowModel: getCoreRowModel(),
