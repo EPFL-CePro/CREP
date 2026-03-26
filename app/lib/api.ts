@@ -1,4 +1,5 @@
 'use server';
+import { EPFLUser } from "@/types/user";
 import { SelectOption } from "../components/forms/ReactSelect";
 
 export async function fetchPersons(query: string): Promise<SelectOption[]> {
@@ -24,7 +25,7 @@ export async function fetchPersons(query: string): Promise<SelectOption[]> {
     })).filter((o: SelectOption) => !!o.value && !!o.person?.email);
 }
 
-export async function fetchPersonBySciper(sciper: string): Promise<{id: string, firstname: string, lastname: string, email: string}> {
+export async function fetchPersonBySciper(sciper: string): Promise<EPFLUser> {
     const url = `https://api.epfl.ch/v1/persons/${sciper}`;
     const headers = new Headers();
     headers.set('Access-Control-Allow-Origin', '*');
@@ -35,7 +36,7 @@ export async function fetchPersonBySciper(sciper: string): Promise<{id: string, 
     return data;
 }
 
-export async function fetchMultiplePersonsBySciper(scipersWithCommas: string): Promise<{id: string, firstname: string, lastname: string, email: string}[]> {
+export async function fetchMultiplePersonsBySciper(scipersWithCommas: string): Promise<EPFLUser[]> {
     const url = `https://api.epfl.ch/v1/persons?ids=${encodeURIComponent(scipersWithCommas)}`;
     const headers = new Headers();
     headers.set('Access-Control-Allow-Origin', '*');
