@@ -47,34 +47,52 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
   const [selectedExam, setSelectedExam] = React.useState<Exam | null>(null)
   const [selectedContact, setSelectedContact] = React.useState<EPFLUser | null>(null)
   const [isLoadingContact, setIsLoadingContact] = React.useState(false)
+  const [isLoadingTable, setIsLoadingTable] = React.useState(true)
   const latestContactRequest = React.useRef<string | null>(null)
 
   React.useEffect(() => {
+    let isActive = true
+    setIsLoadingTable(true)
+
     ;(async function () {
-      const allExamsForAcademicYear = (await getExamsByAcademicYear(
-        academicYear
-      )) as Exam[]
-      setExams(allExamsForAcademicYear)
+      try {
+        const [
+          allExamsForAcademicYear,
+          serviceLevels,
+          services,
+          examTypes,
+          examStatus,
+          sections,
+          allAcademicYears,
+        ] = await Promise.all([
+          getExamsByAcademicYear(academicYear) as Promise<Exam[]>,
+          getAllServiceLevels(),
+          getAllServices(),
+          getAllExamTypes(),
+          getAllExamStatus(),
+          getAllSections(),
+          getAllAcademicYears() as Promise<FormattedAcademicYear[]>,
+        ])
 
-      const serviceLevels = await getAllServiceLevels()
-      setAllServiceLevels(serviceLevels)
+        if (!isActive) return
 
-      const services = await getAllServices()
-      setAllServices(services)
-
-      const examTypes = await getAllExamTypes()
-      setAllExamTypes(examTypes)
-
-      const examStatus = await getAllExamStatus()
-      setAllExamStatus(examStatus)
-
-      const sections = await getAllSections()
-      setAllSections(sections)
-
-      const allAcademicYears =
-        (await getAllAcademicYears()) as FormattedAcademicYear[]
-      setAcademicYears(allAcademicYears.reverse()) // Reversing so that the most recent academic year is at the top of the select
+        setExams(allExamsForAcademicYear)
+        setAllServiceLevels(serviceLevels)
+        setAllServices(services)
+        setAllExamTypes(examTypes)
+        setAllExamStatus(examStatus)
+        setAllSections(sections)
+        setAcademicYears(allAcademicYears.reverse()) // Reversing so that the most recent academic year is at the top of the select
+      } finally {
+        if (isActive) {
+          setIsLoadingTable(false)
+        }
+      }
     })()
+
+    return () => {
+      isActive = false
+    }
   }, [academicYear])
 
   const handleOpenExamDetails = async (exam: Exam) => {
@@ -647,17 +665,31 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
                     <div className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
                       Academic year
                     </div>
-                    <select
-                      value={academicYear}
-                      className="w-full border-none bg-transparent text-sm font-medium text-slate-700 outline-none md:text-base"
-                      onChange={(e) => router.push(`/exams/${e.target.value}`)}
-                    >
-                      {academicYears.map((academic) => (
-                        <option key={academic.label} value={academic.label}>
-                          {academic.label}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={academicYear}
+                        disabled={isLoadingTable}
+                        aria-busy={isLoadingTable}
+                        className="w-full border-none bg-transparent text-sm font-medium text-slate-700 outline-none disabled:cursor-wait disabled:text-slate-400 md:text-base"
+                        onChange={(e) => {
+                          setIsLoadingTable(true)
+                          router.push(`/exams/${e.target.value}`)
+                        }}
+                      >
+                        {academicYears.map((academic) => (
+                          <option key={academic.label} value={academic.label}>
+                            {academic.label}
+                          </option>
+                        ))}
+                      </select>
+
+                      {isLoadingTable && (
+                        <span
+                          className="inline-flex h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-slate-300 border-t-red-500"
+                          aria-label="Loading academic year data"
+                        />
+                      )}
+                    </div>
                   </div>
                 </label>
               </div>
@@ -665,7 +697,18 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-[0_24px_80px_-36px_rgba(15,23,42,0.35)]">
+        <div className="relative overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-[0_24px_80px_-36px_rgba(15,23,42,0.35)]">
+          {isLoadingTable && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70 backdrop-blur-[1px]">
+              <div className="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm">
+                <span
+                  className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-red-500"
+                  aria-hidden="true"
+                />
+                Loading exams...
+              </div>
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="min-w-full border-separate border-spacing-0">
               <thead className="bg-slate-50/80">
