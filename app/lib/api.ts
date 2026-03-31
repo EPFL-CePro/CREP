@@ -1,6 +1,7 @@
 'use server';
 import { EPFLUser } from "@/types/user";
 import { SelectOption } from "../components/forms/ReactSelect";
+import { GroupUser } from "@/types/groupUser";
 
 export async function fetchPersons(query: string): Promise<SelectOption[]> {
     const url = `https://api.epfl.ch/v1/persons?query=${encodeURIComponent(query)}`;
@@ -92,4 +93,15 @@ export async function fetchCourses(academicYear?: string): Promise<SelectOption[
           teacherSciper: c.enseignantSciper,
       }
     }))
+}
+
+export async function fetchCeproAdminsIT(): Promise<GroupUser[]> {
+    const url = `https://api.epfl.ch/v1/groups/CePro_admin_IT/members`;
+    const headers = new Headers();
+    headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('Access-Control-Allow-Headers', '*');
+    headers.set('Authorization', 'Basic ' + Buffer.from(process.env.EPFL_API_USERNAME + ":" + process.env.EPFL_API_PASSWORD).toString('base64'));
+    const res = await fetch(url, {method: 'GET', headers});
+    const data = await res.json();
+    return data.members;
 }
