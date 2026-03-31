@@ -51,6 +51,10 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
   const [isLoadingTable, setIsLoadingTable] = React.useState(true)
   const [allCeproAdminsIT, setAllCeproAdminsIT] = React.useState<GroupUser[]>([])
   const latestContactRequest = React.useRef<string | null>(null)
+  const compactSelectClassName =
+    'h-9 max-w-[9rem] rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-sm text-slate-600'
+  const compactInputClassName =
+    'h-9 rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-sm text-slate-600'
 
   React.useEffect(() => {
     let isActive = true
@@ -125,7 +129,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
       accessorKey: 'code',
       header: 'Code',
       cell: ({ row }) => (
-        <span className="inline-flex rounded-full border border-red-200 bg-red-50 px-3 py-1 font-mono text-sm font-semibold tracking-wide text-red-700">
+        <span className="inline-flex rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-mono font-semibold tracking-[0.14em] text-red-700">
           {row.original.code}
         </span>
       ),
@@ -134,13 +138,13 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
       accessorKey: 'name',
       header: 'Course',
       cell: ({ row }) => (
-        <div className="min-w-0">
-          <div className="flex truncate text-base font-semibold text-slate-950 md:text-lg">
+        <div className="min-w-0 max-w-[18rem]">
+          <div className="flex items-center text-sm font-semibold text-slate-950 md:text-base">
             <span
-              className={`flex h-2 w-2 mt-auto mb-auto rounded-full mr-2`}
+              className="mr-2 h-2 w-2 shrink-0 rounded-full"
               style={{ backgroundColor: allExamStatus.find((element:ExamStatus) => element.id == row.original.exam_status_id)?.color}}
             />
-            {row.original.name}
+            <span className="truncate">{row.original.name}</span>
           </div>
         </div>
       ),
@@ -152,7 +156,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         <div>
           <select
               defaultValue={allServiceLevels.find((element:ServiceLevel) => element.id == row.original.service_level_id)?.id}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+              className={compactSelectClassName}
               onChange={(e) => console.log(e)}
             >
               {allServiceLevels.map((serviceLevel) => (
@@ -201,7 +205,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         <div>
           <select
               defaultValue={allServices.find((element:Service) => element.id == row.original.service_id)?.id}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+              className={compactSelectClassName}
               onChange={(e) => console.log(e)}
             >
               {allServices.map((service) => (
@@ -250,7 +254,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         <div>
           <select
               defaultValue={allExamTypes.find((element:ExamType) => element.id == row.original.exam_type_id)?.id}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+              className={compactSelectClassName}
               onChange={(e) => console.log(e)}
             >
               {allExamTypes.map((examType) => (
@@ -299,7 +303,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         <div>
           <select
               defaultValue={allExamStatus.find((element:ExamStatus) => element.id == row.original.exam_status_id)?.id}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+              className={compactSelectClassName}
               onChange={(e) => console.log(e)}
             >
               {allExamStatus.map((examStatus) => (
@@ -349,6 +353,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
           <input
             type="date"
             defaultValue={row.original.exam_date ? (row.original.exam_date as Date).toISOString().split('T')[0] : ''}
+            className={`${compactInputClassName} w-[8.5rem]`}
           />
         </div>
       ),
@@ -424,7 +429,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
       header: 'Remark',
       cell: ({ row }) => (
         <textarea
-          className="bg-gray-100 p-2 rounded-xl w-96"
+          className="min-h-[4.5rem] w-[13rem] rounded-xl border border-slate-200 bg-slate-50 p-2 text-sm text-slate-700"
           defaultValue={row.original.remark ? row.original.remark : ''}
           rows={2}
         />
@@ -436,7 +441,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
       cell: ({ row }) => (
         <div>
             <input
-              className="bg-gray-100 p-2 rounded-xl w-12 opacity-50"
+              className="h-9 w-11 rounded-xl border border-slate-200 bg-slate-50 px-2 text-center text-sm text-slate-500 opacity-70"
               defaultValue={allSections.find((element:FormattedSection) => element.section.id == row.original.section_id)?.section.code}
               type="text"
               disabled
@@ -481,7 +486,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         <div>
           <select
               defaultValue={allCeproAdminsIT.find((element:GroupUser) => Number(element.id) == Number(row.original.responsible_id))?.id}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+              className="h-9 max-w-[11rem] rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-sm text-slate-600"
               onChange={(e) => console.log(e)}
             >
               {allCeproAdminsIT.map((adminIT) => (
@@ -533,7 +538,9 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
               border-2
               border-blue-500
               rounded-lg
-              p-2
+              px-3
+              py-2
+              text-sm
               text-blue-700
               hover:cursor-pointer
               hover:bg-blue-800
@@ -553,7 +560,9 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
               border-2
               border-red-500
               rounded-lg
-              p-2
+              px-3
+              py-2
+              text-sm
               text-red-700
               hover:cursor-pointer
               hover:bg-red-800
@@ -786,18 +795,18 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
                     return (
                       <th
                         key={header.id}
-                        className={`border-b border-slate-200 px-6 py-5 text-left align-top first:pl-8 last:pr-8 ${
+                        className={`border-b border-slate-200 px-4 py-4 text-left align-top first:pl-5 last:pr-5 ${
                           header.column.id === 'actions'
                             ? 'sticky right-0 z-20 bg-slate-50/95 min-[3150px]:static min-[3150px]:bg-transparent'
                             : ''
                         }`}
                       >
                         {header.isPlaceholder ? null : canSort ? (
-                          <div className="flex flex-col gap-3">
+                          <div className="flex flex-col gap-2.5">
                             <button
                               type="button"
                               onClick={header.column.getToggleSortingHandler()}
-                              className="inline-flex items-center gap-2 text-left text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 transition hover:text-slate-900"
+                              className="inline-flex items-center gap-2 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 transition hover:text-slate-900"
                             >
                               {flexRender(
                                 header.column.columnDef.header,
@@ -806,7 +815,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
 
                               <span
                                 aria-hidden="true"
-                                className={`inline-flex h-6 min-w-6 items-center justify-center rounded-full border px-1 text-[0.7rem] ${
+                                className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full border px-1 text-[0.65rem] ${
                                   isSorted
                                     ? 'border-red-200 bg-red-50 text-red-600'
                                     : 'border-slate-200 bg-white text-slate-400'
@@ -819,7 +828,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
                             </button>
 
                             {canFilter && (
-                              <label className="group flex h-11 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 shadow-sm transition focus-within:border-red-300 focus-within:ring-4 focus-within:ring-red-100">
+                              <label className="group flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 shadow-sm transition focus-within:border-red-300 focus-within:ring-4 focus-within:ring-red-100">
                                 <svg
                                   aria-hidden="true"
                                   viewBox="0 0 24 24"
@@ -842,13 +851,13 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
                                   placeholder={`Filter ${String(
                                     header.column.columnDef.header
                                   ).toLowerCase()}...`}
-                                  className="w-full min-w-28 border-none bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+                                  className="w-full min-w-20 border-none bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
                                 />
                               </label>
                             )}
                           </div>
                         ) : (
-                          <div className="text-left text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+                          <div className="text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                             {flexRender(
                               header.column.columnDef.header,
                               header.getContext()
@@ -899,7 +908,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
                       {row.getVisibleCells().map((cell) => (
                         <td
                           key={cell.id}
-                          className={`border-b border-slate-100 px-6 py-5 align-middle text-slate-900 first:pl-8 last:pr-8 ${
+                          className={`border-b border-slate-100 px-4 py-3.5 align-middle text-slate-900 first:pl-5 last:pr-5 ${
                             index === table.getRowModel().rows.length - 1
                               ? 'border-b-0'
                               : ''
