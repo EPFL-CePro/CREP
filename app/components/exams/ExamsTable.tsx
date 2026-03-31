@@ -21,8 +21,9 @@ import { Service } from '@/types/service'
 import { ExamType } from '@/types/examType'
 import { ExamStatus } from '@/types/examStatus'
 import { FormattedSection } from '@/types/section'
-import { fetchPersonBySciper } from '@/app/lib/api'
+import { fetchCeproAdminsIT, fetchPersonBySciper } from '@/app/lib/api'
 import { EPFLUser } from '@/types/user'
+import { GroupUser } from '@/types/groupUser'
 
 interface ExamsTableProps {
   academicYear: string
@@ -48,6 +49,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
   const [selectedContact, setSelectedContact] = React.useState<EPFLUser | null>(null)
   const [isLoadingContact, setIsLoadingContact] = React.useState(false)
   const [isLoadingTable, setIsLoadingTable] = React.useState(true)
+  const [allCeproAdminsIT, setAllCeproAdminsIT] = React.useState<GroupUser[]>([])
   const latestContactRequest = React.useRef<string | null>(null)
 
   React.useEffect(() => {
@@ -64,6 +66,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
           examStatus,
           sections,
           allAcademicYears,
+          ceproAdminsIT,
         ] = await Promise.all([
           getExamsByAcademicYear(academicYear) as Promise<Exam[]>,
           getAllServiceLevels(),
@@ -72,6 +75,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
           getAllExamStatus(),
           getAllSections(),
           getAllAcademicYears() as Promise<FormattedAcademicYear[]>,
+          fetchCeproAdminsIT() as Promise<GroupUser[]>,
         ])
 
         if (!isActive) return
@@ -83,6 +87,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         setAllExamStatus(examStatus)
         setAllSections(sections)
         setAcademicYears(allAcademicYears.reverse()) // Reversing so that the most recent academic year is at the top of the select
+        setAllCeproAdminsIT(ceproAdminsIT)
       } finally {
         if (isActive) {
           setIsLoadingTable(false)
@@ -470,6 +475,55 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
       },
     },
     {
+      accessorKey: 'responsible_id',
+      header: 'Responsible',
+      cell: ({ row }) => (
+        <div>
+          <select
+              defaultValue={allCeproAdminsIT.find((element:GroupUser) => Number(element.id) == Number(row.original.responsible_id))?.id}
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+              onChange={(e) => console.log(e)}
+            >
+              {allCeproAdminsIT.map((adminIT) => (
+                <option key={adminIT.id} value={adminIT.id}>
+                  {adminIT.display}
+                </option>
+              ))}
+            </select>
+        </div>
+      ),
+      filterFn: (row, columnId, filterValue) => {
+        const search = String(filterValue ?? '').trim().toLowerCase()
+        if (!search) return true
+
+        const adminITDisplay =
+          allCeproAdminsIT
+            .find(
+              (element: GroupUser) => element.id == row.getValue(columnId)
+            )
+            ?.display.toLowerCase() ?? ''
+
+        return adminITDisplay.includes(search)
+      },
+      sortingFn: (firstRow, secondRow, columnId) => {
+        const adminITDisplayA =
+          allCeproAdminsIT
+            .find(
+              (element: GroupUser) => element.id == firstRow.getValue(columnId)
+            )
+            ?.display.toLowerCase() ?? ''
+
+        const adminITDisplayB =
+          allCeproAdminsIT
+            .find(
+              (element: GroupUser) => element.id == secondRow.getValue(columnId)
+            )
+            ?.display.toLowerCase() ?? ''
+
+        return adminITDisplayA.localeCompare(adminITDisplayB)
+      },
+    },
+    {
       accessorKey: 'actions',
       header: 'Actions',
       cell: ({ row }) => (
@@ -535,12 +589,21 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
     globalFilterFn: (row, _columnId, filterValue) => {
-      const search = String(filterValue).toLowerCase()
+      const search = String(filterValue ?? '').trim().toLowerCase()
 
       const examDate = row.original.exam_date
       const formattedExamDate = examDate
         ? new Date(examDate as string | Date).toISOString().split('T')[0]
         : ''
+
+      const responsibleDisplay =
+        allCeproAdminsIT
+          .find(
+            (element: GroupUser) => Number(element.id) == Number(row.original.responsible_id)
+          )
+          ?.display.toLowerCase() ?? ''
+
+      const remark = row.original.remark?.toLowerCase() ?? ''
 
       return (
         row.original.name.toLowerCase().includes(search) ||
@@ -553,8 +616,9 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         !isNaN(Number(search)) && row.original.exam_semester == Number(search) ||
         !isNaN(Number(search)) && row.original.nb_students == Number(search) ||
         !isNaN(Number(search)) && row.original.nb_pages == Number(search) ||
-        !row.original.remark ? false : row.original.remark.toLowerCase().includes(search) ||
-        (allSections.find((element:FormattedSection) => element.section.id == row.original.section_id)?.section.code.toLowerCase().includes(search) || false)
+        remark.includes(search) ||
+        (allSections.find((element:FormattedSection) => element.section.id == row.original.section_id)?.section.code.toLowerCase().includes(search) || false) ||
+        responsibleDisplay.includes(search)
       )
     },
     getCoreRowModel: getCoreRowModel(),
