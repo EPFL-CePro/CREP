@@ -12,7 +12,7 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { getAllAcademicYears, getAllExamStatus, getAllExamTypes, getAllSections, getAllServiceLevels, getAllServices, getExamsByAcademicYear, updateExamDate, updateExamPagesNumber, updateExamService, updateExamServiceLevel, updateExamStatus, updateExamStudentsNumber, updateExamType } from '@/app/lib/database'
+import { getAllAcademicYears, getAllExamStatus, getAllExamTypes, getAllSections, getAllServiceLevels, getAllServices, getExamsByAcademicYear, updateExamDate, updateExamPagesNumber, updateExamRemark, updateExamService, updateExamServiceLevel, updateExamStatus, updateExamStudentsNumber, updateExamType } from '@/app/lib/database'
 import { Exam } from '@/types/exam'
 import { FormattedAcademicYear } from '@/types/academicYear'
 import { useRouter } from 'next/navigation'
@@ -122,6 +122,34 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
         setIsLoadingContact(false)
       }
     }
+  }
+
+  type RemarkTextareaProps = {
+    id: string;
+    initialValue?: string;
+  };
+
+  function RemarkTextarea({ id, initialValue }: RemarkTextareaProps) {
+    const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
+
+    return (
+      <textarea
+        className="min-h-[4.5rem] w-[13rem] rounded-xl border border-slate-200 bg-slate-50 p-2 text-sm text-slate-700"
+        defaultValue={initialValue || ''}
+        rows={2}
+        onChange={(e) => {
+          const value = e.target.value;
+
+          if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+          }
+
+          debounceRef.current = setTimeout(async () => {
+            await updateExamRemark(id, value)
+          }, 700);
+        }}
+      />
+    );
   }
 
   const columns: ColumnDef<Exam>[] = [
@@ -453,11 +481,7 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
       accessorKey: 'remark',
       header: 'Remark',
       cell: ({ row }) => (
-        <textarea
-          className="min-h-[4.5rem] w-[13rem] rounded-xl border border-slate-200 bg-slate-50 p-2 text-sm text-slate-700"
-          defaultValue={row.original.remark ? row.original.remark : ''}
-          rows={2}
-        />
+        <RemarkTextarea id={row.original.id} initialValue={row.original.remark ? row.original.remark : ''} />
       ),
     },
     {
