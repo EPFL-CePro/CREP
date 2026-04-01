@@ -632,3 +632,22 @@ export async function updateExamDate(examId: string, examDate: string) {
         connection.end()
     })
 }
+
+export async function updateExamStudentsNumber(examId: string, nbStudents: string) {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    })
+
+    connection.connect()
+
+    return new Promise(function(resolve) {
+        connection.query('UPDATE exam SET nb_students = ? WHERE id = ?;', [nbStudents, examId], (err, rows) => {
+            if (err) throw err
+            resolve(JSON.stringify(rows));
+        })
+        connection.end()
+    })
+}
