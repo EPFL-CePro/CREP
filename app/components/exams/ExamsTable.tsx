@@ -12,7 +12,7 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { getAllAcademicYears, getAllExamStatus, getAllExamTypes, getAllSections, getAllServiceLevels, getAllServices, getExamsByAcademicYear } from '@/app/lib/database'
+import { getAllAcademicYears, getAllExamStatus, getAllExamTypes, getAllSections, getAllServiceLevels, getAllServices, getExamsByAcademicYear, updateExamServiceLevel } from '@/app/lib/database'
 import { Exam } from '@/types/exam'
 import { FormattedAcademicYear } from '@/types/academicYear'
 import { useRouter } from 'next/navigation'
@@ -157,7 +157,9 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
           <select
               defaultValue={allServiceLevels.find((element:ServiceLevel) => element.id == row.original.service_level_id)?.id}
               className={compactSelectClassName}
-              onChange={(e) => console.log(e)}
+              onChange={async (e) => {
+                await updateExamServiceLevel(row.original.id, e.target.value)
+              }}
             >
               {allServiceLevels.map((serviceLevel) => (
                 <option key={serviceLevel.id} value={serviceLevel.id}>
