@@ -12,7 +12,7 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { getAllAcademicYears, getAllExamStatus, getAllExamTypes, getAllSections, getAllServiceLevels, getAllServices, getExamsByAcademicYear, updateExamDate, updateExamPagesNumber, updateExamRemark, updateExamService, updateExamServiceLevel, updateExamStatus, updateExamStudentsNumber, updateExamType } from '@/app/lib/database'
+import { getAllAcademicYears, getAllExamStatus, getAllExamTypes, getAllSections, getAllServiceLevels, getAllServices, getExamsByAcademicYear, updateExamDate, updateExamPagesNumber, updateExamRemark, updateExamResponsible, updateExamService, updateExamServiceLevel, updateExamStatus, updateExamStudentsNumber, updateExamType } from '@/app/lib/database'
 import { Exam } from '@/types/exam'
 import { FormattedAcademicYear } from '@/types/academicYear'
 import { useRouter } from 'next/navigation'
@@ -536,7 +536,9 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
           <select
               defaultValue={allCeproAdminsIT.find((element:GroupUser) => Number(element.id) == Number(row.original.responsible_id))?.id}
               className="h-9 max-w-[11rem] rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-sm text-slate-600"
-              onChange={(e) => console.log(e)}
+              onChange={async (e) => {
+                await updateExamResponsible(row.original.id, e.target.value)
+              }}
             >
               {allCeproAdminsIT.map((adminIT) => (
                 <option key={adminIT.id} value={adminIT.id}>
