@@ -19,3 +19,5 @@ export type Exam = {
     responsible_id: number | null;
     contact: string;
 }
+
+export type NewExam = Omit<Exam, 'id'>;

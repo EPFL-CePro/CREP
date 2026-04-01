@@ -7,7 +7,7 @@ import { ExamType } from '@/types/examType';
 import { AcademicYear, FormattedAcademicYear } from '@/types/academicYear';
 import { FormattedSection, Section } from '@/types/section';
 import { CrepExam } from '@/types/crepExam';
-import { Exam } from '@/types/exam';
+import { Exam, NewExam } from '@/types/exam';
 import { ServiceLevel } from '@/types/serviceLevel';
 import { ExamStatus } from '@/types/examStatus';
 
@@ -344,7 +344,7 @@ export async function getAllExamTypes(): Promise <ExamType[]> {
     })
 }
 
-export async function insertExam(exam:Exam): Promise<number> {
+export async function insertExam(exam: NewExam): Promise<number> {
     const connection = mysql.createConnection({
         host: process.env.MYSQL_HOST,
         user: process.env.MYSQL_USER,
