@@ -12,7 +12,7 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { getAllAcademicYears, getAllExamStatus, getAllExamTypes, getAllSections, getAllServiceLevels, getAllServices, getExamsByAcademicYear, updateExamService, updateExamServiceLevel, updateExamStatus, updateExamType } from '@/app/lib/database'
+import { getAllAcademicYears, getAllExamStatus, getAllExamTypes, getAllSections, getAllServiceLevels, getAllServices, getExamsByAcademicYear, updateExamDate, updateExamService, updateExamServiceLevel, updateExamStatus, updateExamType } from '@/app/lib/database'
 import { Exam } from '@/types/exam'
 import { FormattedAcademicYear } from '@/types/academicYear'
 import { useRouter } from 'next/navigation'
@@ -362,6 +362,9 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
             type="date"
             defaultValue={row.original.exam_date ? (row.original.exam_date as Date).toISOString().split('T')[0] : ''}
             className={`${compactInputClassName} w-[8.5rem]`}
+            onChange={async (e) => {
+              await updateExamDate(row.original.id, e.target.value)
+            }}
           />
         </div>
       ),
