@@ -708,3 +708,22 @@ export async function updateExamResponsible(examId: string, responsibleId: strin
         connection.end()
     })
 }
+
+export async function deleteExam(examId: string) {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    })
+
+    connection.connect()
+
+    return new Promise(function(resolve) {
+        connection.query('DELETE FROM exam WHERE id = ?;', [examId], (err, rows) => {
+            if (err) throw err
+            resolve(JSON.stringify(rows));
+        })
+        connection.end()
+    })
+}
