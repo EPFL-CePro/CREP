@@ -398,8 +398,12 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
       accessorKey: 'nb_students',
       header: 'NB Students',
       cell: ({ row }) => (
-        <div className="min-w-0">
-          {row.original.nb_students}
+        <div>
+          <input
+            type="number"
+            defaultValue={row.original.nb_students ? row.original.nb_students : ''}
+            className={`${compactInputClassName} w-[5.5rem]`}
+          />
         </div>
       ),
       filterFn: (row, columnId, filterValue) => {
@@ -413,8 +417,12 @@ export default function ExamsTable({ academicYear }: ExamsTableProps) {
       accessorKey: 'nb_pages',
       header: 'NB Pages',
       cell: ({ row }) => (
-        <div className="min-w-0">
-          {row.original.nb_pages}
+        <div>
+          <input
+            type="number"
+            defaultValue={row.original.nb_pages ? row.original.nb_pages : ''}
+            className={`${compactInputClassName} w-[5.5rem]`}
+          />
         </div>
       ),
       filterFn: (row, columnId, filterValue) => {
