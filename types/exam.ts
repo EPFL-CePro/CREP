@@ -1,4 +1,5 @@
 export type Exam = {
+    id: string;
     code: string;
     name: string;
     service_level_id: number;
