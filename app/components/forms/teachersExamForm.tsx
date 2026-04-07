@@ -56,7 +56,7 @@ export default function App({ user }: RegisterProps) {
         })();
     }, [])
 
-    const { control, register, handleSubmit, formState: { errors }, setError, clearErrors, reset, setValue } = useForm<Inputs>({
+    const { control, register, handleSubmit, reset, setValue } = useForm<Inputs>({
         defaultValues: {
             examType: [],
         }
@@ -379,7 +379,7 @@ CePro
                                 />
                             </div>
                             <div>
-                                <label htmlFor={`${field.code}dontKnowYet`} className="!text-sm mr-2">I don't know yet</label>
+                                <label htmlFor={`${field.code}dontKnowYet`} className="!text-sm mr-2">I don&apos;t know yet</label>
                                 <input
                                     id={`${field.code}dontKnowYet`}
                                     className="text-right"

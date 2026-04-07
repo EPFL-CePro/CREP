@@ -222,7 +222,7 @@ function SelectField({
             displayedCoursesRef.current = slice;
             setCourseDisplayed(slice);
         },
-        [PAGE_SIZE]
+        [PAGE_SIZE, academicYear]
     );
 
     const loadMoreCourses = useCallback(() => {

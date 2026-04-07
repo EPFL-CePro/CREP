@@ -22,6 +22,13 @@ interface AppUser extends User {
   isAdmin?: boolean;
 }
 
+function getPrintingDurationInMinutes(nbStudents: number): number {
+  return Math.ceil((20 * nbStudents + 3600) / 60 / 60) * 60;
+}
+
+function getEndDateOfPrinting(printDate: Date, nbStudents: number): Date {
+  return new Date(printDate.getTime() + getPrintingDurationInMinutes(nbStudents) * 60000);
+}
 
 export default function Calendar({ user }: CalendarProps) {
   const [modalOpen, setModalOpen] = useState(false);
@@ -32,15 +39,10 @@ export default function Calendar({ user }: CalendarProps) {
   const calRef = useRef<FullCalendar | null>(null);
 
   const [filters, setFilters] = useState<{ label: string, value: string }[]>([]);
-  const availableStatus = getAllowedExamStatus(user.isAdmin || false);
-
-  function getPrintingDurationInMinutes(nbStudents: number): number {
-    return Math.ceil((20 * nbStudents + 3600) / 60 / 60) * 60;
-  }
-
-  function getEndDateOfPrinting(printDate: Date, nbStudents: number): Date {
-      return new Date(printDate.getTime() + getPrintingDurationInMinutes(nbStudents) * 60000);
-  }
+  const availableStatus = useMemo(
+    () => getAllowedExamStatus(user.isAdmin || false),
+    [user.isAdmin]
+  );
 
   useEffect(() => {
     (async function () {
