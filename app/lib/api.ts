@@ -57,7 +57,7 @@ export async function fetchCourses(academicYear?: string): Promise<SelectOption[
     } else {
         currentYear = date.getFullYear().toString() + '-' + (date.getFullYear() +1).toString();
     }
-    const url = `https://oasis${process.env.NODE_ENV === "development" ? '-t' : ''}.epfl.ch:8484/enseignant-cours/${currentYear}`;
+    const url = `https://oasis${process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test" ? '-t' : ''}.epfl.ch:8484/enseignant-cours/${currentYear}`;
     const headers = new Headers();
     headers.set('Access-Control-Allow-Origin', '*');
     headers.set('Access-Control-Allow-Headers', '*');
