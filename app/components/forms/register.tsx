@@ -1,8 +1,8 @@
 "use client";
 // This form allows users to register their exams into the system.
 import { useForm, SubmitHandler } from "react-hook-form"
-import { getAllCourses, getAllExamsBetweenDates, getAllExamsForDate, insertExamForPrint } from "@/app/lib/database";
-import { useEffect, useState } from "react";
+import { getAllExamsBetweenDates, getAllExamsForDate, insertExamForPrint } from "@/app/lib/database";
+import { useState } from "react";
 import ReactSelect from "./ReactSelect";
 import { fetchMultiplePersonsBySciper, fetchPersonBySciper } from "@/app/lib/api";
 import { sendMail } from "@/app/lib/mail";
@@ -420,26 +420,6 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
             openModal("Unexpected Error", 'An unexpected error occurred while registering the exam.');
         }
     }
-    const [courses, setCourses] = useState<Array<{ id: number; name: string, code: string, teacher: string }>>([]);
-
-    useEffect(() => {
-        (async function () {
-            const courses = await getAllCourses() as Array<{
-                id: number;
-                name: string;
-                code: string;
-                teachers: string;
-            }>;
-
-            const filteredCoursesData = courses.map(({ id, code, name, teachers }) => ({
-                id,
-                code,
-                name,
-                teacher: teachers,
-            }));
-            setCourses(filteredCoursesData);
-        })();
-    }, []);
 
     return (
         /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
