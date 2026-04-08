@@ -3,6 +3,16 @@ import { EPFLUser } from "@/types/user";
 import { SelectOption } from "../components/forms/ReactSelect";
 import { GroupUser } from "@/types/groupUser";
 
+function getOasisBaseUrl(): string {
+    if (process.env.OASIS_BASE_URL) {
+        return process.env.OASIS_BASE_URL;
+    }
+
+    return process.env.NODE_ENV === "development"
+        ? "https://oasis-t.epfl.ch:8484"
+        : "https://oasis.epfl.ch:8484";
+}
+
 export async function fetchPersons(query: string): Promise<SelectOption[]> {
     const url = `https://api.epfl.ch/v1/persons?query=${encodeURIComponent(query)}`;
     const headers = new Headers();
@@ -57,7 +67,7 @@ export async function fetchCourses(academicYear?: string): Promise<SelectOption[
     } else {
         currentYear = date.getFullYear().toString() + '-' + (date.getFullYear() +1).toString();
     }
-    const url = `https://oasis${process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test" ? '-t' : ''}.epfl.ch:8484/enseignant-cours/${currentYear}`;
+    const url = `${getOasisBaseUrl()}/enseignant-cours/${currentYear}`;
     const headers = new Headers();
     headers.set('Access-Control-Allow-Origin', '*');
     headers.set('Access-Control-Allow-Headers', '*');
