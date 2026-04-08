@@ -6,6 +6,7 @@ import { useState } from "react";
 import ReactSelect from "./ReactSelect";
 import { fetchMultiplePersonsBySciper, fetchPersonBySciper } from "@/app/lib/api";
 import { sendMail } from "@/app/lib/mail";
+import { fromDatabaseDateTime, formatDateTimeForDatabase } from "@/app/lib/dateTime";
 import { User } from "next-auth";
 import { RedAsterisk } from "../RedAsterisk";
 import { RegisterModal } from "./RegisterModal";
@@ -214,18 +215,6 @@ export default function App({ user }: RegisterProps) {
                 return new Date(exam.print_date.getTime() + getPrintingDurationInMinutes(exam.exam_students) * 60000);
             }
 
-            function formatDateForDb(date: Date): string {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                const seconds = String(date.getSeconds()).padStart(2, '0');
-
-                return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-            }
-
-
             function computeGapsBetweenExams(exams: Exam[]): Gap[] {
                 const sorted = [...exams].sort(
                     (a, b) => a.print_date.getTime() - b.print_date.getTime()
@@ -282,7 +271,7 @@ export default function App({ user }: RegisterProps) {
             if (!allExamsFromNowToDesired) {
                 const firstDayDate = daysArray[0];
                 firstDayDate.setHours(7, 0, 0, 0);
-                printingDate = formatDateForDb(firstDayDate);
+                printingDate = formatDateTimeForDatabase(firstDayDate);
             } else {
                 const necessaryPrintingDurationInMinutes = getPrintingDurationInMinutes(data.nbStudents);
 
@@ -295,29 +284,32 @@ export default function App({ user }: RegisterProps) {
 
                     if (allExamsForDate.length == 0) {
                         date.setHours(7, 0, 0, 0);
-                        printingDate = formatDateForDb(date);
+                        printingDate = formatDateTimeForDatabase(date);
                         break;
                     } else if (allExamsForDate.length == 1) {
-                        // This is necessary because of the 1 hour delay between the database and JavaScript
-                        allExamsForDate[0].print_date.setHours(allExamsForDate[0].print_date.getHours() - 1);
+                        const examForDate = {
+                            ...allExamsForDate[0],
+                            print_date: fromDatabaseDateTime(allExamsForDate[0].print_date),
+                        };
 
-                        const endPrintExam = getEndDateOfPrinting(allExamsForDate[0]);
+                        const endPrintExam = getEndDateOfPrinting(examForDate);
                         const endPrintOfWantedExam = new Date(endPrintExam.getTime() + necessaryPrintingDurationInMinutes * 60000);
 
                         if (endPrintOfWantedExam.getHours() < 22) {
-                            printingDate = formatDateForDb(endPrintExam);
+                            printingDate = formatDateTimeForDatabase(endPrintExam);
                             break;
                         }
                     } else {
-                        const gaps = computeGapsBetweenExams(allExamsForDate as Exam[]);
+                        const normalizedExamsForDate = allExamsForDate.map((exam) => ({
+                            ...exam,
+                            print_date: fromDatabaseDateTime(exam.print_date),
+                        }));
+                        const gaps = computeGapsBetweenExams(normalizedExamsForDate as Exam[]);
                         const enoughGap = gaps.find(gap => gap.gapMinutes >= necessaryPrintingDurationInMinutes);
 
                         if (enoughGap) {
-                            // This is necessary because of the 1 hour delay between the database and JavaScript
-                            enoughGap.between[0].print_date.setHours(enoughGap.between[0].print_date.getHours() - 1);
-
                             const endPrintFirstExam = getEndDateOfPrinting(enoughGap.between[0]);
-                            printingDate = formatDateForDb(endPrintFirstExam);
+                            printingDate = formatDateTimeForDatabase(endPrintFirstExam);
                             break;
                         } else {
                             const latestGapOfDay = gaps[gaps.length - 1];
@@ -325,15 +317,13 @@ export default function App({ user }: RegisterProps) {
                             const latestExamPrintingDurationInMinutes = getPrintingDurationInMinutes(latestExam.exam_students);
 
                             const latestExamPrintDate = latestExam.print_date;
-                            latestExamPrintDate.setHours(latestExamPrintDate.getHours() - 1);
-
                             const endPrintingLatestExam = new Date(latestExamPrintDate.getTime() + latestExamPrintingDurationInMinutes * 60000);
                             const endPrintingWantedExam = new Date(endPrintingLatestExam.getTime() + getPrintingDurationInMinutes(data.nbStudents) * 60000);
 
                             const printingLimit = new Date(endPrintingLatestExam);
                             printingLimit.setHours(22, 0, 0, 0);
                             if (endPrintingWantedExam <= printingLimit) {
-                                printingDate = formatDateForDb(endPrintingLatestExam);
+                                printingDate = formatDateTimeForDatabase(endPrintingLatestExam);
                                 break;
                             }
                         }

@@ -2,16 +2,23 @@
 import { User } from "next-auth";
 import React, { Dispatch, SetStateAction, useRef, useState } from "react";
 import { updateExamRemarkById, updateExamStatusById, updateExamReproRemarkById } from "../lib/database";
-import { EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
+import { EventApi, EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
 import { PrintButton } from "./print/ReactToPrint";
 import { examNotAdminStatus } from "../lib/examStatus";
+import {
+    formatDateInputValue,
+    formatDateOnlyValue,
+    formatTimeInputValue,
+    getDatePartFromDateTimeString,
+    getTimePartFromDateTimeString,
+} from "../lib/dateTime";
 
 interface AppUser extends User {
     isAdmin?: boolean;
 }
 
 interface ModalProps {
-    event: EventInput;
+    event?: EventApi;
     shareLink: string;
     user: AppUser;
     examStatus?: { value: string; label: string; color: string, needsAdmin: boolean, fcColor: string }[];
@@ -35,19 +42,24 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
             }
             return e;
         }) : [];
-        await updateExamRemarkById(event.id || '', remark)
+        await updateExamRemarkById(event?.id || '', remark)
         setRemark(remark)
 
-        await updateExamReproRemarkById(event.id || '', reproRemark)
+        await updateExamReproRemarkById(event?.id || '', reproRemark)
         setReproRemark(reproRemark)
 
-        await updateExamStatusById(event.id || '', selectStatus)
+        await updateExamStatusById(event?.id || '', selectStatus)
         setSelectStatus(selectStatus)
         setExams(updatedExams)
     }
 
     // Get color of selected exam
     const examColor = examStatus?.find(status => status.value === event?.extendedProps?.status)?.color;
+    const startDateValue = getDatePartFromDateTimeString(event?.startStr) || (event?.start ? formatDateInputValue(event.start) : '');
+    const startTimeValue = getTimePartFromDateTimeString(event?.startStr) || (event?.start ? formatTimeInputValue(event.start) : '');
+    const endDateValue = getDatePartFromDateTimeString(event?.endStr) || (event?.end ? formatDateInputValue(event.end) : '');
+    const endTimeValue = getTimePartFromDateTimeString(event?.endStr) || (event?.end ? formatTimeInputValue(event.end) : '');
+
     return (
         <form ref={modalRef as React.RefObject<HTMLFormElement>} method="dialog" className="modal-content flex flex-col gap-4 p-12 w-full text-foreground bg-background accent-red-500 [&_input]:rounded-lg">
             <h3 className={`exam-title font-bold basis-full text-lg ${examColor}`}>{event?.title}</h3>
@@ -84,13 +96,13 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                 <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
                     <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
                         <label className="font-semibold w-full" htmlFor="start">Estimated print start</label>
-                        <input className="start-date basis-full xl:basis-auto" type="date" name="start" disabled defaultValue={event ? new Date(event.start as string).toISOString().split("T")[0] : ''} />
-                        <input className="start-time basis-full xl:basis-auto" type="time" name="start" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + (new Date(event.start as string).getHours() - 1)).slice(-2)}:${("0" + new Date(event.start as string).getMinutes()).slice(-2)}` : ''} />
+                        <input className="start-date basis-full xl:basis-auto" type="date" name="start" disabled defaultValue={startDateValue} />
+                        <input className="start-time basis-full xl:basis-auto" type="time" name="start" disabled step="3600" min="00:00" max="23:59" defaultValue={startTimeValue} />
                     </div>
                     <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
                         <label className="font-semibold w-full" htmlFor="end">Estimated print end</label>
-                        <input className="end-date basis-full xl:basis-auto" type="date" name="end" disabled defaultValue={event ? new Date(event.end as string).toISOString().split("T")[0] : ''} />
-                        <input className="end-time basis-full xl:basis-auto" type="time" name="end" disabled step="3600" min="00:00" max="23:59" defaultValue={event ? `${("0" + (new Date(event.end as string).getHours() - 1)).slice(-2)}:${("0" + new Date(event.end as string).getMinutes()).slice(-2)}` : ''} />
+                        <input className="end-date basis-full xl:basis-auto" type="date" name="end" disabled defaultValue={endDateValue} />
+                        <input className="end-time basis-full xl:basis-auto" type="time" name="end" disabled step="3600" min="00:00" max="23:59" defaultValue={endTimeValue} />
                     </div>
                 </div>
                 <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
@@ -100,7 +112,7 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                     </div>
                     <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
                         <label className="font-semibold w-full" htmlFor="examDate">Exam date</label>
-                        <input className="exam-date basis-full xl:basis-auto" type="date" name="examDate" disabled defaultValue={new Date(event?.extendedProps?.examDate as string).toISOString().split("T")[0]} />
+                        <input className="exam-date basis-full xl:basis-auto" type="date" name="examDate" disabled defaultValue={formatDateOnlyValue(event?.extendedProps?.examDate as string | Date | null | undefined)} />
                     </div>
                 </div>
                 <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">

@@ -10,6 +10,7 @@ import { CrepExam } from '@/types/crepExam';
 import { Exam, NewExam } from '@/types/exam';
 import { ServiceLevel } from '@/types/serviceLevel';
 import { ExamStatus } from '@/types/examStatus';
+import { formatDateTimeForDatabase } from './dateTime';
 
 export async function getAllCrepExams() {
     const connection = mysql.createConnection({
@@ -155,7 +156,7 @@ export async function getAllExamsBetweenDates(beginDate: Date, endDate: Date): P
     connection.connect()
     
     return new Promise(function(resolve) {
-        connection.query(`SELECT * from crep WHERE print_date between '${beginDate.toISOString().replace('T', ' ').slice(0, 19)}' and '${endDate.toISOString().replace('T', ' ').slice(0, 19)}'`, (err:mysql.QueryError, rows:CrepExam[]) => {
+        connection.query(`SELECT * from crep WHERE print_date between '${formatDateTimeForDatabase(beginDate)}' and '${formatDateTimeForDatabase(endDate)}'`, (err:mysql.QueryError, rows:CrepExam[]) => {
             if (err) throw err
             resolve(rows);
         })

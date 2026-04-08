@@ -7,12 +7,14 @@ import interactionPlugin from '@fullcalendar/interaction'; // handles event clic
 import { useEffect, useRef, useState, useMemo, Dispatch } from "react";
 import { EventDropArg, EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
 import { getAllCrepExams, getAllNonAdminExams, updateExamDateById } from "@/app/lib/database";
+import { fromDatabaseDateTime, formatDateTimeForDatabase, formatDateTimeInputValue } from "@/app/lib/dateTime";
 import { Modal } from "../Modal";
 import { User } from "next-auth";
 import { getAllowedExamStatus } from "@/app/lib/examStatus";
 import { Filters } from "../Filters";
 import { QueryResult } from "mysql2";
 import { Legend } from "../Legend";
+import { EventApi } from "@fullcalendar/core";
 
 interface CalendarProps {
   user: AppUser
@@ -27,12 +29,15 @@ function getPrintingDurationInMinutes(nbStudents: number): number {
 }
 
 function getEndDateOfPrinting(printDate: Date, nbStudents: number): Date {
-  return new Date(printDate.getTime() + getPrintingDurationInMinutes(nbStudents) * 60000);
+  return new Date(
+    fromDatabaseDateTime(printDate).getTime() +
+      getPrintingDurationInMinutes(nbStudents) * 60000
+  );
 }
 
 export default function Calendar({ user }: CalendarProps) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<EventInput>();
+  const [selectedEvent, setSelectedEvent] = useState<EventApi>();
   const [shareLink, setShareLink] = useState('#');
 
   const [exams, setExams] = useState<EventSourceInput | undefined>();
@@ -58,8 +63,8 @@ export default function Calendar({ user }: CalendarProps) {
         const eventColor = availableStatus.find(status => status.value === e.status)?.fcColor;
         return {
           title: `${e.exam_code} - ${e.exam_name}`,
-          start: e.print_date.toISOString().slice(0, 19),
-          end: getEndDateOfPrinting(e.print_date, e.exam_students),
+          start: formatDateTimeInputValue(fromDatabaseDateTime(e.print_date)),
+          end: formatDateTimeInputValue(getEndDateOfPrinting(e.print_date, e.exam_students)),
           description: e.exam_name,
           durationEditable: false,
           id: e.id,
@@ -84,24 +89,12 @@ export default function Calendar({ user }: CalendarProps) {
     })();
   }, [availableStatus, user.isAdmin])
 
-  function formatDate(date: Date) {
-    const pad = (num: number) => String(num).padStart(2, '0');
-
-    const year = date.getFullYear();
-    const month = pad(date.getMonth() + 1); // month starting at 0
-    const day = pad(date.getDate());
-    const hours = pad(date.getUTCHours());
-    const minutes = pad(date.getMinutes());
-    const seconds = pad(date.getSeconds());
-
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-  }
-
   const handleEventDrop = async (arg: EventDropArg) => {
     const id = arg.event.id;
     const startDate = arg.event.start;
-
-    const formattedStartDate = formatDate(startDate || new Date())
+    const formattedStartDate = arg.event.startStr
+      ? arg.event.startStr.slice(0, 19).replace("T", " ")
+      : formatDateTimeForDatabase(startDate || new Date());
 
     await updateExamDateById(id, formattedStartDate)
   }
@@ -195,7 +188,7 @@ export default function Calendar({ user }: CalendarProps) {
           info.event.setExtendedProp('contact', clickedExam?.contact)
           info.event.setExtendedProp('authorizedPersons', JSON.parse(clickedExam?.authorizedPersons)) // Necessary since it's an Array of objects.
           info.event.setExtendedProp('files', JSON.parse(clickedExam?.files)) // Necessary since it's an Array of strings.
-          setSelectedEvent(info.event as EventInput);
+          setSelectedEvent(info.event);
           // build the share link once and stash in state
           const rawPath = "vpsi1files.epfl.ch/CAPE/REPRO/TEST/" + info.event.extendedProps?.folder_name; //folder name doesn't exist yet. snippet from ludo. ToDo
           const uncURL = `file://///${rawPath}`;
@@ -249,7 +242,7 @@ export default function Calendar({ user }: CalendarProps) {
       }}>
         {modalOpen && (
           <Modal
-            event={selectedEvent as EventInput}
+            event={selectedEvent}
             shareLink={shareLink}
             user={user}
             exams={exams}
