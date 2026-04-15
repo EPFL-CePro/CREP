@@ -1,11 +1,28 @@
 // app/api/upload-exam-files/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { uploadExamFiles } from "@/app/lib/upload";
+import { auth } from "@/auth";
 
 // ensure Node.js runtime (needed for fs / NAS)
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  const session = await auth();
+
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const groups = session.user.groups || [];
+  const authorizedGroups = ["CREP-access_AppGrpU", "CREP-admin_AppGrpU"];
+  const isInAllowedGroup = groups.some((group: string) =>
+    authorizedGroups.includes(group)
+  );
+
+  if (!isInAllowedGroup) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const formData = await req.formData();
 
   const folder_name = formData.get("folder_name");
