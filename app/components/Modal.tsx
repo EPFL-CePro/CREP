@@ -167,6 +167,12 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                         </ul>
                     </div>
                 </div>
+                <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
+                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
+                        <label className="font-semibold w-full" htmlFor="desiredDate">Desired delivery date</label>
+                        <input className="exam-date basis-full xl:basis-auto" type="date" name="desiredDate" disabled defaultValue={formatDateOnlyValue(event?.extendedProps?.desiredDate as string | Date | null | undefined)} />
+                    </div>
+                </div>
             </div>
             <div>
                 <label className="font-semibold w-full" htmlFor="description">Description</label>

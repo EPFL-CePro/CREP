@@ -353,6 +353,7 @@ export default function App({ user }: RegisterProps) {
                     need_scan: data.needScan,
                     financial_center: data.financialCenter,
                     files: JSON.stringify(filesNamesArray),
+                    desired_date: data.desiredDate,
                 }
             )
 
