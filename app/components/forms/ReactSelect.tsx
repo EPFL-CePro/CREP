@@ -63,9 +63,7 @@ function SelectField({
     const currentQueryRef = useRef<string>("");
     const pageRef = useRef<number>(1);
 
-    const [selected, setSelected] = useState<SelectOption | SelectOption[] | null>(
-        null
-    );
+    const [selected, setSelected] = useState<SelectOption | SelectOption[] | null>(null);
     const [courseDisplayed, setCourseDisplayed] = useState<SelectOption[]>([]);
     const [courseLoading, setCourseLoading] = useState(false);
 
@@ -154,9 +152,19 @@ function SelectField({
         [containCourses, name]
     );
 
+    useEffect(() => {
+        if (containCourses && name === "course") {
+            return;
+        }
+
+        if (!field.value || (Array.isArray(field.value) && field.value.length === 0)) {
+            setSelected(isMultiChoice ? [] : null);
+        }
+    }, [containCourses, field.value, isMultiChoice, name]);
+
     // Default contact user is the logged in user
     useEffect(() => {
-        if (!user?.sciper) return;
+        if (name !== "contact" || !user?.sciper) return;
 
         let cancelled = false;
 
@@ -179,9 +187,8 @@ function SelectField({
                     },
                 };
 
-                setSelected(option);
-
                 if (!field.value) {
+                    setSelected(option);
                     field.onChange(option.value);
                 }
             } catch (e) {
@@ -244,8 +251,8 @@ function SelectField({
                 isLoading={courseLoading}
                 value={
                     isMultiChoice
-                        ? (Array.isArray(selected) ? selected : [])
-                        : (selected as SelectOption | null)
+                        ? (Array.isArray(field.value) ? field.value as SelectOption[] : [])
+                        : (field.value as SelectOption | null) ?? null
                 }
                 getOptionValue={(opt) => String(opt.value)}
                 formatOptionLabel={formatOption}
@@ -265,17 +272,12 @@ function SelectField({
                         const opts = Array.isArray(selectedOption)
                             ? selectedOption
                             : [];
-                        setSelected(opts);
+                        field.onChange(opts);
                     } else {
                         const opt = selectedOption
                             ? (selectedOption as SelectOption)
                             : null;
-                        setSelected(opt);
-                        if (!opt) {
-                            field.onChange(null);
-                            return;
-                        }
-                        field.onChange(opt as SelectOption);
+                        field.onChange(opt);
                     }
                 }}
                 onMenuOpen={() => ensureCoursesLoaded(currentQueryRef.current)}

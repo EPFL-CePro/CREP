@@ -69,7 +69,17 @@ function businessDaysBetween(startDate: string, endDate: string) {
 
 
 export default function App({ user }: RegisterProps) {
-    const { control, register, handleSubmit, formState: { errors }, setError, clearErrors, reset, setValue } = useForm<Inputs>()
+    const { control, register, handleSubmit, formState: { errors }, setError, clearErrors, reset, setValue } = useForm<Inputs>({
+        defaultValues: {
+            course: null,
+            contact: "",
+            authorizedPersons: "",
+            paperFormat: "A3",
+            paperColor: "greyscale",
+            needScan: true,
+            remark: "",
+        },
+    })
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [modalTitle, setModalTitle] = useState("Registration Successful");
@@ -444,6 +454,8 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                 openModal("Registration Successful", 'Your Exam ' + exam_code + ' has been registered and a confirmation has been sent to your email.');
             }
             reset();
+            setSelectedFiles([]);
+            clearErrors();
         } catch (err) {
             console.error(err);
             openModal("Unexpected Error", 'An unexpected error occurred while registering the exam.');
