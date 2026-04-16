@@ -150,6 +150,8 @@ export default function App({ user }: RegisterProps) {
         // validate that desiredDate is not later than examDate
         const { examDate, desiredDate } = data;
 
+        var status = 'registered';
+
         if (!data.course) {
             openModal("Course Selection Error", "Please select a course.");
             return;
@@ -166,6 +168,7 @@ export default function App({ user }: RegisterProps) {
                 if (!confirmed) {
                     return;
                 }
+                status = 'registered-warning'
             }
             else {
                 // clear any previous date error
@@ -331,6 +334,15 @@ export default function App({ user }: RegisterProps) {
                 }
             }
 
+            /* If `printingDate` is undefined, that means that a printing schedule can not be defined.
+            (timings are too short, already existing planning is too full, ...)
+            So we should register it at 07:00 AM on the desired delivery date, with the status `registered-error`. */
+            if(!printingDate) {
+                desiredDate.setHours(7)
+                printingDate = formatDateTimeForDatabase(desiredDate);
+                status = 'registered-error'
+            }
+
             const filesNamesArray = selectedFiles.map((file) => file.name)
 
             const insertedExam = await insertExamForPrint(
@@ -348,7 +360,7 @@ export default function App({ user }: RegisterProps) {
                     paper_color: data.paperColor,
                     remark: data.remark,
                     repro_remark: null,
-                    status: 'registered',
+                    status: status,
                     registered_by: user.email || '',
                     need_scan: data.needScan,
                     financial_center: data.financialCenter,
@@ -380,19 +392,28 @@ export default function App({ user }: RegisterProps) {
                 openModal("File Upload Error", "An error occurred while uploading exam files. Please try again.");
                 return;
             }
-            const daysBetweenExamAndDesired = businessDaysBetween(data.desiredDate, data.examDate)
-            const lessThanEightDays = daysBetweenExamAndDesired < 8;
+           /*
+            The mail checks if status is `registered-warning` or `registered-error`, and displays a message for the user and the CePro team to let them know about the exam printing situation.
+            If the status is `registered-warning`, that means that a printing schedule could be found, but that the timing is too short (less than 8 days between the exam date and the desired delivery date)
+            If the status is `registered-error`, that means that a printing schedule could NOT be found, so the CePro (and Repro) team need to do something for the user. 
+           */
             if (process.env.NODE_ENV !== "development") {
                 await sendMail(
                     user.email || '',
-                    `${lessThanEightDays ? 'REQUIRES ATTENTION - ' : ''} CePro - Exam printing service subscription confirmation`,
+                    `${status == 'registered-warning' || status == 'registered-error' ? 'REQUIRES ATTENTION - ' : ''} CePro - Exam printing service subscription confirmation`,
                     `
 Hello,
-Your subscription to our exam printing service has been successfully registered:
+Your subscription to our exam printing service has been registered:
 
-${lessThanEightDays ? `⚠️ : We would like to inform you that you choose a desired delivery date that is inferior to 8 business days before the exam.
+${['registered-warning', 'registered-error'].includes(status) ? `
+⚠️ : ${
+    status === 'registered-error'
+        ? `Due to a printing planning extremely full or too tight delays, we could not determine a printing session for your exam.
+The CePro team will get in touch with you as soon as possible to discuss about your situation.`
+        : `We would like to inform you that you choose a desired delivery date that is inferior to 8 business days before the exam.
 The CePro team will get in touch with you shortly to discuss about your situation.
-Next time, please register to the printing service earlier to make sur that the printing team has the right amount of time to print your exam correctly.
+Next time, please register to the printing service earlier to make sur that the printing team has the right amount of time to print your exam correctly.`
+}
 ` : ''}
 
 - Course: ${data.course?.label}
@@ -404,7 +425,23 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                     'cepro-exams@epfl.ch'
                 );
             }
-            openModal("Registration Successful", 'Your Exam ' + exam_code + ' has been registered and a confirmation has been sent to your email.');
+            if(status == 'registered-warning') {
+                // Modal with warning that there is less than 8 days between the exam date and the desired delivery date.
+                openModal("REQUIRES ATTENTION - Registration Successful", `
+                    Your exam ${exam_code} has been registered, but with a delivery date that is inferior to 8 business days before the exam.
+                    An email has been sent to you as a confirmation.
+                    The CePro team can contact you at any time to discuss about your situation.
+                `)
+            } else if(status == 'registered-error') {
+                // Modal with error message that a printing session could not be calculated and that the CePro team will contact the user as soon as possible.
+                openModal("REQUIRES ATTENTION - REGISTRATION ERROR", `
+                    You filled the form correctly, but due to a printing planning extremely full or too tight delays, we could not determine a printing session for your exam.
+                    The CePro team will contact you as soon as possible to discuss about your situation.
+                    An email has been sent to you and the CePro team as information.
+                `)
+            } else {
+                openModal("Registration Successful", 'Your Exam ' + exam_code + ' has been registered and a confirmation has been sent to your email.');
+            }
             reset();
         } catch (err) {
             console.error(err);
