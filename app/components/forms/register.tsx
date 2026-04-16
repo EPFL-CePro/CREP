@@ -150,7 +150,7 @@ export default function App({ user }: RegisterProps) {
         // validate that desiredDate is not later than examDate
         const { examDate, desiredDate } = data;
 
-        var status = 'registered';
+        let status = 'registered';
 
         if (!data.course) {
             openModal("Course Selection Error", "Please select a course.");
