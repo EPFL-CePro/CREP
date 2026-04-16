@@ -11,6 +11,15 @@ import { Inputs } from "@/types/inputs";
 
 export type SelectOption = { value: number | string; label: string; person?: { id: number; firstname?: string; lastname?: string; email?: string; sciper?: string } };
 
+function isSelectOption(value: unknown): value is SelectOption {
+    return Boolean(
+        value &&
+        typeof value === "object" &&
+        "value" in value &&
+        "label" in value
+    );
+}
+
 export interface SelectProps {
     control: Control<Inputs>;
     label: string;
@@ -249,11 +258,7 @@ function SelectField({
             <Select<SelectOption, boolean, GroupBase<SelectOption>>
                 options={courseDisplayed}
                 isLoading={courseLoading}
-                value={
-                    isMultiChoice
-                        ? (Array.isArray(field.value) ? field.value as SelectOption[] : [])
-                        : (field.value as SelectOption | null) ?? null
-                }
+                value={isSelectOption(field.value) ? field.value : null}
                 getOptionValue={(opt) => String(opt.value)}
                 formatOptionLabel={formatOption}
                 theme={theme}
