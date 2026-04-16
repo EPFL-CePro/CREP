@@ -156,6 +156,17 @@ export default function App({ user }: RegisterProps) {
             openModal("Course Selection Error", "Please select a course.");
             return;
         }
+
+        // check uploaded files not empty
+        if (selectedFiles.length === 0) {
+            setError("files", {
+                type: "validate",
+                message: "Please upload at least one file",
+            });
+            openModal("File Upload Error", "You need to upload at least one file before submitting the form.");
+            return;
+        }
+
         if (examDate && desiredDate) {
             const exam = new Date(examDate);
             const desired = new Date(desiredDate);
@@ -174,16 +185,6 @@ export default function App({ user }: RegisterProps) {
                 // clear any previous date error
                 clearErrors("desiredDate");
             }
-        }
-
-        // check uploaded files not empty
-        if (selectedFiles.length === 0) {
-            setError("files", {
-                type: "validate",
-                message: "Please upload at least one file",
-            });
-            openModal("File Upload Error", "You need to upload at least one file before submitting the form.");
-            return;
         }
 
         try {
