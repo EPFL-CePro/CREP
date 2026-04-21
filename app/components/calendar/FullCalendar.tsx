@@ -186,7 +186,7 @@ export default function Calendar({ user }: CalendarProps) {
           info.event.setExtendedProp('paperFormat', clickedExam?.paperFormat)
           info.event.setExtendedProp('paperColor', clickedExam?.paperColor)
           info.event.setExtendedProp('needScan', clickedExam?.needScan)
-          info.event.setExtendedProp('contact', clickedExam?.contact)
+          info.event.setExtendedProp('contact', JSON.parse(clickedExam?.contact))
           info.event.setExtendedProp('authorizedPersons', JSON.parse(clickedExam?.authorizedPersons)) // Necessary since it's an Array of objects.
           info.event.setExtendedProp('files', JSON.parse(clickedExam?.files)) // Necessary since it's an Array of strings.
           info.event.setExtendedProp('desiredDate', clickedExam?.desiredDate)

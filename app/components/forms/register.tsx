@@ -227,6 +227,12 @@ export default function App({ user }: RegisterProps) {
 
 
             const contact = await fetchPersonBySciper(data.contact);
+            const formattedContact = {
+                id: contact.id,
+                email: contact.email,
+                firstname: contact.firstname,
+                lastname: contact.lastname,
+            }
 
             const exam_name = data.course.value.toString();
             const exam_code = data.course.label.split(' - ')[0] || '';
@@ -374,7 +380,7 @@ export default function App({ user }: RegisterProps) {
                     print_date: printingDate,
                     exam_students: data.nbStudents,
                     exam_pages: data.nbPages,
-                    contact: contact?.firstname + ' ' + contact?.lastname + ' (' + contact?.email + ')',
+                    contact: JSON.stringify(formattedContact),
                     // contact: data.contact, //if we want the id only
                     authorized_persons: JSON.stringify(authorizedPersons),
                     paper_format: data.paperFormat,

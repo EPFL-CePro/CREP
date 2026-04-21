@@ -142,7 +142,7 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                     </div>
                     <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
                         <label className="font-semibold w-full" htmlFor="contact">Contact</label>
-                        <input className="contact basis-full xl:basis-auto w-full" type="text" name="contact" disabled defaultValue={event?.extendedProps?.contact} />
+                        <input className="contact basis-full xl:basis-auto w-full" type="text" name="contact" disabled defaultValue={`${event?.extendedProps?.contact.firstname} ${event?.extendedProps?.contact.lastname} (${event?.extendedProps?.contact.email})`} />
                     </div>
                 </div>
                 <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
