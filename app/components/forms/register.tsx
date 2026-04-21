@@ -493,23 +493,19 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                                 required: true,
                                 onChange: (e) => {
                                     const exam = (e.target as HTMLInputElement).value;
-                                    const desiredInput = document.querySelector('input[name="desiredDate"]') as HTMLInputElement | null;
-                                    if (!exam || !desiredInput || desiredInput.value) return; // only set once when desiredDate is empty
                                     const d = new Date(exam);
 
-                                    for (let i = 0; i < 8; i++) {
-                                        // If it's sunday go back 2 days
-                                        if (d.getDay() === 0) {
-                                            d.setDate(d.getDate() - 2);
-                                        }
-                                        // If it's monday go back 3 days
-                                        else if (d.getDay() === 1) {
-                                            d.setDate(d.getDate() - 3);
-                                        }
-                                        // Else just go back one day
-                                        else {
-                                            d.setDate(d.getDate() - 1);
-                                        }
+                                    // If it's sunday go back 2 days
+                                    if (d.getDay() === 0) {
+                                        d.setDate(d.getDate() - 2);
+                                    }
+                                    // If it's monday go back 3 days
+                                    else if (d.getDay() === 1) {
+                                        d.setDate(d.getDate() - 3);
+                                    }
+                                    // Else just go back one day
+                                    else {
+                                        d.setDate(d.getDate() - 1);
                                     }
                                     const yyyy = d.getFullYear();
                                     const mm = String(d.getMonth() + 1).padStart(2, "0");
