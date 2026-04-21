@@ -156,9 +156,19 @@ export default function App({ user }: RegisterProps) {
         });
     };
 
+    const formatDateYYYYMMDD = (date: Date) => {
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, "0");
+        const dd = String(date.getDate()).padStart(2, "0");
+
+        return `${yyyy}-${mm}-${dd}`
+    }
+
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
         // validate that desiredDate is not later than examDate
         const { examDate, desiredDate } = data;
+
+        const today = new Date();
 
         let status = 'registered';
 
@@ -184,8 +194,9 @@ export default function App({ user }: RegisterProps) {
                 setError("desiredDate", { type: "validate", message: "Desired delivery date cannot be later than the exam date." });
                 return;
             }
-            else if (businessDaysBetween(desiredDate, examDate) < 8) {
-                const confirmed = await openConfirmationModal('Date Validation Warning', `There must be at least 8 business days between the desired delivery date and the exam date.\n\nDo you still want to submit your exam?`);
+
+            else if (businessDaysBetween(formatDateYYYYMMDD(today), desiredDate) < 8) {
+                const confirmed = await openConfirmationModal('Date Validation Warning', `There must be at least 8 business days between today and the desired delivery date.\n\nDo you still want to submit your exam?`);
                 if (!confirmed) {
                     return;
                 }
@@ -259,7 +270,6 @@ export default function App({ user }: RegisterProps) {
             let printingDate;
 
             const desiredDate = new Date(data.desiredDate);
-            const today = new Date();
 
             // Making sure hours is not a problem
             desiredDate.setHours(0,0,0,0);
@@ -421,7 +431,7 @@ ${['registered-warning', 'registered-error'].includes(status) ? `
     status === 'registered-error'
         ? `Due to a printing planning extremely full or too tight delays, we could not determine a printing session for your exam.
 The CePro team will get in touch with you as soon as possible to discuss about your situation.`
-        : `We would like to inform you that you choose a desired delivery date that is inferior to 8 business days before the exam.
+        : `We would like to inform you that you choose a desired delivery date that is inferior to 8 business days from today.
 The CePro team will get in touch with you shortly to discuss about your situation.
 Next time, please register to the printing service earlier to make sur that the printing team has the right amount of time to print your exam correctly.`
 }
@@ -439,7 +449,7 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
             if(status == 'registered-warning') {
                 // Modal with warning that there is less than 8 days between the exam date and the desired delivery date.
                 openModal("REQUIRES ATTENTION - Registration Successful", `
-                    Your exam ${exam_code} has been registered, but with a delivery date that is inferior to 8 business days before the exam.
+                    Your exam ${exam_code} has been registered, but with a delivery date that is inferior to 8 business days from today.
                     An email has been sent to you as a confirmation.
                     The CePro team can contact you at any time to discuss about your situation.
                 `)
@@ -507,10 +517,7 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                                     else {
                                         d.setDate(d.getDate() - 1);
                                     }
-                                    const yyyy = d.getFullYear();
-                                    const mm = String(d.getMonth() + 1).padStart(2, "0");
-                                    const dd = String(d.getDate()).padStart(2, "0");
-                                    const formatted = `${yyyy}-${mm}-${dd}`;
+                                    const formatted = formatDateYYYYMMDD(d)
                                     setValue("desiredDate", formatted, { shouldDirty: true, shouldValidate: true });
                                 },
                             })}
