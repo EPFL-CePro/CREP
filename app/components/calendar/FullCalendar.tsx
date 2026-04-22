@@ -237,7 +237,7 @@ export default function Calendar({ user }: CalendarProps) {
         eventDrop={handleEventDrop}
       />
       {/* dialog modal starts empty, then is populated with event details on click. Closing the modal will reset the state. */}
-      <dialog id="modal" className="modal fixed top-1/8 left-1/8 w-3/4 md:left-1/4 md:w-2/4 rounded-xl flex items-center justify-center z-50 drop-shadow-2xl backdrop:backdrop-blur-xs opacity-98" onClose={() => {
+      <dialog id="modal" className="modal fixed inset-0 z-50 m-0 h-dvh w-screen max-h-none max-w-none overflow-y-auto bg-transparent p-4 backdrop:backdrop-blur-xs open:flex open:items-center open:justify-center md:p-8" onClose={() => {
         setModalOpen(false);
       }}>
         {modalOpen && (
