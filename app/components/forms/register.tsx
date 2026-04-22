@@ -6,7 +6,7 @@ import { useState } from "react";
 import ReactSelect from "./ReactSelect";
 import { fetchMultiplePersonsBySciper, fetchPersonBySciper } from "@/app/lib/api";
 import { sendMail } from "@/app/lib/mail";
-import { fromDatabaseDateTime, formatDateTimeForDatabase } from "@/app/lib/dateTime";
+import { fromDatabaseDateTime, formatDateTimeForDatabase, formatDateYYYYMMDD } from "@/app/lib/dateTime";
 import { User } from "next-auth";
 import { RedAsterisk } from "../RedAsterisk";
 import { RegisterModal } from "./RegisterModal";
@@ -155,14 +155,6 @@ export default function App({ user }: RegisterProps) {
             return updated;
         });
     };
-
-    const formatDateYYYYMMDD = (date: Date) => {
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, "0");
-        const dd = String(date.getDate()).padStart(2, "0");
-
-        return `${yyyy}-${mm}-${dd}`
-    }
 
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
         // validate that desiredDate is not later than examDate
