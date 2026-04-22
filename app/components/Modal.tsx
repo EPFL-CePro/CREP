@@ -19,14 +19,13 @@ interface AppUser extends User {
 
 interface ModalProps {
     event?: EventApi;
-    shareLink: string;
     user: AppUser;
     examStatus?: { value: string; label: string; color: string, needsAdmin: boolean, fcColor: string }[];
     exams: EventSourceInput | undefined;
     setExams: Dispatch<SetStateAction<EventSourceInput | undefined>>;
 }
 
-export function Modal({ event, shareLink, user, examStatus, exams, setExams }: ModalProps) {
+export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) {
     const [remark, setRemark] = useState(event?.extendedProps?.remark)
     const [reproRemark, setReproRemark] = useState(event?.extendedProps?.reproRemark)
     const [selectStatus, setSelectStatus] = useState(event?.extendedProps?.status)
@@ -172,6 +171,10 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                         <label className="font-semibold w-full" htmlFor="desiredDate">Desired delivery date</label>
                         <input className="exam-date basis-full xl:basis-auto" type="date" name="desiredDate" disabled defaultValue={formatDateOnlyValue(event?.extendedProps?.desiredDate as string | Date | null | undefined)} />
                     </div>
+                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
+                        <label className="font-semibold w-full" htmlFor="folderName">Folder name</label>
+                        <input className="exam-date basis-full xl:basis-auto w-full" type="text" name="folderName" disabled defaultValue={event?.extendedProps?.folderName} />
+                    </div>
                 </div>
             </div>
             <div>
@@ -204,13 +207,6 @@ export function Modal({ event, shareLink, user, examStatus, exams, setExams }: M
                         </select>
                     )}
                     <PrintButton ref={modalRef} />
-                    {/* Open the folder where the exam files are stored */}
-                    <a className="btn btn-secondary group " id="openShare" href={shareLink} target="_blank" rel="noreferrer noopener">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
-                            <path className="opacity-0 group-hover:opacity-100 transition duration-300 ease-out-in" strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
-                            <path className="opacity-100 group-hover:opacity-0 transition duration-300 ease-in-out" strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
-                        </svg>
-                        Open folder</a>
                 </div>
                 <div className="flex flex-row gap-4">
                     <button className="btn btn-secondary">Cancel</button>

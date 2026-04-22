@@ -7,7 +7,7 @@ import interactionPlugin from '@fullcalendar/interaction'; // handles event clic
 import { useEffect, useRef, useState, useMemo, Dispatch } from "react";
 import { EventDropArg, EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
 import { getAllCrepExams, getAllNonAdminExams, updateExamDateById } from "@/app/lib/database";
-import { fromDatabaseDateTime, formatDateTimeForDatabase, formatDateTimeInputValue } from "@/app/lib/dateTime";
+import { fromDatabaseDateTime, formatDateTimeForDatabase, formatDateTimeInputValue, formatDateYYYYMMDD } from "@/app/lib/dateTime";
 import { Modal } from "../Modal";
 import { User } from "next-auth";
 import { getAllowedExamStatus } from "@/app/lib/examStatus";
@@ -38,7 +38,6 @@ function getEndDateOfPrinting(printDate: Date, nbStudents: number): Date {
 export default function Calendar({ user }: CalendarProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventApi>();
-  const [shareLink, setShareLink] = useState('#');
 
   const [exams, setExams] = useState<EventSourceInput | undefined>();
   const calRef = useRef<FullCalendar | null>(null);
@@ -84,6 +83,7 @@ export default function Calendar({ user }: CalendarProps) {
           authorizedPersons: e.authorized_persons,
           files: e.files,
           desiredDate: e.desired_date,
+          code: e.exam_code,
         }
       })
       setExams(filteredData);
@@ -176,6 +176,10 @@ export default function Calendar({ user }: CalendarProps) {
         }}
         eventClick={(info) => {
           const clickedExam = Array.isArray(exams) ? exams.find((e: EventInput) => e.id == info.event.id) : undefined;
+          const contact = JSON.parse(clickedExam?.contact);
+
+          const folderName = `${clickedExam?.code}_${contact.lastname}_${formatDateYYYYMMDD(clickedExam?.desiredDate)}`
+
           info.event.setExtendedProp('status', clickedExam?.status);
           info.event.setExtendedProp('remark', clickedExam?.remark);
           info.event.setExtendedProp('reproRemark', clickedExam?.reproRemark)
@@ -190,16 +194,10 @@ export default function Calendar({ user }: CalendarProps) {
           info.event.setExtendedProp('authorizedPersons', JSON.parse(clickedExam?.authorizedPersons)) // Necessary since it's an Array of objects.
           info.event.setExtendedProp('files', JSON.parse(clickedExam?.files)) // Necessary since it's an Array of strings.
           info.event.setExtendedProp('desiredDate', clickedExam?.desiredDate)
+          info.event.setExtendedProp('folderName', folderName)
           setSelectedEvent(info.event);
-          // build the share link once and stash in state
-          const rawPath = "vpsi1files.epfl.ch/CAPE/REPRO/TEST/" + info.event.extendedProps?.folder_name; //folder name doesn't exist yet. snippet from ludo. ToDo
-          const uncURL = `file://///${rawPath}`;
-          const smbURL = `smb://${rawPath}`;
-          const dialog = document.getElementById("modal") as HTMLDialogElement;
-          const isWindows = () =>
-            /windows/i.test(navigator.userAgent);
 
-          setShareLink(isWindows() ? uncURL : smbURL);
+          const dialog = document.getElementById("modal") as HTMLDialogElement;
           dialog.showModal();
           setModalOpen(true);
         }}
@@ -245,7 +243,6 @@ export default function Calendar({ user }: CalendarProps) {
         {modalOpen && (
           <Modal
             event={selectedEvent}
-            shareLink={shareLink}
             user={user}
             exams={exams}
             setExams={setExams}
