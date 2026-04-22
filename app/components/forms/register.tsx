@@ -86,6 +86,7 @@ export default function App({ user }: RegisterProps) {
     const [modalMessage, setModalMessage] = useState("Your exam has been successfully registered.");
     const [modalResolver, setModalResolver] = useState<((confirmed: boolean) => void) | null>(null);
     const [isConfirmModal, setIsConfirmModal] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const openModal = (title: string, message: string) => {
         setIsConfirmModal(false);
@@ -199,6 +200,8 @@ export default function App({ user }: RegisterProps) {
                 clearErrors("desiredDate");
             }
         }
+
+        setIsSubmitting(true);
 
         try {
             let authorizedPersons: { id: string, email: string, name: string }[];
@@ -467,6 +470,8 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
         } catch (err) {
             console.error(err);
             openModal("Unexpected Error", 'An unexpected error occurred while registering the exam.');
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
@@ -619,7 +624,19 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                     <span className="text-red-600">{errors.files.message}</span>
                 )}
 
-                <input className="btn btn-primary hover:cursor-pointer" type="submit" value="Submit exam registration" />
+                <button
+                    className="btn btn-primary flex items-center justify-center gap-2 hover:cursor-pointer disabled:cursor-wait disabled:opacity-80"
+                    type="submit"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting && (
+                        <span
+                            className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+                            aria-hidden="true"
+                        />
+                    )}
+                    <span>{isSubmitting ? "Submitting..." : "Submit exam registration"}</span>
+                </button>
             </form >
         </div >
 
