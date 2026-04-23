@@ -15,6 +15,7 @@ import { Filters } from "../Filters";
 import { QueryResult } from "mysql2";
 import { Legend } from "../Legend";
 import { EventApi } from "@fullcalendar/core";
+import { useSearchParams } from "next/navigation";
 
 interface CalendarProps {
   user: AppUser
@@ -38,6 +39,10 @@ function getEndDateOfPrinting(printDate: Date, nbStudents: number): Date {
 export default function Calendar({ user }: CalendarProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventApi>();
+
+  const searchParams = useSearchParams();
+  const openExamParam = searchParams.get('openExam');
+  const hasOpenedExamFromQueryRef = useRef(false);
 
   const [exams, setExams] = useState<EventSourceInput | undefined>();
   const calRef = useRef<FullCalendar | null>(null);
@@ -108,6 +113,68 @@ export default function Calendar({ user }: CalendarProps) {
     return m;
   }, [availableStatus]);
 
+  function openExamModal(calendarEvent: EventApi, examsList: EventInput[]) {
+    const clickedExam = examsList.find((e: EventInput) => e.id == calendarEvent.id);
+    if (!clickedExam?.contact) return;
+
+    const contact = JSON.parse(clickedExam.contact);
+    const folderName = `${clickedExam.code}_${contact.lastname}_${formatDateYYYYMMDD(clickedExam.desiredDate)}`;
+
+    calendarEvent.setExtendedProp('status', clickedExam.status);
+    calendarEvent.setExtendedProp('remark', clickedExam.remark);
+    calendarEvent.setExtendedProp('reproRemark', clickedExam.reproRemark);
+    calendarEvent.setExtendedProp('financialCenter', clickedExam.financialCenter);
+    calendarEvent.setExtendedProp('examDate', clickedExam.examDate);
+    calendarEvent.setExtendedProp('copiesNumber', clickedExam.copiesNumber);
+    calendarEvent.setExtendedProp('pagesPerCopy', clickedExam.pagesPerCopy);
+    calendarEvent.setExtendedProp('paperFormat', clickedExam.paperFormat);
+    calendarEvent.setExtendedProp('paperColor', clickedExam.paperColor);
+    calendarEvent.setExtendedProp('needScan', clickedExam.needScan);
+    calendarEvent.setExtendedProp('contact', JSON.parse(clickedExam.contact));
+    calendarEvent.setExtendedProp('authorizedPersons', JSON.parse(clickedExam.authorizedPersons)); // Necessary since it's an Array of objects.
+    calendarEvent.setExtendedProp('files', JSON.parse(clickedExam.files)); // Necessary since it's an Array of strings.
+    calendarEvent.setExtendedProp('desiredDate', clickedExam.desiredDate);
+    calendarEvent.setExtendedProp('folderName', folderName);
+    setSelectedEvent(calendarEvent);
+
+    const dialog = document.getElementById("modal") as HTMLDialogElement | null;
+    dialog?.showModal();
+    setModalOpen(true);
+  }
+
+  useEffect(() => {
+    if (!openExamParam || hasOpenedExamFromQueryRef.current || !Array.isArray(exams)) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const examToOpen = exams
+      .filter((exam: EventInput) => exam.code == openExamParam && !!exam.start)
+      .map((exam: EventInput) => ({
+        exam,
+        printStartDate: new Date(exam.start as string),
+      }))
+      .filter(({ printStartDate }) => {
+        if (Number.isNaN(printStartDate.getTime())) return false;
+
+        const printDay = new Date(printStartDate);
+        printDay.setHours(0, 0, 0, 0);
+        return printDay >= today;
+      })
+      .sort((a, b) => a.printStartDate.getTime() - b.printStartDate.getTime())[0]?.exam;
+
+    if (!examToOpen) return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      const calendarEvent = calRef.current?.getApi().getEventById(String(examToOpen.id));
+      if (!calendarEvent) return;
+
+      openExamModal(calendarEvent, exams as EventInput[]);
+      hasOpenedExamFromQueryRef.current = true;
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [exams, openExamParam]);
+
   function makeEventsKey(
     examsArr: EventSourceInput,
     filtersArr: { label: string, value: string }[],
@@ -175,31 +242,8 @@ export default function Calendar({ user }: CalendarProps) {
           listWeek: { buttonText: 'List' },
         }}
         eventClick={(info) => {
-          const clickedExam = Array.isArray(exams) ? exams.find((e: EventInput) => e.id == info.event.id) : undefined;
-          const contact = JSON.parse(clickedExam?.contact);
-
-          const folderName = `${clickedExam?.code}_${contact.lastname}_${formatDateYYYYMMDD(clickedExam?.desiredDate)}`
-
-          info.event.setExtendedProp('status', clickedExam?.status);
-          info.event.setExtendedProp('remark', clickedExam?.remark);
-          info.event.setExtendedProp('reproRemark', clickedExam?.reproRemark)
-          info.event.setExtendedProp('financialCenter', clickedExam?.financialCenter)
-          info.event.setExtendedProp('examDate', clickedExam?.examDate)
-          info.event.setExtendedProp('copiesNumber', clickedExam?.copiesNumber)
-          info.event.setExtendedProp('pagesPerCopy', clickedExam?.pagesPerCopy)
-          info.event.setExtendedProp('paperFormat', clickedExam?.paperFormat)
-          info.event.setExtendedProp('paperColor', clickedExam?.paperColor)
-          info.event.setExtendedProp('needScan', clickedExam?.needScan)
-          info.event.setExtendedProp('contact', JSON.parse(clickedExam?.contact))
-          info.event.setExtendedProp('authorizedPersons', JSON.parse(clickedExam?.authorizedPersons)) // Necessary since it's an Array of objects.
-          info.event.setExtendedProp('files', JSON.parse(clickedExam?.files)) // Necessary since it's an Array of strings.
-          info.event.setExtendedProp('desiredDate', clickedExam?.desiredDate)
-          info.event.setExtendedProp('folderName', folderName)
-          setSelectedEvent(info.event);
-
-          const dialog = document.getElementById("modal") as HTMLDialogElement;
-          dialog.showModal();
-          setModalOpen(true);
+          if (!Array.isArray(exams)) return;
+          openExamModal(info.event, exams as EventInput[]);
         }}
         editable={user.isAdmin ? true : false}
         selectable={true}
