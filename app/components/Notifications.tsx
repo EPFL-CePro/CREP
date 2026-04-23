@@ -131,20 +131,23 @@ export default function Notifications({ user }: notifProps) {
                             logs
                                 .sort((a, b) => b.id - a.id)
                                 .slice(0, 7)
-                                .map((n) => (
-                                    <li key={n.id} className={`p-4 gap-x-4 ps-10 gap-y-1.5 ${n.is_read ? "opacity-70" : "bg-gray-50"} hover:bg-gray-100 flex hover:rounded-xl hover:outline-white hover:ring-4 hover:ring-white flex-col hover:ring-inset`}>
-                                        <span className={`absolute inline-flex left-4 mt-8 size-2 rounded-full ${n.is_read ? "" : "bg-red-500 opacity-75"} `}></span>
-                                        <div className="flex justify-between flex-col sm:flex-row">
-                                            <span className="text-sm text-gray-700 flex gap-1 tracking-wide">{defineAction(n.action, true)} {defineAction(n.action, false)} | contact : {n.contact} </span>
-                                            <span className="text-xs  text-gray-400">{n.date_time.toDateString()}</span>
-                                        </div>
-                                        <span className="text-md">{n.exam_code} {n.exam_name}</span>
-                                        <div className="flex flex-col sm:flex-row justify-between">
-                                            <span className="text-sm text-gray-500">Delivery Date: {n.delivery_date}</span>
-                                            <span className="text-sm text-gray-500 mr-10">Exam Date: {n.exam_date}</span>
-                                        </div>
-                                    </li>
-                                ))
+                                .map((n) => {
+                                    const contact = JSON.parse(n.contact);
+                                    return (
+                                        <li key={n.id} className={`p-4 gap-x-4 ps-10 gap-y-1.5 ${n.is_read ? "opacity-70" : "bg-gray-50"} hover:bg-gray-100 flex hover:rounded-xl hover:outline-white hover:ring-4 hover:ring-white flex-col hover:ring-inset`}>
+                                            <span className={`absolute inline-flex left-4 mt-8 size-2 rounded-full ${n.is_read ? "" : "bg-red-500 opacity-75"} `}></span>
+                                            <div className="flex justify-between flex-col sm:flex-row">
+                                                <span className="text-sm text-gray-700 flex gap-1 tracking-wide">{defineAction(n.action, true)} {defineAction(n.action, false)} | contact : {contact.firstname} {contact.lastname} ({contact.email}) </span>
+                                                <span className="text-xs  text-gray-400">{n.date_time.toDateString()}</span>
+                                            </div>
+                                            <span className="text-md">{n.exam_code} {n.exam_name}</span>
+                                            <div className="flex flex-col sm:flex-row justify-between">
+                                                <span className="text-sm text-gray-500">Delivery Date: {n.delivery_date}</span>
+                                                <span className="text-sm text-gray-500 mr-10">Exam Date: {n.exam_date}</span>
+                                            </div>
+                                        </li>
+                                    )
+                                })
                         )}
                     </ul>
                 </div>
