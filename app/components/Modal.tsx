@@ -65,7 +65,7 @@ export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) 
             method="dialog"
             className="modal-content relative flex max-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-background text-foreground shadow-2xl accent-red-500 print:block print:max-h-none print:max-w-none print:overflow-visible print:rounded-none print:shadow-none md:max-h-[calc(100dvh-4rem)] [&_input]:rounded-lg"
         >
-            <div className="shrink-0 border-b border-black/5 px-5 py-4 print:px-2 print:py-2 print:pb-4 md:px-8 md:py-6">
+            <div className="shrink-0 border-b border-black/5 px-5 py-4 print:px-8 print:py-8 print:pb-4 md:px-8 md:py-6">
                 <h3 className={`exam-title pr-12 text-lg font-bold ${examColor}`}>{event?.title}</h3>
                 <button className="btn absolute right-4 top-4 p-1 hover:bg-gray-100 md:right-6 md:top-6" aria-label="Close">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6 size-6 ">
@@ -97,7 +97,7 @@ export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) 
                     ))}
                 </div>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 print:block print:overflow-visible print:px-2 print:py-4 md:px-8 md:py-6">
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 print:block print:overflow-visible print:px-8 print:py-10 md:px-8 md:py-6">
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-y-4">
                 <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
