@@ -221,10 +221,19 @@ export default function Calendar({ user }: CalendarProps) {
 
           const prepared = (filteredEvents as EventInput[]).map((ev: EventInput) => {
             const color = statusColorMap.get(ev.status) || "#000000";
+
+            const eventStartPrintDate = new Date(ev.start as string);
+            const today = new Date();
+            const isToday = eventStartPrintDate.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0);
+            const isBreathingPrint = isToday && ev.status === "toPrint";
+
             return {
               ...ev,
               backgroundColor: color,
-              borderColor: color,
+              borderColor: isToday && ev.status == "toPrint" ? "#ff47c5" : color,
+              classNames: [
+                isBreathingPrint ? "fc-event-breathing-pink" : ""
+              ].filter(Boolean),
               extendedProps: { ...(ev.extendedProps || {}), status: ev.status, remark: ev.remark, reproRemark: ev.reproRemark },
             };
           });
