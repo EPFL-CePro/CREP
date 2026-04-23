@@ -42,6 +42,7 @@ export default function Calendar({ user }: CalendarProps) {
 
   const searchParams = useSearchParams();
   const openExamParam = searchParams.get('openExam');
+  const dayParam = searchParams.get('day');
   const hasOpenedExamFromQueryRef = useRef(false);
 
   const [exams, setExams] = useState<EventSourceInput | undefined>();
@@ -112,6 +113,33 @@ export default function Calendar({ user }: CalendarProps) {
     (availableStatus || []).forEach(s => m.set(s.value, s.fcColor || "#000000"));
     return m;
   }, [availableStatus]);
+
+  function parseDayParam(value: string): Date | null {
+    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/); // YYYY-MM-DD
+    if (!match) return null;
+
+    const [, year, month, day] = match;
+    const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
+
+    if (
+      parsedDate.getFullYear() !== Number(year) ||
+      parsedDate.getMonth() !== Number(month) - 1 ||
+      parsedDate.getDate() !== Number(day)
+    ) {
+      return null;
+    }
+
+    return parsedDate;
+  }
+
+  const targetDayDate = useMemo(() => {
+    if (!dayParam) return undefined;
+
+    const targetDate = parseDayParam(dayParam);
+    if (!targetDate) return undefined;
+
+    return targetDate;
+  }, [dayParam]);
 
   function openExamModal(calendarEvent: EventApi, examsList: EventInput[]) {
     const clickedExam = examsList.find((e: EventInput) => e.id == calendarEvent.id);
@@ -211,9 +239,11 @@ export default function Calendar({ user }: CalendarProps) {
         </div>
       </div>
       <FullCalendar
+        key={targetDayDate ? targetDayDate.toISOString().slice(0, 10) : "current-week"}
         ref={calRef}
         plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
         initialView="timeGridWeek"
+        initialDate={targetDayDate}
         contentHeight="71dvh"
         firstDay={1}
         slotMinTime="07:00:00"
