@@ -163,6 +163,7 @@ export default function Calendar({ user }: CalendarProps) {
     calendarEvent.setExtendedProp('files', JSON.parse(clickedExam.files)); // Necessary since it's an Array of strings.
     calendarEvent.setExtendedProp('desiredDate', clickedExam.desiredDate);
     calendarEvent.setExtendedProp('folderName', folderName);
+    calendarEvent.setExtendedProp('printSchedule', clickedExam.start);
     setSelectedEvent(calendarEvent);
 
     const dialog = document.getElementById("modal") as HTMLDialogElement | null;

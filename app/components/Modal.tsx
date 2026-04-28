@@ -8,10 +8,12 @@ import { examNotAdminStatus } from "../lib/examStatus";
 import {
     formatDateInputValue,
     formatDateOnlyValue,
+    formatDateYYYYMMDD,
     formatTimeInputValue,
     getDatePartFromDateTimeString,
     getTimePartFromDateTimeString,
 } from "../lib/dateTime";
+import { sendMail } from "../lib/mail";
 
 interface AppUser extends User {
     isAdmin?: boolean;
@@ -221,7 +223,40 @@ export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) 
                 <div className="flex flex-row gap-4">
                     <button className="btn btn-secondary">Cancel</button>
                     {/* on save, check if the status change into a status that requires admin privileges and confirm with the user */}
-                    <button className="btn btn-primary" onClick={(e) => {
+                    <button className="btn btn-primary" onClick={async (e) => {
+                        // If the old status was `registered`, `registered-warning` or `registered-error` and that the new status is `toPrint`, we notify the Repro with an email.
+                        if(event?.extendedProps?.status !== selectStatus && (['registered', 'registered-warning', 'registered-error'].includes(event?.extendedProps?.status) && selectStatus == 'toPrint')) {
+                            // proceed only if confirmed, else prevent modal close and save
+                            if (window.confirm("You are changing the status from a `registered` one to `toPrint`. The Repro will be notified. Are you sure you want to proceed?")) {
+                                if (process.env.NODE_ENV !== "development") {
+                                    const datePrintSchedule = new Date(event?.extendedProps?.printSchedule)
+                                    const examURL = `https://crep.epfl.ch/?openExam=${event?.extendedProps?.code}&day=${formatDateYYYYMMDD(datePrintSchedule)}`;
+                                    await sendMail( 
+                                        'repro@groupes.epfl.ch',
+                                        `Exam ${event?.extendedProps?.code} is ready to be printed`,
+                                        `
+Hello,
+
+The exam ${event?.extendedProps?.description} status has been set to "toPrint" in CREP.
+
+You can see the exam in the app directly by clicking on this link : ${examURL}
+
+Best,
+CePro team
+`,
+                                        ''
+                                    );
+                                }
+                                
+                                save();
+                                return
+                            }
+                            e.preventDefault();
+                            return;
+                        } else {
+                            save();
+                        }
+
                         if (event?.extendedProps?.status !== selectStatus && examStatus?.find(status => status.value === selectStatus)?.needsAdmin) {
                             // proceed only if confirmed, else prevent modal close and save
                             if (window.confirm("You are changing the status to one that requires admin privileges. It means that this exam will be hidden to non-admin users. Are you sure you want to proceed?")) {
