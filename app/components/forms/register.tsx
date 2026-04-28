@@ -296,7 +296,7 @@ export default function App({ user }: RegisterProps) {
             const allExamsFromNowToDesired = await getAllExamsBetweenDates(new Date(), new Date(data.desiredDate))
             if (!allExamsFromNowToDesired) {
                 const firstDayDate = daysArray[0];
-                firstDayDate.setHours(7, 0, 0, 0);
+                firstDayDate.setHours(8, 0, 0, 0);
                 printingDate = formatDateTimeForDatabase(firstDayDate);
             } else {
                 const necessaryPrintingDurationInMinutes = getPrintingDurationInMinutes(data.nbStudents);
@@ -309,7 +309,7 @@ export default function App({ user }: RegisterProps) {
                     const allExamsForDate = await getAllExamsForDate(`${year}-${month}-${day}`);
 
                     if (allExamsForDate.length == 0) {
-                        date.setHours(7, 0, 0, 0);
+                        date.setHours(8, 0, 0, 0);
                         printingDate = formatDateTimeForDatabase(date);
                         break;
                     } else if (allExamsForDate.length == 1) {
@@ -321,7 +321,7 @@ export default function App({ user }: RegisterProps) {
                         const endPrintExam = getEndDateOfPrinting(examForDate);
                         const endPrintOfWantedExam = new Date(endPrintExam.getTime() + necessaryPrintingDurationInMinutes * 60000);
 
-                        if (endPrintOfWantedExam.getHours() < 22) {
+                        if (endPrintOfWantedExam.getHours() < 18) {
                             printingDate = formatDateTimeForDatabase(endPrintExam);
                             break;
                         }
@@ -347,7 +347,7 @@ export default function App({ user }: RegisterProps) {
                             const endPrintingWantedExam = new Date(endPrintingLatestExam.getTime() + getPrintingDurationInMinutes(data.nbStudents) * 60000);
 
                             const printingLimit = new Date(endPrintingLatestExam);
-                            printingLimit.setHours(22, 0, 0, 0);
+                            printingLimit.setHours(18, 0, 0, 0);
                             if (endPrintingWantedExam <= printingLimit) {
                                 printingDate = formatDateTimeForDatabase(endPrintingLatestExam);
                                 break;
@@ -359,9 +359,9 @@ export default function App({ user }: RegisterProps) {
 
             /* If `printingDate` is undefined, that means that a printing schedule can not be defined.
             (timings are too short, already existing planning is too full, ...)
-            So we should register it at 07:00 AM on the desired delivery date, with the status `registered-error`. */
+            So we should register it at 08:00 AM on the desired delivery date, with the status `registered-error`. */
             if(!printingDate) {
-                desiredDate.setHours(7)
+                desiredDate.setHours(8)
                 printingDate = formatDateTimeForDatabase(desiredDate);
                 status = 'registered-error'
             }
