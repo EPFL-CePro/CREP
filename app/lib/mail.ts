@@ -2,7 +2,7 @@
 
 import nodemailer from 'nodemailer';
 
-export async function sendMail(to: string, subject: string, content: string, cc: string) {
+export async function sendMail(to: string, subject: string, content: string, cc: string, replyTo?: string) {
     const transporter = nodemailer.createTransport({
         host: process.env.MAIL_SMTP_HOST,
         port: 587,
@@ -18,6 +18,7 @@ export async function sendMail(to: string, subject: string, content: string, cc:
         to: to,
         subject: subject,
         text: content,
-        cc: cc
+        cc: cc,
+        replyTo: replyTo
     });
 }
