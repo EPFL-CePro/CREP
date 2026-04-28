@@ -582,6 +582,11 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                 <label>Contact <RedAsterisk /></label>
                 <ReactSelect control={control} label={"contact"} name={"contact"} isMultiChoice={false} instanceId={2} user={user} />
                 <label>Authorized persons</label>
+                <div className="bg-red-600/30 border-1 border-red-500 rounded-xl p-3 text-sm">
+                    Only the persons that will be selected here will be authorized to come pick up the exam at the Repro.<br />
+                    The Repro will ask for the Camipro of the person that came to pick up the exam.<br />
+                    The Repro has the right to not give the exam to the person if they are not selected in this list.
+                </div>
                 <ReactSelect control={control} label={"authorized persons"} name={"authorizedPersons"} isMultiChoice={true} instanceId={3} />
                 <label>Additional remarks</label>
                 <textarea {...register("remark")} placeholder="Additional remarks (optional)" />
