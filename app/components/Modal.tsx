@@ -14,6 +14,7 @@ import {
     getTimePartFromDateTimeString,
 } from "../lib/dateTime";
 import { sendMail } from "../lib/mail";
+import { AuthorizedPersons } from "@/types/user";
 
 interface AppUser extends User {
     isAdmin?: boolean;
@@ -224,17 +225,47 @@ export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) 
                     <button className="btn btn-secondary">Cancel</button>
                     {/* on save, check if the status change into a status that requires admin privileges and confirm with the user */}
                     <button className="btn btn-primary" onClick={async (e) => {
+                        e.preventDefault();
+
+                        const previousStatus = event?.extendedProps?.status;
+                        const statusChanged = previousStatus !== selectStatus;
+                        const shouldNotifyRepro = statusChanged && ['registered', 'registered-warning', 'registered-error'].includes(previousStatus) && selectStatus == 'toPrint';
+                        const shouldNotifyFinished = statusChanged && selectStatus == 'finished';
+                        const selectedStatusNeedsAdmin = statusChanged && examStatus?.find(status => status.value === selectStatus)?.needsAdmin;
+
                         // If the old status was `registered`, `registered-warning` or `registered-error` and that the new status is `toPrint`, we notify the Repro with an email.
-                        if(event?.extendedProps?.status !== selectStatus && (['registered', 'registered-warning', 'registered-error'].includes(event?.extendedProps?.status) && selectStatus == 'toPrint')) {
+                        if (shouldNotifyRepro) {
                             // proceed only if confirmed, else prevent modal close and save
-                            if (window.confirm("You are changing the status from a `registered` one to `toPrint`. The Repro will be notified. Are you sure you want to proceed?")) {
-                                if (process.env.NODE_ENV !== "development") {
-                                    const datePrintSchedule = new Date(event?.extendedProps?.printSchedule)
-                                    const examURL = `https://crep.epfl.ch/?openExam=${event?.extendedProps?.code}&day=${formatDateYYYYMMDD(datePrintSchedule)}`;
-                                    await sendMail( 
-                                        'repro@groupes.epfl.ch',
-                                        `Exam ${event?.extendedProps?.code} is ready to be printed`,
-                                        `
+                            if (!window.confirm("You are changing the status from a `registered` one to `toPrint`. The Repro will be notified. Are you sure you want to proceed?")) {
+                                setSelectStatus(previousStatus);
+                                return;
+                            }
+                        }
+
+                        if (shouldNotifyFinished) {
+                            // proceed only if confirmed, else prevent modal close and save
+                            if (!window.confirm("You are changing the status to `finished`. This will send an email to the contact person and authorized persons saying that they can pick up the exam at the Repro. Are you sure you want to proceed?")) {
+                                setSelectStatus(previousStatus);
+                                return;
+                            }
+                        }
+
+                        if (selectedStatusNeedsAdmin) {
+                            // proceed only if confirmed, else prevent modal close and save
+                            if (!window.confirm("You are changing the status to one that requires admin privileges. It means that this exam will be hidden to non-admin users. Are you sure you want to proceed?")) {
+                                setSelectStatus(previousStatus);
+                                return;
+                            }
+                        }
+
+                        if (shouldNotifyRepro) {
+                            if (process.env.NODE_ENV !== "development") {
+                                const datePrintSchedule = new Date(event?.extendedProps?.printSchedule)
+                                const examURL = `https://crep.epfl.ch/?openExam=${event?.extendedProps?.code}&day=${formatDateYYYYMMDD(datePrintSchedule)}`;
+                                await sendMail(
+                                    'repro@groupes.epfl.ch',
+                                    `Exam ${event?.extendedProps?.code} is ready to be printed`,
+                                    `
 Hello,
 
 The exam ${event?.extendedProps?.description} status has been set to "toPrint" in CREP.
@@ -244,30 +275,35 @@ You can see the exam in the app directly by clicking on this link : ${examURL}
 Best,
 CePro team
 `,
-                                        ''
-                                    );
-                                }
-                                
-                                save();
-                                return
+                                    ''
+                                );
                             }
-                            e.preventDefault();
-                            return;
-                        } else {
-                            save();
                         }
 
-                        if (event?.extendedProps?.status !== selectStatus && examStatus?.find(status => status.value === selectStatus)?.needsAdmin) {
-                            // proceed only if confirmed, else prevent modal close and save
-                            if (window.confirm("You are changing the status to one that requires admin privileges. It means that this exam will be hidden to non-admin users. Are you sure you want to proceed?")) {
-                                save();
-                                return
+                        if (shouldNotifyFinished) {
+                            const authorizedPersonsEmails = event?.extendedProps?.authorizedPersons.map((e:AuthorizedPersons) => e.email).join(', ')
+                            if (process.env.NODE_ENV !== "development") {
+                                await sendMail(
+                                    event?.extendedProps?.contact.email,
+                                    `Exam ${event?.extendedProps?.code} is ready to be picked up`,
+                                    `
+Hello,
+
+The exam ${event?.extendedProps?.description} has been finished printing and is ready to be picked up at the Repro.
+
+Click on this link to find where the Repro is located : https://plan.epfl.ch/?room=%253DBP%200243
+
+Best,
+CePro team
+`,
+                                    authorizedPersonsEmails,
+                                    'guichet.repro@epfl.ch'
+                                );
                             }
-                            e.preventDefault();
-                            return;
-                        } else {
-                            save();
                         }
+
+                        await save();
+                        (document.getElementById("modal") as HTMLDialogElement | null)?.close();
                     }}>Save</button>
                 </div>
             </div>

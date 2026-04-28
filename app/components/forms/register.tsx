@@ -11,6 +11,7 @@ import { User } from "next-auth";
 import { RedAsterisk } from "../RedAsterisk";
 import { RegisterModal } from "./RegisterModal";
 import { Inputs } from "@/types/inputs";
+import { AuthorizedPersons } from "@/types/user";
 
 interface RegisterProps {
     user: AppUser
@@ -204,7 +205,7 @@ export default function App({ user }: RegisterProps) {
         setIsSubmitting(true);
 
         try {
-            let authorizedPersons: { id: string, email: string, name: string }[];
+            let authorizedPersons:AuthorizedPersons[];
 
             if (data.authorizedPersons) {
                 const pers = data.authorizedPersons as unknown as Array<string>;
