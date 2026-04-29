@@ -1,7 +1,7 @@
 "use client";
 // This form allows users to register their exams into the system.
 import { useForm, SubmitHandler } from "react-hook-form"
-import { getAllExamsBetweenDates, getAllExamsForDate, insertExamForPrint } from "@/app/lib/database";
+import { getAllExamsBetweenDates, getBlockingExamsForDate, insertExamForPrint } from "@/app/lib/database";
 import { useState } from "react";
 import ReactSelect from "./ReactSelect";
 import { fetchMultiplePersonsBySciper, fetchPersonBySciper } from "@/app/lib/api";
@@ -306,7 +306,7 @@ export default function App({ user }: RegisterProps) {
                     const month = String(date.getMonth() + 1).padStart(2, '0');
                     const day = String(date.getDate()).padStart(2, '0');
 
-                    const allExamsForDate = await getAllExamsForDate(`${year}-${month}-${day}`);
+                    const allExamsForDate = await getBlockingExamsForDate(`${year}-${month}-${day}`);
 
                     if (allExamsForDate.length == 0) {
                         date.setHours(8, 0, 0, 0);
