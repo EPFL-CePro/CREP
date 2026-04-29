@@ -264,7 +264,7 @@ export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) 
                                 const examURL = `https://crep.epfl.ch/?openExam=${event?.extendedProps?.code}&day=${formatDateYYYYMMDD(datePrintSchedule)}`;
                                 await sendMail(
                                     'repro@groupes.epfl.ch',
-                                    `Exam ${event?.extendedProps?.code} is ready to be printed`,
+                                    `${process.env.NODE_ENV == "test" && "TEST -"} Exam ${event?.extendedProps?.code} is ready to be printed`,
                                     `
 Hello,
 
@@ -285,7 +285,7 @@ CePro team
                             if (process.env.NODE_ENV !== "development") {
                                 await sendMail(
                                     event?.extendedProps?.contact.email,
-                                    `Exam ${event?.extendedProps?.code} is ready to be picked up`,
+                                    `${process.env.NODE_ENV == "test" && "TEST -"} Exam ${event?.extendedProps?.code} is ready to be picked up`,
                                     `
 Hello,
 

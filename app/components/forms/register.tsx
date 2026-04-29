@@ -423,7 +423,7 @@ export default function App({ user }: RegisterProps) {
             if (process.env.NODE_ENV !== "development") {
                 await sendMail(
                     user.email || '',
-                    `${status == 'registered-warning' || status == 'registered-error' ? 'REQUIRES ATTENTION - ' : ''} CePro - Exam printing service subscription confirmation`,
+                    `${process.env.NODE_ENV == "test" && "TEST -"} ${status == 'registered-warning' || status == 'registered-error' ? 'REQUIRES ATTENTION - ' : ''} CePro - Exam printing service subscription confirmation`,
                     `
 Hello,
 Your subscription to our exam printing service has been registered:
