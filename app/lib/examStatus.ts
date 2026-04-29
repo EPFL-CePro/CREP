@@ -27,6 +27,14 @@ export const examNotAdminStatus = examStatus.filter(status => !status.needsAdmin
 
 export const examAdminStatus = examStatus.filter(status => status.needsAdmin);
 
+export const examBlockingPrintStatus = [
+    'registered',
+    'registered-warning',
+    'registered-error',
+    'toPrint',
+    'printing',
+];
+
 export const getAllowedExamStatus = (isAdmin: boolean) => {
     return isAdmin ? examStatus : examNotAdminStatus;
 }

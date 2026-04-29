@@ -1,7 +1,7 @@
 'use server';
 import mysql from 'mysql2';
 import type { ResultSetHeader } from 'mysql2';
-import { examNotAdminStatus } from './examStatus';
+import { examBlockingPrintStatus, examNotAdminStatus } from './examStatus';
 import { Service } from '@/types/service';
 import { ExamType } from '@/types/examType';
 import { AcademicYear, FormattedAcademicYear } from '@/types/academicYear';
@@ -240,6 +240,29 @@ export async function getAllExamsForDate(date:string): Promise <CrepExam[]> {
             if (err) throw err
             resolve(rows as CrepExam[]);
         })
+        connection.end()
+    })
+}
+
+export async function getBlockingExamsForDate(date:string): Promise <CrepExam[]> {
+    const connection = mysql.createConnection({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+    })
+
+    connection.connect()
+
+    return new Promise(function(resolve) {
+        connection.query(
+            'SELECT * FROM crep WHERE DATE(print_date) = DATE(?) AND status IN (?);',
+            [date, examBlockingPrintStatus],
+            (err, rows) => {
+                if (err) throw err
+                resolve(rows as CrepExam[]);
+            }
+        )
         connection.end()
     })
 }
