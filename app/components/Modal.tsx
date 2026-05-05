@@ -103,90 +103,90 @@ export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) 
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 print:block print:overflow-visible print:px-8 print:py-10 md:px-8 md:py-6">
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-y-4">
-                <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
-                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
-                        <label className="font-semibold w-full" htmlFor="start">Estimated print start</label>
-                        <input className="start-date basis-full xl:basis-auto" type="date" name="start" disabled defaultValue={startDateValue} />
-                        <input className="start-time basis-full xl:basis-auto" type="time" name="start" disabled step="3600" min="00:00" max="23:59" defaultValue={startTimeValue} />
-                    </div>
-                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
-                        <label className="font-semibold w-full" htmlFor="end">Estimated print end</label>
-                        <input className="end-date basis-full xl:basis-auto" type="date" name="end" disabled defaultValue={endDateValue} />
-                        <input className="end-time basis-full xl:basis-auto" type="time" name="end" disabled step="3600" min="00:00" max="23:59" defaultValue={endTimeValue} />
-                    </div>
-                </div>
-                <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
-                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
-                        <label className="font-semibold w-full" htmlFor="financial">Financial center</label>
-                        <input className="financial-center basis-full xl:basis-auto" type="text" name="financial" disabled defaultValue={event?.extendedProps?.financialCenter} />
-                    </div>
-                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
-                        <label className="font-semibold w-full" htmlFor="examDate">Exam date</label>
-                        <input className="exam-date basis-full xl:basis-auto" type="date" name="examDate" disabled defaultValue={formatDateOnlyValue(event?.extendedProps?.examDate as string | Date | null | undefined)} />
-                    </div>
-                </div>
-                <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
-                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
-                        <label className="font-semibold w-full" htmlFor="copiesNumber">Number of copies</label>
-                        <input className="copies-number basis-full xl:basis-auto" type="text" name="copiesNumber" disabled defaultValue={event?.extendedProps?.copiesNumber} />
-                    </div>
-                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
-                        <label className="font-semibold w-full" htmlFor="pagesPerCopy">Pages per copy</label>
-                        <input className="pages-copy basis-full xl:basis-auto" type="text" name="pagesPerCopy" disabled defaultValue={event?.extendedProps?.pagesPerCopy} />
-                    </div>
-                </div>
-                <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
-                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
-                        <label className="font-semibold w-full" htmlFor="paperFormat">Paper format</label>
-                        <input className="paper-format basis-full xl:basis-auto" type="text" name="paperFormat" disabled defaultValue={event?.extendedProps?.paperFormat} />
-                    </div>
-                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
-                        <label className="font-semibold w-full" htmlFor="paperColor">Paper color</label>
-                        <input className="paper-color basis-full xl:basis-auto" type="text" name="paperColor" disabled defaultValue={event?.extendedProps?.paperColor} />
-                    </div>
-                </div>
-                <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
-                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
-                        <label className="font-semibold w-full" htmlFor="needScan">Needs to be scanned</label>
-                        <input className="need-scan basis-full xl:basis-auto" type="text" name="needScan" disabled defaultValue={event?.extendedProps?.needScan ? 'Yes' : 'No'} />
-                    </div>
-                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
-                        <label className="font-semibold w-full" htmlFor="contact">Contact</label>
-                        <input className="contact basis-full xl:basis-auto w-full" type="text" name="contact" disabled defaultValue={`${event?.extendedProps?.contact.firstname} ${event?.extendedProps?.contact.lastname} (${event?.extendedProps?.contact.email})`} />
-                    </div>
-                </div>
-                <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
-                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
-                        <label className="font-semibold w-full" htmlFor="authorizedPersons">Authorized persons</label>
-                        <ul className={`${event?.extendedProps?.authorizedPersons.length > 0 && 'ml-6'} list-disc`}>
-                            {event?.extendedProps?.authorizedPersons.length > 0 ? 
-                                event?.extendedProps?.authorizedPersons.map((user:{ email: string, id: string, name: string }) => (
-                                    <li key={user.id}>{user.email}</li>
-                                )) : 'None'
-                            }
-                        </ul>
-                    </div>
-                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
-                        <label className="font-semibold w-full" htmlFor="files">Files</label>
-                        <ul className={`${event?.extendedProps?.files.length > 0 && 'ml-6'} list-disc`}>
-                            {event?.extendedProps?.files.length > 0 ? 
-                                event?.extendedProps?.files.map((file:string) => (
-                                    <li key={file}>{file}</li>
-                                )) : 'None'
-                            }
-                        </ul>
-                    </div>
-                </div>
-                <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
-                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
-                        <label className="font-semibold w-full" htmlFor="desiredDate">Desired delivery date</label>
-                        <input className="exam-date basis-full xl:basis-auto" type="date" name="desiredDate" disabled defaultValue={formatDateOnlyValue(event?.extendedProps?.desiredDate as string | Date | null | undefined)} />
-                    </div>
-                    <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
-                        <label className="font-semibold w-full" htmlFor="folderName">Folder name</label>
-                        <input className="exam-date basis-full xl:basis-auto w-full" type="text" name="folderName" disabled defaultValue={event?.extendedProps?.folderName} />
-                    </div>
-                </div>
+                        <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
+                                <label className="font-semibold w-full" htmlFor="start">Estimated print start</label>
+                                <input className="start-date basis-full xl:basis-auto" type="date" name="start" disabled defaultValue={startDateValue} />
+                                <input className="start-time basis-full xl:basis-auto" type="time" name="start" disabled step="3600" min="00:00" max="23:59" defaultValue={startTimeValue} />
+                            </div>
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
+                                <label className="font-semibold w-full" htmlFor="end">Estimated print end</label>
+                                <input className="end-date basis-full xl:basis-auto" type="date" name="end" disabled defaultValue={endDateValue} />
+                                <input className="end-time basis-full xl:basis-auto" type="time" name="end" disabled step="3600" min="00:00" max="23:59" defaultValue={endTimeValue} />
+                            </div>
+                        </div>
+                        <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
+                                <label className="font-semibold w-full" htmlFor="financial">Financial center</label>
+                                <input className="financial-center basis-full xl:basis-auto" type="text" name="financial" disabled defaultValue={event?.extendedProps?.financialCenter} />
+                            </div>
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
+                                <label className="font-semibold w-full" htmlFor="examDate">Exam date</label>
+                                <input className="exam-date basis-full xl:basis-auto" type="date" name="examDate" disabled defaultValue={formatDateOnlyValue(event?.extendedProps?.examDate as string | Date | null | undefined)} />
+                            </div>
+                        </div>
+                        <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
+                                <label className="font-semibold w-full" htmlFor="copiesNumber">Number of copies</label>
+                                <input className="copies-number basis-full xl:basis-auto" type="text" name="copiesNumber" disabled defaultValue={event?.extendedProps?.copiesNumber} />
+                            </div>
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
+                                <label className="font-semibold w-full" htmlFor="pagesPerCopy">Pages per copy</label>
+                                <input className="pages-copy basis-full xl:basis-auto" type="text" name="pagesPerCopy" disabled defaultValue={event?.extendedProps?.pagesPerCopy} />
+                            </div>
+                        </div>
+                        <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
+                                <label className="font-semibold w-full" htmlFor="paperFormat">Paper format</label>
+                                <input className="paper-format basis-full xl:basis-auto" type="text" name="paperFormat" disabled defaultValue={event?.extendedProps?.paperFormat} />
+                            </div>
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
+                                <label className="font-semibold w-full" htmlFor="paperColor">Paper color</label>
+                                <input className="paper-color basis-full xl:basis-auto" type="text" name="paperColor" disabled defaultValue={event?.extendedProps?.paperColor} />
+                            </div>
+                        </div>
+                        <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
+                                <label className="font-semibold w-full" htmlFor="needScan">Needs to be scanned</label>
+                                <input className="need-scan basis-full xl:basis-auto" type="text" name="needScan" disabled defaultValue={event?.extendedProps?.needScan ? 'Yes' : 'No'} />
+                            </div>
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
+                                <label className="font-semibold w-full" htmlFor="contact">Contact</label>
+                                <input className="contact basis-full xl:basis-auto w-full" type="text" name="contact" disabled defaultValue={`${event?.extendedProps?.contact.firstname} ${event?.extendedProps?.contact.lastname} (${event?.extendedProps?.contact.email})`} />
+                            </div>
+                        </div>
+                        <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
+                                <label className="font-semibold w-full" htmlFor="authorizedPersons">Authorized persons</label>
+                                <ul className={`${event?.extendedProps?.authorizedPersons.length > 0 && 'ml-6'} list-disc`}>
+                                    {event?.extendedProps?.authorizedPersons.length > 0 ?
+                                        event?.extendedProps?.authorizedPersons.map((user: { email: string, id: string, name: string }) => (
+                                            <li key={user.id}>{user.email}</li>
+                                        )) : 'None'
+                                    }
+                                </ul>
+                            </div>
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
+                                <label className="font-semibold w-full" htmlFor="files">Files</label>
+                                <ul className={`${event?.extendedProps?.files.length > 0 && 'ml-6'} list-disc`}>
+                                    {event?.extendedProps?.files.length > 0 ?
+                                        event?.extendedProps?.files.map((file: string) => (
+                                            <li key={file}>{file}</li>
+                                        )) : 'None'
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                        <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
+                                <label className="font-semibold w-full" htmlFor="desiredDate">Desired delivery date</label>
+                                <input className="exam-date basis-full xl:basis-auto" type="date" name="desiredDate" disabled defaultValue={formatDateOnlyValue(event?.extendedProps?.desiredDate as string | Date | null | undefined)} />
+                            </div>
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
+                                <label className="font-semibold w-full" htmlFor="folderName">Folder name</label>
+                                <input className="exam-date basis-full xl:basis-auto w-full" type="text" name="folderName" disabled defaultValue={event?.extendedProps?.folderName} />
+                            </div>
+                        </div>
                     </div>
                     <div>
                         <label className="font-semibold w-full" htmlFor="description">Description</label>
