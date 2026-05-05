@@ -105,6 +105,16 @@ export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) 
                     <div className="flex flex-col gap-y-4">
                         <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
                             <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
+                                <label className="font-semibold w-full" htmlFor="desiredDate">Desired delivery date</label>
+                                <input className="exam-date basis-full xl:basis-auto" type="date" name="desiredDate" disabled defaultValue={formatDateOnlyValue(event?.extendedProps?.desiredDate as string | Date | null | undefined)} />
+                            </div>
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
+                                <label className="font-semibold w-full" htmlFor="examDate">Exam date</label>
+                                <input className="exam-date basis-full xl:basis-auto" type="date" name="examDate" disabled defaultValue={formatDateOnlyValue(event?.extendedProps?.examDate as string | Date | null | undefined)} />
+                            </div>
+                        </div>
+                        <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
+                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
                                 <label className="font-semibold w-full" htmlFor="start">Estimated print start</label>
                                 <input className="start-date basis-full xl:basis-auto" type="date" name="start" disabled defaultValue={startDateValue} />
                                 <input className="start-time basis-full xl:basis-auto" type="time" name="start" disabled step="3600" min="00:00" max="23:59" defaultValue={startTimeValue} />
@@ -121,8 +131,8 @@ export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) 
                                 <input className="financial-center basis-full xl:basis-auto" type="text" name="financial" disabled defaultValue={event?.extendedProps?.financialCenter} />
                             </div>
                             <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
-                                <label className="font-semibold w-full" htmlFor="examDate">Exam date</label>
-                                <input className="exam-date basis-full xl:basis-auto" type="date" name="examDate" disabled defaultValue={formatDateOnlyValue(event?.extendedProps?.examDate as string | Date | null | undefined)} />
+                                <label className="font-semibold w-full" htmlFor="folderName">Folder name</label>
+                                <input className="exam-date basis-full xl:basis-auto w-full" type="text" name="folderName" disabled defaultValue={event?.extendedProps?.folderName} />
                             </div>
                         </div>
                         <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
@@ -175,16 +185,6 @@ export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) 
                                         )) : 'None'
                                     }
                                 </ul>
-                            </div>
-                        </div>
-                        <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
-                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
-                                <label className="font-semibold w-full" htmlFor="desiredDate">Desired delivery date</label>
-                                <input className="exam-date basis-full xl:basis-auto" type="date" name="desiredDate" disabled defaultValue={formatDateOnlyValue(event?.extendedProps?.desiredDate as string | Date | null | undefined)} />
-                            </div>
-                            <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
-                                <label className="font-semibold w-full" htmlFor="folderName">Folder name</label>
-                                <input className="exam-date basis-full xl:basis-auto w-full" type="text" name="folderName" disabled defaultValue={event?.extendedProps?.folderName} />
                             </div>
                         </div>
                     </div>
