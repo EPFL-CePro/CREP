@@ -201,6 +201,16 @@ export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) 
                     </textarea>
                 </div>
             </div>
+            <div className="hidden print:flex fixed bottom-0 justify-between w-full px-24 pb-24">
+                <div className="flex flex-col gap-8">
+                    <p className="text-lg font-bold">Delivered on</p>
+                    <span>{".".repeat(40)}</span>
+                </div>
+                <div className="flex flex-col gap-8">
+                    <p className="text-lg font-bold">Signature</p>
+                    <span>{".".repeat(40)}</span>
+                </div>
+            </div>
             <div id="modal-toolbar" className="shrink-0 border-t border-black/5 px-5 py-4 md:px-8 md:py-6 flex flex-row justify-between flex-wrap xxl:flex-nowrap gap-y-2 bg-background">
                 <div className="flex flex-row gap-4 flex-wrap md:flex-nowrap gap-y-2 ">
                     {/* ToDo : use a component */}
