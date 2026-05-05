@@ -151,7 +151,7 @@ export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) 
                                 <input className="paper-format basis-full xl:basis-auto" type="text" name="paperFormat" disabled defaultValue={event?.extendedProps?.paperFormat} />
                             </div>
                             <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
-                                <label className="font-semibold w-full" htmlFor="paperColor">Paper color</label>
+                                <label className="font-semibold w-full" htmlFor="paperColor">Print</label>
                                 <input className="paper-color basis-full xl:basis-auto" type="text" name="paperColor" disabled defaultValue={event?.extendedProps?.paperColor} />
                             </div>
                         </div>
