@@ -147,8 +147,8 @@ export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) 
                         </div>
                         <div className="flex flex-row justify-between gap-x-12 flex-wrap gap-y-0 md:flex-nowrap sm:gap-y-2 items-start">
                             <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-sm flex-1">
-                                <label className="font-semibold w-full" htmlFor="paperFormat">Paper format</label>
-                                <input className="paper-format basis-full xl:basis-auto" type="text" name="paperFormat" disabled defaultValue={event?.extendedProps?.paperFormat} />
+                                <label className="font-semibold w-full" htmlFor="paperFormat">Bindings</label>
+                                <input className="paper-format basis-full xl:basis-auto" type="text" name="paperFormat" disabled defaultValue={event?.extendedProps?.paperFormat && event?.extendedProps?.paperFormat == 'A3' ? 'Saddle stitch (A3)' : 'Stapple (A4)'} />
                             </div>
                             <div className="date-input flex flex-row flex-wrap gap-4 gap-y-1 [&_input]:rounded-lg flex-1">
                                 <label className="font-semibold w-full" htmlFor="paperColor">Print</label>
