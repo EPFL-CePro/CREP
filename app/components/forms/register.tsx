@@ -543,19 +543,15 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                         <input className="text-right" type="number" min={1} {...register("nbPages", { required: true, min: 1 })} />
                     </div>
                 </div>
-                <label>Paper Format <RedAsterisk /></label>
-                <div className="flex items-end align-middle flex-row justify-between [&>div]:flex [&>div]:flex-col [&>div]:gap-2">
-                    <div className="[&>p]:italic">
-                        <p>Without folding</p>
-                        <p>With two staples in the fold</p>
+                <label>Bindings <RedAsterisk /></label>
+                <div>
+                    <div>
+                        <label className="mr-2" htmlFor="stapple">Stapple (A4)</label>
+                        <input type="radio" id="stapple" value="A4" {...register("paperFormat", { required: true })} />
                     </div>
-                    <div className="[&>div]:flex [&>div]:justify-end [&>div]:gap-3">
-                        <div onClick={(e) => { const input = e.currentTarget.querySelector('input') as HTMLInputElement | null; if (input) { input.click(); } }}>
-                            <input type="radio" value="A4" {...register("paperFormat", { required: true })} /><label>A4</label>
-                        </div>
-                        <div onClick={(e) => { const input = e.currentTarget.querySelector('input') as HTMLInputElement | null; if (input) { input.click(); } }}>
-                            <input type="radio" defaultChecked value="A3" {...register("paperFormat", { required: true })} /><label>A3</label>
-                        </div>
+                    <div>
+                        <label className="mr-2" htmlFor="saddle-stitch">Saddle stitch (A3)</label>
+                        <input type="radio" id="saddle-stitch" value="A3" {...register("paperFormat", { required: true })} />
                     </div>
                 </div>
                 <label>Paper color <RedAsterisk /></label>
