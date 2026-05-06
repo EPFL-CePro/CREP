@@ -79,6 +79,7 @@ export default function App({ user }: RegisterProps) {
             paperColor: "greyscale",
             needScan: true,
             remark: "",
+            print: "recto-verso",
         },
     })
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -389,6 +390,7 @@ export default function App({ user }: RegisterProps) {
                     financial_center: data.financialCenter,
                     files: JSON.stringify(filesNamesArray),
                     desired_date: data.desiredDate,
+                    print: data.print,
                 }
             )
 
@@ -541,6 +543,17 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                     <div className="flex flex-col w-2/4 gap-3">
                         <label>Pages per copy <RedAsterisk /></label>
                         <input className="text-right" type="number" min={1} {...register("nbPages", { required: true, min: 1 })} />
+                    </div>
+                </div>
+                <label>Print <RedAsterisk /></label>
+                <div>
+                    <div>
+                        <label className="mr-2" htmlFor="recto">Recto</label>
+                        <input type="radio" id="recto" value="recto" {...register("print", { required: true })} />
+                    </div>
+                    <div>
+                        <label className="mr-2" htmlFor="recto-verso">Recto-verso</label>
+                        <input type="radio" id="recto-verso" value="recto-verso" {...register("print", { required: true })} />
                     </div>
                 </div>
                 <label>Bindings <RedAsterisk /></label>

@@ -35,4 +35,5 @@ export type Inputs = {
     academicYear: FormattedAcademicYear
     examSemester: string
     section: FormattedSection
+    print: string
 }

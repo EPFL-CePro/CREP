@@ -90,6 +90,7 @@ export default function Calendar({ user }: CalendarProps) {
           files: e.files,
           desiredDate: e.desired_date,
           code: e.exam_code,
+          print: e.print,
         }
       })
       setExams(filteredData);
@@ -164,6 +165,7 @@ export default function Calendar({ user }: CalendarProps) {
     calendarEvent.setExtendedProp('desiredDate', clickedExam.desiredDate);
     calendarEvent.setExtendedProp('folderName', folderName);
     calendarEvent.setExtendedProp('printSchedule', clickedExam.start);
+    calendarEvent.setExtendedProp('print', clickedExam.print);
     setSelectedEvent(calendarEvent);
 
     const dialog = document.getElementById("modal") as HTMLDialogElement | null;
