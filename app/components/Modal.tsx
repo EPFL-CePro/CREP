@@ -269,7 +269,7 @@ export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) 
                                 const datePrintSchedule = new Date(event?.extendedProps?.printSchedule)
                                 const examURL = `https://crep.epfl.ch/?openExam=${event?.extendedProps?.code}&day=${formatDateYYYYMMDD(datePrintSchedule)}`;
                                 await sendMail(
-                                    'repro@groupes.epfl.ch',
+                                    'examen.repro@epfl.ch',
                                     `Exam ${event?.extendedProps?.code} is ready to be printed`,
                                     `
 Hello,
@@ -303,7 +303,7 @@ Best,
 CePro team
 `,
                                     authorizedPersonsEmails,
-                                    'guichet.repro@epfl.ch'
+                                    'examen.repro@epfl.ch'
                                 );
                             }
                         }
