@@ -303,6 +303,7 @@ export default function Calendar({ user }: CalendarProps) {
             const today = new Date();
             const isToday = eventStartPrintDate.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0);
             const isBreathingPrint = isToday && ev.status === "toPrint";
+            const isMovable = ["registered", "registered-warning", "registered-error", "toPrint"].includes(ev.status);
 
             return {
               ...ev,
@@ -312,6 +313,7 @@ export default function Calendar({ user }: CalendarProps) {
                 isBreathingPrint ? "fc-event-breathing-pink" : ""
               ].filter(Boolean),
               extendedProps: { ...(ev.extendedProps || {}), status: ev.status, remark: ev.remark, reproRemark: ev.reproRemark },
+              startEditable: isMovable,
             };
           });
 
