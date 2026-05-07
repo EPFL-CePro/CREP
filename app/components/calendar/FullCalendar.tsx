@@ -109,6 +109,18 @@ export default function Calendar({ user }: CalendarProps) {
     const formattedStartDate = arg.event.startStr
       ? arg.event.startStr.slice(0, 19).replace("T", " ")
       : formatDateTimeForDatabase(startDate || new Date());
+    const formattedEventStart = arg.event.startStr
+      ? arg.event.startStr.slice(0, 19)
+      : startDate ? formatDateTimeInputValue(startDate) : undefined;
+    const formattedEventEnd = arg.event.endStr
+      ? arg.event.endStr.slice(0, 19)
+      : arg.event.end ? formatDateTimeInputValue(arg.event.end) : undefined;
+    const previousEventStart = arg.oldEvent.startStr
+      ? arg.oldEvent.startStr.slice(0, 19)
+      : arg.oldEvent.start ? formatDateTimeInputValue(arg.oldEvent.start) : undefined;
+    const previousEventEnd = arg.oldEvent.endStr
+      ? arg.oldEvent.endStr.slice(0, 19)
+      : arg.oldEvent.end ? formatDateTimeInputValue(arg.oldEvent.end) : undefined;
 
     const newStart = arg.event.start;
     const examDateRaw = arg.event.extendedProps.examDate;
@@ -126,7 +138,40 @@ export default function Calendar({ user }: CalendarProps) {
       return;
     }
 
-    await updateExamDateById(id, formattedStartDate)
+    if (!formattedEventStart) {
+      arg.revert();
+      return;
+    }
+
+    setExams((currentExams: EventSourceInput | undefined) => Array.isArray(currentExams)
+      ? currentExams.map((exam: EventInput) => exam.id == id
+        ? {
+          ...exam,
+          start: formattedEventStart,
+          end: formattedEventEnd,
+        }
+        : exam)
+      : currentExams
+    );
+    eventsCacheRef.current = { key: "", events: [] };
+
+    try {
+      await updateExamDateById(id, formattedStartDate)
+    } catch (error) {
+      setExams((currentExams: EventSourceInput | undefined) => Array.isArray(currentExams)
+        ? currentExams.map((exam: EventInput) => exam.id == id
+          ? {
+            ...exam,
+            start: previousEventStart,
+            end: previousEventEnd,
+          }
+          : exam)
+        : currentExams
+      );
+      eventsCacheRef.current = { key: "", events: [] };
+      arg.revert();
+      console.error("Failed to update exam print date", error);
+    }
   }
 
   const eventsCacheRef = useRef<{ key: string; events: EventInput[] }>({ key: "", events: [] });
@@ -239,7 +284,7 @@ export default function Calendar({ user }: CalendarProps) {
       fcColor: string;
       needsAdmin: boolean;
     }[]) {
-    const examsPart = Array.isArray(examsArr) ? examsArr.map(e => `${e.id}:${e.status}`).join("|") : "";
+    const examsPart = Array.isArray(examsArr) ? examsArr.map(e => `${e.id}:${e.status}:${e.start}:${e.end}`).join("|") : "";
     const filtersPart = (filtersArr || []).map(f => f.value).join(",");
     const statusPart = (examStatusArr || []).map(s => `${s.value}:${s.fcColor}`).join(",");
 
