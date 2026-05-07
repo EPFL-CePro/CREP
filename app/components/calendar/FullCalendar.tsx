@@ -97,12 +97,34 @@ export default function Calendar({ user }: CalendarProps) {
     })();
   }, [availableStatus, user.isAdmin])
 
+  const startOfDay = (date: Date) => {
+    const copy = new Date(date);
+    copy.setHours(0, 0, 0, 0);
+    return copy;
+  };
+
   const handleEventDrop = async (arg: EventDropArg) => {
     const id = arg.event.id;
     const startDate = arg.event.start;
     const formattedStartDate = arg.event.startStr
       ? arg.event.startStr.slice(0, 19).replace("T", " ")
       : formatDateTimeForDatabase(startDate || new Date());
+
+    const newStart = arg.event.start;
+    const examDateRaw = arg.event.extendedProps.examDate;
+
+    if (!newStart || !examDateRaw) {
+      arg.revert();
+      return;
+    }
+
+    const movedDate = startOfDay(newStart);
+    const examDate = startOfDay(new Date(examDateRaw));
+
+    if (movedDate > examDate) {
+      arg.revert();
+      return;
+    }
 
     await updateExamDateById(id, formattedStartDate)
   }
@@ -312,7 +334,7 @@ export default function Calendar({ user }: CalendarProps) {
               classNames: [
                 isBreathingPrint ? "fc-event-breathing-pink" : ""
               ].filter(Boolean),
-              extendedProps: { ...(ev.extendedProps || {}), status: ev.status, remark: ev.remark, reproRemark: ev.reproRemark },
+              extendedProps: { ...(ev.extendedProps || {}), status: ev.status, remark: ev.remark, reproRemark: ev.reproRemark, examDate: ev.examDate },
               startEditable: isMovable,
             };
           });
