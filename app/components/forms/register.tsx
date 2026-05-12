@@ -556,7 +556,26 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                         <input type="radio" id="recto-verso" value="recto-verso" {...register("print", { required: true })} />
                     </div>
                 </div>
-                <label>Bindings <RedAsterisk /></label>
+                <div className="flex items-center gap-2 text-lg">
+                    <span>Bindings <RedAsterisk /></span>
+                    <span className="group relative inline-flex h-5 w-5">
+                        <button
+                            type="button"
+                            aria-label="Show bindings example"
+                            className="flex h-5 w-5 items-center justify-center rounded-full border border-slate-400 text-xs font-semibold leading-none text-slate-700 hover:border-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                        >
+                            ?
+                        </button>
+                        <span className="pointer-events-none invisible absolute left-1/2 bottom-7 z-20 w-96 -translate-x-1/2 rounded-md border border-slate-700 bg-white p-2 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src="/bindings.png"
+                                alt="Bindings example"
+                                className="h-auto w-full rounded"
+                            />
+                        </span>
+                    </span>
+                </div>
                 <div>
                     <div>
                         <label className="mr-2" htmlFor="stapple">Stapple (A4)</label>
