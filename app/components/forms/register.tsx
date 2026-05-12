@@ -189,6 +189,13 @@ export default function App({ user }: RegisterProps) {
                 setError("desiredDate", { type: "validate", message: "Desired delivery date cannot be later than the exam date." });
                 return;
             }
+            
+            today.setHours(0, 0, 0, 0);
+
+            if(exam <= today || desired <= today) {
+                openModal("Date selection error", "The exam date or the desired delivery date can not be before today's date.");
+                return;
+            }
 
             else if (businessDaysBetween(formatDateYYYYMMDD(today), desiredDate) < 8) {
                 const confirmed = await openConfirmationModal('Date Validation Warning', `There must be at least 8 business days between today and the desired delivery date.\n\nDo you still want to submit your exam?`);
