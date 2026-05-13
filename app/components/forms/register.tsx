@@ -570,7 +570,7 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                         >
                             ?
                         </button>
-                        <span className="pointer-events-none invisible absolute left-1/2 bottom-7 z-20 w-96 -translate-x-1/2 rounded-md border border-slate-700 bg-white p-2 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                        <span className="invisible absolute left-1/2 bottom-5 z-20 w-96 -translate-x-1/2 select-text rounded-md border border-slate-700 bg-white p-2 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src="/bindings.png"
