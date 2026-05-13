@@ -1,7 +1,7 @@
 "use client"
 import { User } from "next-auth";
 import React, { Dispatch, SetStateAction, useRef, useState } from "react";
-import { updateExamRemarkById, updateExamStatusById, updateExamReproRemarkById } from "../lib/database";
+import { updateExamRemarkById, updateExamStatusById, updateExamReproRemarkById, deleteCrepExam } from "../lib/database";
 import { EventApi, EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
 import { PrintButton } from "./print/ReactToPrint";
 import { examNotAdminStatus } from "../lib/examStatus";
@@ -53,6 +53,22 @@ export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) 
         await updateExamStatusById(event?.id || '', selectStatus)
         setSelectStatus(selectStatus)
         setExams(updatedExams)
+    }
+
+    async function handleDeleteExam(examId?: string) {
+        if(!examId) return;
+
+        if (!window.confirm("This will delete the exam from the database. Are you sure you want to proceed ?")) {
+            return;
+        }
+
+        await deleteCrepExam(examId);
+        event?.remove();
+        setExams((currentExams: EventInput) => Array.isArray(currentExams)
+            ? currentExams.filter((exam: EventInput) => String(exam.id) !== String(examId))
+            : currentExams
+        );
+        (document.getElementById("modal") as HTMLDialogElement | null)?.close();
     }
 
     // Get color of selected exam
@@ -216,14 +232,17 @@ export function Modal({ event, user, examStatus, exams, setExams }: ModalProps) 
                     {/* ToDo : use a component */}
                     {/* Displays a dropdown if user has admin privileges */}
                     {user.isAdmin && (
-                        <select name="from" className="dropdown btn btn-secondary" id="from"
-                            value={selectStatus}
-                            onChange={(e) => setSelectStatus(e.target.value)}
-                        >
-                            {examStatus && examStatus.map((status) => (
-                                <option key={status.value} value={status.value} className={status.color}>{status.label}</option>
-                            ))}
-                        </select>
+                        <>                        
+                            <button type="button" className="btn btn-primary" onClick={() => handleDeleteExam(event?.id)}>Delete</button>
+                            <select name="from" className="dropdown btn btn-secondary" id="from"
+                                value={selectStatus}
+                                onChange={(e) => setSelectStatus(e.target.value)}
+                            >
+                                {examStatus && examStatus.map((status) => (
+                                    <option key={status.value} value={status.value} className={status.color}>{status.label}</option>
+                                ))}
+                            </select>
+                        </>
                     )}
                     <PrintButton ref={modalRef} />
                 </div>
