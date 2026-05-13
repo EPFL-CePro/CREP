@@ -539,14 +539,51 @@ ${data.remark && `- Additional remarks: ${data.remark}`}`,
                         {errors.desiredDate && <span className="text-red-600">{errors.desiredDate.message}</span>}
                     </div>
                 </div>
-                <div className="flex flex-row justify-between w-full gap-4 [&>*>label]:text-lg">
-                    <div className="flex flex-col w-2/4 gap-3">
-                        <label>Number of copies <RedAsterisk /></label>
-                        <input className="text-right" type="number" min={1} {...register("nbStudents", { required: true, min: 1 })} />
+                <div className="flex flex-col justify-between w-full gap-1 [&>*>label]:text-lg">
+                    <div className="flex gap-4">
+                        <div className="flex flex-col w-2/4 gap-3">
+                            <label>Requested students copies <RedAsterisk /></label>
+                            <input className="text-right border border-slate-300 rounded-md p-2" type="number" min={1} {...register("nbStudents", { required: true, min: 1 })} />
+                        </div>
+                        <div className="flex flex-col w-2/4 gap-3">
+                            <label>Pages per document <RedAsterisk /></label>
+                            <input className="text-right border border-slate-300 rounded-md p-2" type="number" min={1} {...register("nbPages", { required: true, min: 1 })} />
+                        </div>
                     </div>
-                    <div className="flex flex-col w-2/4 gap-3">
-                        <label>Pages per copy <RedAsterisk /></label>
-                        <input className="text-right" type="number" min={1} {...register("nbPages", { required: true, min: 1 })} />
+                    <div>
+                        <span>I need help{" "}</span>
+                        <span className="group relative inline-flex h-5 w-5">
+                            <button
+                                type="button"
+                                aria-label="Show bindings example"
+                                className="flex h-5 w-5 items-center justify-center rounded-full border border-slate-400 text-xs font-semibold leading-none text-slate-700 hover:border-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                            >
+                                ?
+                            </button>
+                            <div className="invisible absolute left-1/2 bottom-5 z-20 w-96 -translate-x-1/2 select-text rounded-md border border-slate-700 bg-white p-2 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                                <div className="flex flex-col gap-2">
+                                    <div>
+                                        PDF already containing 120 documents of 20 pages each (2400-page PDF):
+
+                                        <ul className="pl-4 list-disc">
+                                            <li>Requested copies: 120</li>
+                                            <li>Pages per document: 20</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        PDF containing a single 20-page document:
+
+                                        <ul className="pl-4 list-disc">
+                                            <li>Requested copies: 120</li>
+                                            <li>Pages per document: 20</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        Documents will be automatically separated and stapled/folded every specified number of pages per document.
+                                    </div>
+                                </div>
+                            </div>
+                        </span>
                     </div>
                 </div>
                 <label>Print <RedAsterisk /></label>
