@@ -13,16 +13,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const groups = session.user.groups || [];
-  const authorizedGroups = ["CREP-access_AppGrpU", "CREP-admin_AppGrpU"];
-  const isInAllowedGroup = groups.some((group: string) =>
-    authorizedGroups.includes(group)
-  );
-
-  if (!isInAllowedGroup) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
   const formData = await req.formData();
 
   const folder_name = formData.get("folder_name");
