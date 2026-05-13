@@ -12,6 +12,7 @@ import { RedAsterisk } from "../RedAsterisk";
 import { RegisterModal } from "./RegisterModal";
 import { Inputs } from "@/types/inputs";
 import { AuthorizedPersons } from "@/types/user";
+import { getPrintingDurationInMinutes } from "@/app/lib/printingDuration";
 
 interface RegisterProps {
     user: AppUser
@@ -241,10 +242,6 @@ export default function App({ user }: RegisterProps) {
             const exam_name = data.course.value.toString();
             const exam_code = data.course.label.split(' - ')[0] || '';
             const contact_name = contact?.lastname;
-
-            function getPrintingDurationInMinutes(nbStudents: number): number {
-                return Math.ceil((20 * nbStudents + 3600) / 60 / 60) * 60;
-            }
 
             function getEndDateOfPrinting(exam: Exam): Date {
                 return new Date(exam.print_date.getTime() + getPrintingDurationInMinutes(exam.exam_students) * 60000);

@@ -16,6 +16,7 @@ import { QueryResult } from "mysql2";
 import { Legend } from "../Legend";
 import { EventApi } from "@fullcalendar/core";
 import { useSearchParams } from "next/navigation";
+import { getPrintingDurationInMinutes } from "@/app/lib/printingDuration";
 
 interface CalendarProps {
   user: AppUser
@@ -23,10 +24,6 @@ interface CalendarProps {
 
 interface AppUser extends User {
   isAdmin?: boolean;
-}
-
-function getPrintingDurationInMinutes(nbStudents: number): number {
-  return Math.ceil((20 * nbStudents + 3600) / 60 / 60) * 60;
 }
 
 function getEndDateOfPrinting(printDate: Date, nbStudents: number): Date {
